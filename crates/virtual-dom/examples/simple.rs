@@ -1,4 +1,4 @@
-use virtual_dom::{Callback, Events, VElement, VNode, VText};
+use virtual_dom::{Callback, Events, VElement, VNode, VText, Value};
 
 use std::any::Any;
 use std::collections::HashMap;
@@ -11,50 +11,32 @@ fn main() {
     let v2 = 11;
 
     let x = 3u8;
-    let s = (1, "hi");
+    let s = 1;
 
     let div = VNode::Element(VElement {
         tag: "div".into(),
         attrs: {
-            let mut hm: HashMap<String, &Any> = HashMap::new();
-            hm.insert("v1".into(), &"somev1");
-            hm.insert("v1".into(), &v1);
-            hm.insert("v2".into(), &v2);
-            hm.insert("id".into(), &0);
+            let mut hm: HashMap<String, Value> = HashMap::new();
+            hm.insert("v1".into(), "somev1".into());
+            hm.insert("v1".into(), v1.into());
+            hm.insert("v2".into(), v2.into());
+            hm.insert("id".into(), 0.into());
             hm
         },
         events: Events({
-            let mut hm:HashMap<String, Callback<&Any>> = HashMap::new();
-            let hello = |x: &Any| {
-                print!("hello  ");
-                if x.is::<String>() {
-                    println!("a string");
-                } else if x.is::<u8>() {
-                    print!("u8: {}", x.downcast_ref::<u8>().unwrap());
-                } else {
-                    print!("cant guess");
-                }
-                println!();
+            let mut hm:HashMap<String, Callback<Value>> = HashMap::new();
+            let hello = |x: Value| {
+                print!("hello  {}",x);
             };
-            let hi = |s: &Any| {
+            let hi = |s: Value| {
                 println!("hi: {:#?} ", s);
-                if s.is::<(i32, &str)>() {
-                    print!("gotcha type");
-                    if let Some((v, s)) = s.downcast_ref::<(i32, &str)>() {
-                        println!("({},{})", v, s);
-                    }
-                } else if s.is::<u8>() {
-                    print!("u8: {}", s.downcast_ref::<u8>().unwrap());
-                } else {
-                    print!("dunno type");
-                }
-                println!();
             };
-            let hic: Callback<&Any> = hi.into();
-            hic.emit(&s);
-            hic.emit(&x);
-            let helloc:Callback<&Any> = hello.into();
-            helloc.emit(&x);
+            let hic: Callback<Value> = hi.into();
+            hic.emit(s);
+            hic.emit(s);
+            hic.emit(x);
+            let helloc:Callback<Value> = hello.into();
+            helloc.emit(x);
             hm.insert("click".into(), hello.into());
             hm.insert("mousedown".into(), hi.into());
             hm

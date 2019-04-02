@@ -1,3 +1,4 @@
+use std::convert::Into;
 
 pub struct Callback<IN>(Box<dyn Fn(IN)>);
 
@@ -9,7 +10,14 @@ impl<IN, F: Fn(IN) + 'static> From<F> for Callback<IN> {
 
 impl<IN> Callback<IN> {
     /// This method calls the actual callback.
-    pub fn emit(&self, value: IN) {
-        (self.0)(value);
+    pub fn emit<T:Into<IN>>(&self, value: T) {
+        (self.0)(value.into());
+    }
+}
+
+impl<IN> PartialEq for Callback<IN> {
+
+    fn eq(&self, rhs: &Self) -> bool {
+        true
     }
 }
