@@ -1,0 +1,6 @@
+[package]
+name = "virtual_dom"
+edition = "2018"
+version = "0.1.0"
+
+[dependencies]

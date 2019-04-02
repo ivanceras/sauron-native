@@ -1,0 +1,7 @@
+[package]
+name = "lazarust"
+version = "0.1.0"
+authors = ["lee"]
+edition = "2018"
+
+[dependencies]
