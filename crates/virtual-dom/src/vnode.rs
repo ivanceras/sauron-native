@@ -12,6 +12,7 @@ pub enum VNode{
     Text(VText),
 }
 
+#[derive(PartialEq)]
 pub struct VElement{
     pub tag: String,
     pub attrs: HashMap<String, Value>,
@@ -19,11 +20,24 @@ pub struct VElement{
     pub children: Vec<VNode>,
 }
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 pub enum Value{
     String(String),
     Vec(Vec<Value>),
     U8(u8),
+    U16(u16),
+    U32(u32),
+    U64(u64),
+    Usize(usize),
+    U128(u128),
+    I8(i8),
+    I16(i16),
+    I32(i32),
+    I64(i64),
+    I128(i128),
+    Isize(isize),
+    F32(f32),
+    F64(f64),
 }
 
 
@@ -32,23 +46,10 @@ pub struct VText {
     pub text: String,
 }
 
+#[derive(PartialEq)]
 pub struct Events<IN>(pub HashMap<String, Callback<IN>>);
 
-impl PartialEq for VElement{
 
-    fn eq(&self, rhs: &Self) -> bool {
-        self.tag == rhs.tag
-            || self.events == rhs.events
-            || self.children == rhs.children
-    }
-}
-
-impl <IN>PartialEq for Events<IN>{
-
-    fn eq(&self, rhs: &Self) -> bool {
-        self.0 == rhs.0
-    }
-}
 
 
 impl fmt::Debug for VNode {
@@ -76,7 +77,36 @@ impl fmt::Debug for VText {
     }
 }
 
+impl Value{
 
+    fn as_str(&self) -> Option<&str> {
+        match self{
+            Value::String(ref v) => Some(&v),
+            _ => None
+        }
+    }
+
+    fn as_f64(&self) -> Option<f64> {
+        match self{
+            Value::String(v) => None, 
+            Value::Vec(v) => None,
+            Value::U8(v) =>  Some(*v as f64),
+            Value::U16(v) => Some(*v as f64),
+            Value::U32(v) => Some(*v as f64),
+            Value::U64(v) => Some(*v as f64),
+            Value::U128(v) => Some(*v as f64),
+            Value::Usize(v) => Some(*v as f64),
+            Value::I8(v) => Some(*v as f64),
+            Value::I16(v) => Some(*v as f64),
+            Value::I32(v) => Some(*v as f64),
+            Value::I64(v) => Some(*v as f64),
+            Value::I128(v) => Some(*v as f64),
+            Value::Isize(v) => Some(*v as f64),
+            Value::F32(v) => Some(*v as f64),
+            Value::F64(v) => Some(*v )
+        }
+    }
+}
 
 impl fmt::Display for Value{
     
@@ -85,6 +115,19 @@ impl fmt::Display for Value{
             Value::String(v) => write!(f, "{}",v),
             Value::Vec(v) => write!(f, "{:?}", v),
             Value::U8(v) => write!(f, "{}", v),
+            Value::U16(v) => write!(f, "{}", v),
+            Value::U32(v) => write!(f, "{}", v),
+            Value::U64(v) => write!(f, "{}", v),
+            Value::U128(v) => write!(f, "{}", v),
+            Value::Usize(v) => write!(f, "{}", v),
+            Value::I8(v) => write!(f, "{}", v),
+            Value::I16(v) => write!(f, "{}", v),
+            Value::I32(v) => write!(f, "{}", v),
+            Value::I64(v) => write!(f, "{}", v),
+            Value::I128(v) => write!(f, "{}", v),
+            Value::Isize(v) => write!(f, "{}", v),
+            Value::F32(v) => write!(f, "{}", v),
+            Value::F64(v) => write!(f, "{}", v),
         }
     }
 }
