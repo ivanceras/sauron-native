@@ -1,11 +1,11 @@
-use virtual_dom::{Callback, Events, VElement, VNode, VText, Value};
+use virtual_dom::{Callback, VElement, VNode, VText, Value};
 
 use std::any::Any;
 use std::collections::HashMap;
 
 fn main() {
     let txt = VNode::Text(VText {
-        text: "Hello".into(),
+        text: "World!".into(),
     });
     let v1 = "somev1";
     let v2 = 11;
@@ -23,7 +23,7 @@ fn main() {
             hm.insert("id".into(), 0.into());
             hm
         },
-        events: Events({
+        events: {
             let mut hm:HashMap<String, Callback<Value>> = HashMap::new();
             let hello = |x: Value| {
                 print!("hello  {}",x);
@@ -40,10 +40,12 @@ fn main() {
             hm.insert("click".into(), hello.into());
             hm.insert("mousedown".into(), hi.into());
             hm
-        }),
-        children: vec![],
+        },
+        children: vec![
+            VNode::Text(VText{text:"Hello".into()}),
+            txt
+        ],
     });
 
     println!("{}", div);
-    println!("{}", txt);
 }

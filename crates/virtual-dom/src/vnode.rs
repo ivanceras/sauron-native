@@ -16,7 +16,7 @@ pub enum VNode{
 pub struct VElement{
     pub tag: String,
     pub attrs: HashMap<String, Value>,
-    pub events: Events<Value>,
+    pub events: HashMap<String, Callback<Value>>,
     pub children: Vec<VNode>,
 }
 
@@ -45,9 +45,6 @@ pub enum Value{
 pub struct VText {
     pub text: String,
 }
-
-#[derive(PartialEq)]
-pub struct Events<IN>(pub HashMap<String, Callback<IN>>);
 
 
 
@@ -163,11 +160,7 @@ impl fmt::Display for VElement {
             write!(f, "{}", child.to_string())?;
         }
 
-        /*
-        if !html_validation::is_self_closing(&self.tag) {
-            write!(f, "</{}>", self.tag)?;
-        }
-        */
+        write!(f, "</{}>", self.tag)?;
 
         Ok(())
     }
