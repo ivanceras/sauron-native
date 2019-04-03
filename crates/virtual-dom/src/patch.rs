@@ -4,6 +4,7 @@
 
 use crate::{VText, VNode};
 use std::collections::HashMap;
+use crate::Value;
 
 
 /// A Patch encodes an operation that modifies a real DOM element.
@@ -40,16 +41,16 @@ use std::collections::HashMap;
 ///
 /// The patching process is tested in a real browser in crates/virtual-dom-rs/tests/diff_patch.rs
 #[derive(Debug, PartialEq)]
-pub enum Patch<'a,'v> {
+pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(NodeIdx, Vec<&'a VNode<'v>>),
+    AppendChildren(NodeIdx, Vec<&'a VNode>),
     /// For a `node_i32`, remove all children besides the first `len`
     TruncateChildren(NodeIdx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(NodeIdx, &'a VNode<'v>),
+    Replace(NodeIdx, &'a VNode),
     /// Add attributes that the new node has that the old node does not
-    AddAttributes(NodeIdx, HashMap<&'a str, &'a str>),
+    AddAttributes(NodeIdx, HashMap<&'a str, &'a Value>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
@@ -58,7 +59,7 @@ pub enum Patch<'a,'v> {
 
 type NodeIdx = usize;
 
-impl<'a,'v> Patch<'a,'v> {
+impl<'a> Patch<'a> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
     /// index of the DOM node that this patch should apply to. DOM nodes are indexed
     /// depth first with the root node in the tree having index 0.

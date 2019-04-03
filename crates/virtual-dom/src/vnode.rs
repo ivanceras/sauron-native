@@ -145,7 +145,6 @@ impl From<&str> for Value {
 impl fmt::Display for VElement {
     // Turn a VElement and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::util::any_to_string;
 
         write!(f, "<{}", self.tag).unwrap();
 

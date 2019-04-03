@@ -1,4 +1,5 @@
 use virtual_dom::{Callback, VElement, VNode, VText, Value};
+use virtual_dom::diff;
 
 use std::any::Any;
 use std::collections::HashMap;
@@ -43,9 +44,10 @@ fn main() {
         },
         children: vec![
             VNode::Text(VText{text:"Hello".into()}),
-            txt
         ],
     });
 
     println!("{}", div);
+    let diff = diff::diff(&txt, &div);
+    println!("diff: {:#?}", diff);
 }
