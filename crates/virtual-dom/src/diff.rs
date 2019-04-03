@@ -152,3 +152,95 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a VNode, cur_node_idx: &'b mut
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests{
+    use crate::*;
+    use super::*;
+
+    #[test]
+    fn test_replace_node(){
+        let old = VNode::Element(VElement {
+            tag: "div".into(),
+            attrs: HashMap::new(),
+            events: HashMap::new(),
+            children: vec![],
+        });
+        let new = VNode::Element(VElement {
+            tag: "span".into(),
+            attrs: HashMap::new(),
+            events: HashMap::new(),
+            children: vec![],
+        });
+
+        let diff = diff::diff(&old, &new);
+        assert_eq!(diff, vec![Patch::Replace(0, &new)], "Should replace the first node");
+    }
+
+    #[test]
+    fn test_simple_diff(){
+        let old = VNode::Element(VElement {
+            tag: "div".into(),
+            attrs: {
+                let mut hm: HashMap<String, Value> = HashMap::new();
+                hm.insert("id".into(), "some-id".into());
+                hm.insert("class".into(), "some-class".into());
+                hm
+            },
+            events: HashMap::new(),
+            children: vec![],
+        });
+
+        let new = VNode::Element(VElement {
+            tag: "div".into(),
+            attrs: {
+                let mut hm: HashMap<String, Value> = HashMap::new();
+                hm.insert("id".into(), "some-id".into());
+                hm.insert("class".into(), "some-class".into());
+                hm
+            },
+            events: HashMap::new(),
+            children: vec![],
+        });
+
+        let diff = diff(&old, &new);
+        assert_eq!(diff, vec![])
+    }
+
+    #[test]
+    fn test_class_changed(){
+        let old = VNode::Element(VElement {
+            tag: "div".into(),
+            attrs: {
+                let mut hm: HashMap<String, Value> = HashMap::new();
+                hm.insert("id".into(), "some-id".into());
+                hm.insert("class".into(), "some-class".into());
+                hm
+            },
+            events: HashMap::new(),
+            children: vec![],
+        });
+
+        let new = VNode::Element(VElement {
+            tag: "div".into(),
+            attrs: {
+                let mut hm: HashMap<String, Value> = HashMap::new();
+                hm.insert("id".into(), "some-id".into());
+                hm.insert("class".into(), "some-class2".into());
+                hm
+            },
+            events: HashMap::new(),
+            children: vec![],
+        });
+
+        let diff = diff(&old, &new);
+        let class2 = Value::String("some-class2".to_string());
+        assert_eq!(diff, vec![
+                   Patch::AddAttributes(0, {
+                       let mut hm = HashMap::new();
+                       hm.insert("class", &class2);
+                       hm
+        })])
+    }
+}
