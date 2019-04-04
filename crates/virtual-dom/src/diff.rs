@@ -1,10 +1,10 @@
-
 use crate::Patch;
 use crate::VNode;
 use crate::Value;
 use std::cmp::min;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::mem;
+use maplit::btreemap;
 
 /// Given two VNode's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new VNode's real DOM node equivalent.
@@ -66,7 +66,7 @@ fn diff_recursive<'a, 'b>(
 
         // We're comparing two element nodes
         (VNode::Element(old_element), VNode::Element(new_element)) => {
-            let mut add_attributes: HashMap<&str, &Value> = HashMap::new();
+            let mut add_attributes: BTreeMap<&str, &Value> = BTreeMap::new();
             let mut remove_attributes: Vec<&str> = vec![];
 
             // TODO: -> split out into func
@@ -134,8 +134,7 @@ fn diff_recursive<'a, 'b>(
                 }
             }
         }
-        (VNode::Text(_), VNode::Element(_))
-        | (VNode::Element(_), VNode::Text(_)) => {
+        (VNode::Text(_), VNode::Element(_)) | (VNode::Element(_), VNode::Text(_)) => {
             unreachable!("Unequal variant discriminants should already have been handled");
         }
     };
@@ -153,55 +152,52 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a VNode, cur_node_idx: &'b mut
     }
 }
 
-
 #[cfg(test)]
-mod tests{
-    use crate::*;
+mod tests {
     use super::*;
+    use crate::*;
 
     #[test]
-    fn test_replace_node(){
+    fn test_replace_node() {
         let old = VNode::Element(VElement {
             tag: "div".into(),
-            attrs: HashMap::new(),
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
         let new = VNode::Element(VElement {
             tag: "span".into(),
-            attrs: HashMap::new(),
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
 
         let diff = diff::diff(&old, &new);
-        assert_eq!(diff, vec![Patch::Replace(0, &new)], "Should replace the first node");
+        assert_eq!(
+            diff,
+            vec![Patch::Replace(0, &new)],
+            "Should replace the first node"
+        );
     }
 
     #[test]
-    fn test_simple_diff(){
+    fn test_simple_diff() {
         let old = VNode::Element(VElement {
             tag: "div".into(),
             attrs: {
-                let mut hm: HashMap<String, Value> = HashMap::new();
+                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
                 hm.insert("id".into(), "some-id".into());
                 hm.insert("class".into(), "some-class".into());
                 hm
             },
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
 
         let new = VNode::Element(VElement {
             tag: "div".into(),
             attrs: {
-                let mut hm: HashMap<String, Value> = HashMap::new();
+                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
                 hm.insert("id".into(), "some-id".into());
                 hm.insert("class".into(), "some-class".into());
                 hm
             },
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
 
         let diff = diff(&old, &new);
@@ -209,38 +205,38 @@ mod tests{
     }
 
     #[test]
-    fn test_class_changed(){
+    fn test_class_changed() {
         let old = VNode::Element(VElement {
             tag: "div".into(),
             attrs: {
-                let mut hm: HashMap<String, Value> = HashMap::new();
+                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
                 hm.insert("id".into(), "some-id".into());
                 hm.insert("class".into(), "some-class".into());
                 hm
             },
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
 
         let new = VNode::Element(VElement {
             tag: "div".into(),
             attrs: {
-                let mut hm: HashMap<String, Value> = HashMap::new();
+                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
                 hm.insert("id".into(), "some-id".into());
                 hm.insert("class".into(), "some-class2".into());
                 hm
             },
-            events: HashMap::new(),
-            children: vec![],
+            ..Default::default()
         });
 
         let diff = diff(&old, &new);
         let class2 = Value::String("some-class2".to_string());
-        assert_eq!(diff, vec![
-                   Patch::AddAttributes(0, {
-                       let mut hm = HashMap::new();
-                       hm.insert("class", &class2);
-                       hm
-        })])
+        assert_eq!(
+            diff,
+            vec![Patch::AddAttributes(0, {
+                let mut hm = BTreeMap::new();
+                hm.insert("class", &class2);
+                hm
+            })]
+        )
     }
 }

@@ -1,11 +1,9 @@
-
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::{VText, VNode};
-use std::collections::HashMap;
 use crate::Value;
-
+use crate::{VNode, VText};
+use std::collections::BTreeMap;
 
 /// A Patch encodes an operation that modifies a real DOM element.
 ///
@@ -50,7 +48,7 @@ pub enum Patch<'a> {
     /// ex: <div> becomes <span>
     Replace(NodeIdx, &'a VNode),
     /// Add attributes that the new node has that the old node does not
-    AddAttributes(NodeIdx, HashMap<&'a str, &'a Value>),
+    AddAttributes(NodeIdx, BTreeMap<&'a str, &'a Value>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.

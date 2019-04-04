@@ -1,8 +1,8 @@
-use virtual_dom::{Callback, VElement, VNode, VText, Value};
 use virtual_dom::diff;
+use virtual_dom::{Callback, VElement, VNode, VText, Value};
 
 use std::any::Any;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 fn main() {
     let txt = VNode::Text(VText {
@@ -17,7 +17,7 @@ fn main() {
     let div = VNode::Element(VElement {
         tag: "div".into(),
         attrs: {
-            let mut hm: HashMap<String, Value> = HashMap::new();
+            let mut hm: BTreeMap<String, Value> = BTreeMap::new();
             hm.insert("v1".into(), "somev1".into());
             hm.insert("v1".into(), v1.into());
             hm.insert("v2".into(), v2.into());
@@ -25,9 +25,9 @@ fn main() {
             hm
         },
         events: {
-            let mut hm:HashMap<String, Callback<Value>> = HashMap::new();
+            let mut hm: BTreeMap<String, Callback<Value>> = BTreeMap::new();
             let hello = |x: Value| {
-                print!("hello  {}",x);
+                print!("hello  {}", x);
             };
             let hi = |s: Value| {
                 println!("hi: {:#?} ", s);
@@ -36,15 +36,16 @@ fn main() {
             hic.emit(s);
             hic.emit(s);
             hic.emit(x);
-            let helloc:Callback<Value> = hello.into();
+            let helloc: Callback<Value> = hello.into();
             helloc.emit(x);
             hm.insert("click".into(), hello.into());
             hm.insert("mousedown".into(), hi.into());
             hm
         },
-        children: vec![
-            VNode::Text(VText{text:"Hello".into()}),
-        ],
+        children: vec![VNode::Text(VText {
+            text: "Hello".into(),
+        })],
+        namespace: None,
     });
 
     println!("{}", div);
