@@ -1,8 +1,5 @@
-use std::any::Any;
 use std::collections::BTreeMap;
 use std::fmt;
-use std::marker::PhantomData;
-use std::rc::Rc;
 
 use crate::Callback;
 

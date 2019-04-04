@@ -1,15 +1,13 @@
-use maplit::btreemap;
-use std::collections::HashMap;
 use std::convert::AsRef;
 use virtual_dom::builder::*;
 use virtual_dom::Callback;
-use virtual_dom::{Element, Node, Text, Value};
+use virtual_dom::{Node, Value};
 
 pub fn class<'a>(v: &str) -> Attribute<'a> {
     attribute("class", v)
 }
 
-fn r#type<'a>(v: &str) -> Attribute<'a> {
+pub fn r#type<'a>(v: &str) -> Attribute<'a> {
     attribute("type", v)
 }
 

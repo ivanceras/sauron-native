@@ -1,6 +1,5 @@
 use crate::Callback;
 use crate::{Element, Node, Text, Value};
-use std::collections::HashMap;
 use std::convert::AsRef;
 
 pub struct Attribute<'a> {
@@ -78,6 +77,11 @@ where
             .add_children(children)
             .add_attributes(attrs),
     )
+}
+
+#[inline]
+pub fn text<V>(v: V) -> Node where V:Into<String>{
+    Node::Text(Text{text:v.into()})
 }
 
 #[inline]

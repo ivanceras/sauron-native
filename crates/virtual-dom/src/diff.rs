@@ -1,7 +1,6 @@
 use crate::Node;
 use crate::Patch;
 use crate::Value;
-use maplit::btreemap;
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;

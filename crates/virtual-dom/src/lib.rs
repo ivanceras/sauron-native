@@ -1,3 +1,4 @@
+#![deny(warnings)]
 mod callback;
 pub mod diff;
 mod patch;

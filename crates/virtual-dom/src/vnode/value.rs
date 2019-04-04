@@ -24,17 +24,17 @@ pub enum Value {
 }
 
 impl Value {
-    fn as_str(&self) -> Option<&str> {
+    pub fn as_str(&self) -> Option<&str> {
         match self {
             Value::String(ref v) => Some(&v),
             _ => None,
         }
     }
 
-    fn as_f64(&self) -> Option<f64> {
+    pub fn as_f64(&self) -> Option<f64> {
         match self {
-            Value::String(v) => None,
-            Value::Vec(v) => None,
+            Value::String(_v) => None,
+            Value::Vec(_v) => None,
             Value::U8(v) => Some(*v as f64),
             Value::U16(v) => Some(*v as f64),
             Value::U32(v) => Some(*v as f64),
