@@ -1,16 +1,10 @@
 use std::convert::AsRef;
 use virtual_dom::builder::*;
-use virtual_dom::Callback;
-use virtual_dom::{Node, Value};
+use virtual_dom::{Node};
 
 pub mod attributes;
+pub mod events;
 
-pub fn on_click<'a, F>(f: F) -> Attribute<'a>
-where
-    F: Into<Callback<Value>>,
-{
-    on_event("click", f)
-}
 
 macro_rules! builder_constructors {
     ( $(
@@ -590,8 +584,9 @@ builder_constructors! {
 mod tests {
     use super::*;
     use attributes::*;
+    use events::*;
     use maplit::btreemap;
-    use virtual_dom::{Element, Text};
+    use virtual_dom::{Element, Value, Callback, Text};
 
     #[test]
     fn simple_builder() {

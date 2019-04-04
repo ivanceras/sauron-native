@@ -1,4 +1,5 @@
 use ui_backend::html::attributes::*;
+use ui_backend::html::events::*;
 use ui_backend::html::*;
 use virtual_dom::builder::*;
 use virtual_dom::diff;
@@ -11,8 +12,8 @@ fn main() {
             on_click(|_| {
                 println!("clicked");
             }),
-            attribute("data-id", 1),
-            on_event("mouseover", |_| {
+            attr("data-id", 1),
+            on("mouseover", |_| {
                 println!("i've been clicked");
             }),
         ],
@@ -25,8 +26,8 @@ fn main() {
             on_click(|_| {
                 println!("clicked2");
             }),
-            attribute("data-id", 2),
-            on_event("mouseover", |_| {
+            attr("data-id", 2),
+            on("mouseover", |_| {
                 println!("i've been clicked2");
             }),
         ],

@@ -88,7 +88,7 @@ where
 }
 
 #[inline]
-pub fn attribute<'a, V>(name: &'a str, v: V) -> Attribute<'a>
+pub fn attr<'a, V>(name: &'a str, v: V) -> Attribute<'a>
 where
     V: Into<Value>,
 {
@@ -99,7 +99,7 @@ where
 }
 
 #[inline]
-pub fn on_event<'a, C>(name: &'a str, c: C) -> Attribute<'a>
+pub fn on<'a, C>(name: &'a str, c: C) -> Attribute<'a>
 where
     C: Into<Callback<Value>>,
 {

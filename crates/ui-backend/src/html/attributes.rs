@@ -1,10 +1,11 @@
 //! https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-use virtual_dom::builder::attribute;
+//!
+use virtual_dom::builder::attr;
 use virtual_dom::builder::Attribute;
 use virtual_dom::Value;
 
 pub fn r#type<'a>(v: &str) -> Attribute<'a> {
-    attribute("type", v)
+    attr("type", v)
 }
 
 macro_rules! builder_attributes {
@@ -19,7 +20,7 @@ macro_rules! builder_attributes {
             pub fn $name<'a, V>(v: V) -> Attribute<'a>
                 where V: Into<Value>
                 {
-                    attribute(stringify!($name), v)
+                    attr(stringify!($name), v)
                 }
          )*
     }
