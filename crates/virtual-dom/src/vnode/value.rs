@@ -83,14 +83,13 @@ impl From<&str> for Value {
 }
 
 macro_rules! impl_from {
-
     ($ty:ty => $variant:ident) => {
         impl From<$ty> for Value {
             fn from(f: $ty) -> Self {
                 Value::$variant(f)
             }
         }
-    }
+    };
 }
 
 impl_from!(u8 => U8);

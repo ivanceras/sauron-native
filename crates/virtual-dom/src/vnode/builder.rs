@@ -26,7 +26,6 @@ impl From<Callback<Value>> for AttribValue {
 }
 
 impl Element {
-
     pub fn set_attribute<V>(mut self, name: &str, value: V) -> Self
     where
         V: Into<Value>,
@@ -82,8 +81,9 @@ where
 }
 
 #[inline]
-pub fn attribute<'a,V>(name: &'a str, v: V) -> Attribute<'a> 
-    where V:Into<Value>
+pub fn attribute<'a, V>(name: &'a str, v: V) -> Attribute<'a>
+where
+    V: Into<Value>,
 {
     Attribute {
         name: name,
@@ -94,11 +94,10 @@ pub fn attribute<'a,V>(name: &'a str, v: V) -> Attribute<'a>
 #[inline]
 pub fn on_event<'a, C>(name: &'a str, c: C) -> Attribute<'a>
 where
-    C: Into<Callback<Value>>
+    C: Into<Callback<Value>>,
 {
     Attribute {
         name: name,
         value: c.into().into(),
     }
 }
-

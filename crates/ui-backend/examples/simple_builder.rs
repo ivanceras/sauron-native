@@ -1,5 +1,5 @@
-use virtual_dom::builder::*;
 use ui_backend::html::*;
+use virtual_dom::builder::*;
 
 fn main() {
     let html = div(
@@ -10,7 +10,9 @@ fn main() {
                 println!("clicked");
             }),
             attribute("data-id", 1223442),
-            on_event("mouseover", |_|{println!("i've been clicked");}),
+            on_event("mouseover", |_| {
+                println!("i've been clicked");
+            }),
         ],
         [div([], [])],
     );

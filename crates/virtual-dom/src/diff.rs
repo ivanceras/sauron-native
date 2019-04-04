@@ -1,10 +1,10 @@
-use crate::Patch;
 use crate::Node;
+use crate::Patch;
 use crate::Value;
+use maplit::btreemap;
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;
-use maplit::btreemap;
 
 /// Given two Node's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new Node's real DOM node equivalent.

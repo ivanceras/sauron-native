@@ -1,9 +1,9 @@
+use maplit::btreemap;
+use std::collections::HashMap;
+use std::convert::AsRef;
 use virtual_dom::builder::*;
 use virtual_dom::Callback;
 use virtual_dom::{Element, Node, Text, Value};
-use std::collections::HashMap;
-use std::convert::AsRef;
-use maplit::btreemap;
 
 pub fn class<'a>(v: &str) -> Attribute<'a> {
     attribute("class", v)
@@ -19,7 +19,7 @@ pub fn id<'a>(v: &str) -> Attribute<'a> {
 
 pub fn on_click<'a, F>(f: F) -> Attribute<'a>
 where
-    F: Into<Callback<Value>> 
+    F: Into<Callback<Value>>,
 {
     on_event("click", f)
 }
@@ -610,7 +610,7 @@ mod tests {
             div,
             Element {
                 tag: "div".into(),
-                attrs: btreemap!{
+                attrs: btreemap! {
                     "class".into() => "some-class".into(),
                 },
                 ..Default::default()
@@ -630,12 +630,12 @@ mod tests {
             div,
             Element {
                 tag: "div".into(),
-                events: btreemap!{
+                events: btreemap! {
                     "click".to_string() => callback.clone(),
                 },
                 ..Default::default()
-            }
-            ,"Cloning a callback should only clone the reference"
+            },
+            "Cloning a callback should only clone the reference"
         );
     }
 
@@ -651,7 +651,7 @@ mod tests {
             div,
             Element {
                 tag: "div".into(),
-                attrs: btreemap!{
+                attrs: btreemap! {
                     "class".to_string() => "some-class".into(),
                 },
                 children: vec![Node::Text(Text {
@@ -665,38 +665,34 @@ mod tests {
     #[test]
     fn div_builder() {
         let clicked = |_| {
-                    println!("clicked");
-                };
-        let cb:Callback<Value> = clicked.into();
+            println!("clicked");
+        };
+        let cb: Callback<Value> = clicked.into();
         let div = div(
-            [
-                class("some-class"),
-                r#type("submit"),
-                on_click(cb.clone()),
-            ],
+            [class("some-class"), r#type("submit"), on_click(cb.clone())],
             [div([class("some-class")], [])],
         );
         println!("{:#?}", div);
-        assert_eq!(div,
-                   Node::Element(Element{
-                       tag: "div".into(),
-                       attrs: btreemap!{
-                           "class".into() => "some-class".into(),
-                           "type".into() => "submit".into(),
-                        },
-                       events: btreemap!{
-                           "click".into() => cb.clone(),
-                       },
-                       children: vec![
-                           Node::Element(Element{
-                               tag: "div".into(),
-                               attrs: btreemap!{
-                                   "class".into() => "some-class".into()
-                               },
-                               ..Default::default()
-                           })
-                       ],
-                       ..Default::default()
-                   }))
+        assert_eq!(
+            div,
+            Node::Element(Element {
+                tag: "div".into(),
+                attrs: btreemap! {
+                   "class".into() => "some-class".into(),
+                   "type".into() => "submit".into(),
+                },
+                events: btreemap! {
+                    "click".into() => cb.clone(),
+                },
+                children: vec![Node::Element(Element {
+                    tag: "div".into(),
+                    attrs: btreemap! {
+                        "class".into() => "some-class".into()
+                    },
+                    ..Default::default()
+                })],
+                ..Default::default()
+            })
+        )
     }
 }

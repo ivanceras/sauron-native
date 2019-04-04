@@ -41,7 +41,6 @@ pub struct Element {
     pub namespace: Option<String>,
 }
 
-
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Text {
     pub text: String,
