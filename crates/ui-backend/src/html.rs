@@ -5,7 +5,6 @@ use virtual_dom::{Node, Value};
 
 pub mod attributes;
 
-
 pub fn on_click<'a, F>(f: F) -> Attribute<'a>
 where
     F: Into<Callback<Value>>,
@@ -590,9 +589,9 @@ builder_constructors! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use attributes::*;
     use maplit::btreemap;
     use virtual_dom::{Element, Text};
-    use attributes::*;
 
     #[test]
     fn simple_builder() {
