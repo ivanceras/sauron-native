@@ -3,17 +3,8 @@ use virtual_dom::builder::*;
 use virtual_dom::Callback;
 use virtual_dom::{Node, Value};
 
-pub fn class<'a>(v: &str) -> Attribute<'a> {
-    attribute("class", v)
-}
+pub mod attributes;
 
-pub fn r#type<'a>(v: &str) -> Attribute<'a> {
-    attribute("type", v)
-}
-
-pub fn id<'a>(v: &str) -> Attribute<'a> {
-    attribute("id", v)
-}
 
 pub fn on_click<'a, F>(f: F) -> Attribute<'a>
 where
@@ -601,6 +592,7 @@ mod tests {
     use super::*;
     use maplit::btreemap;
     use virtual_dom::{Element, Text};
+    use attributes::*;
 
     #[test]
     fn simple_builder() {

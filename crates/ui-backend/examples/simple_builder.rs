@@ -1,5 +1,7 @@
 use ui_backend::html::*;
+use ui_backend::html::attributes::*;
 use virtual_dom::builder::*;
+
 
 fn main() {
     let html = div(
@@ -14,7 +16,11 @@ fn main() {
                 println!("i've been clicked");
             }),
         ],
-        [div([], [])],
+        [input(
+             [class("client"),
+             r#type("checkbox"),
+             ], [])
+        ],
     );
     println!("{:#?}", html);
 }
