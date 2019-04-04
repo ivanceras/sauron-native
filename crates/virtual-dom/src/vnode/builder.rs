@@ -80,8 +80,11 @@ where
 }
 
 #[inline]
-pub fn text<V>(v: V) -> Node where V:Into<String>{
-    Node::Text(Text{text:v.into()})
+pub fn text<V>(v: V) -> Node
+where
+    V: Into<String>,
+{
+    Node::Text(Text { text: v.into() })
 }
 
 #[inline]

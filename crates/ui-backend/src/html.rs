@@ -599,6 +599,8 @@ builder_constructors! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::btreemap;
+    use virtual_dom::{Element, Text};
 
     #[test]
     fn simple_builder() {
@@ -619,7 +621,7 @@ mod tests {
     #[test]
     fn builder_with_event() {
         let cb = |x: Value| {
-            println!("hello!");
+            println!("hello! {:?}", x);
         };
         let callback: Callback<Value> = cb.into();
         let div = Element::new("div").add_event_listener("click", callback.clone());
@@ -668,7 +670,7 @@ mod tests {
         let cb: Callback<Value> = clicked.into();
         let div = div(
             [class("some-class"), r#type("submit"), on_click(cb.clone())],
-            [div([class("some-class")], [])],
+            [div([class("some-class")], [text("Hello world!")])],
         );
         println!("{:#?}", div);
         assert_eq!(
@@ -687,6 +689,9 @@ mod tests {
                     attrs: btreemap! {
                         "class".into() => "some-class".into()
                     },
+                    children: vec![Node::Text(Text {
+                        text: "Hello world!".into()
+                    })],
                     ..Default::default()
                 })],
                 ..Default::default()
