@@ -1,6 +1,6 @@
-use crate::vnode::VNode;
+use crate::vnode::Node;
 
 pub trait View<F:Fn()> {
 
-    fn render(&self) -> VNode<F>;
+    fn render(&self) -> Node<F>;
 }

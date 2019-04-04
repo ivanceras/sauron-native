@@ -1,6 +1,6 @@
 use virtual_dom::builder::*;
 use virtual_dom::Callback;
-use virtual_dom::{VElement, VNode, VText, Value};
+use virtual_dom::{Element, Node, Text, Value};
 use std::collections::HashMap;
 use std::convert::AsRef;
 use maplit::btreemap;
@@ -33,8 +33,8 @@ macro_rules! builder_constructors {
         $(
             $(#[$attr])*
             #[inline]
-            pub fn $name<'a, A, C>(attrs: A, children: C) -> VNode
-                where C: AsRef<[VNode]>,
+            pub fn $name<'a, A, C>(attrs: A, children: C) -> Node
+                where C: AsRef<[Node]>,
                       A: AsRef<[Attribute<'a>]>,
                 {
                     element(stringify!($name), attrs, children)
@@ -50,8 +50,8 @@ macro_rules! builder_constructors {
         $(
             $(#[$attr])*
             #[inline]
-            pub fn $name<'a, A, C>(attrs: A, children: C) -> VNode
-                where C: AsRef<[VNode]>,
+            pub fn $name<'a, A, C>(attrs: A, children: C) -> Node
+                where C: AsRef<[Node]>,
                       A: AsRef<[Attribute<'a>]>,
                 {
                     element(stringify!($name), attrs, children)
@@ -604,11 +604,11 @@ mod tests {
 
     #[test]
     fn simple_builder() {
-        let div = VElement::new("div").set_attribute("class", "some-class");
+        let div = Element::new("div").set_attribute("class", "some-class");
 
         assert_eq!(
             div,
-            VElement {
+            Element {
                 tag: "div".into(),
                 attrs: btreemap!{
                     "class".into() => "some-class".into(),
@@ -624,11 +624,11 @@ mod tests {
             println!("hello!");
         };
         let callback: Callback<Value> = cb.into();
-        let div = VElement::new("div").add_event_listener("click", callback.clone());
+        let div = Element::new("div").add_event_listener("click", callback.clone());
 
         assert_eq!(
             div,
-            VElement {
+            Element {
                 tag: "div".into(),
                 events: btreemap!{
                     "click".to_string() => callback.clone(),
@@ -641,20 +641,20 @@ mod tests {
 
     #[test]
     fn builder_with_children() {
-        let div = VElement::new("div")
+        let div = Element::new("div")
             .set_attribute("class", "some-class")
-            .add_children(vec![VNode::Text(VText {
+            .add_children(vec![Node::Text(Text {
                 text: "Hello".to_string(),
             })]);
 
         assert_eq!(
             div,
-            VElement {
+            Element {
                 tag: "div".into(),
                 attrs: btreemap!{
                     "class".to_string() => "some-class".into(),
                 },
-                children: vec![VNode::Text(VText {
+                children: vec![Node::Text(Text {
                     text: "Hello".to_string()
                 })],
                 ..Default::default()
@@ -678,7 +678,7 @@ mod tests {
         );
         println!("{:#?}", div);
         assert_eq!(div,
-                   VNode::Element(VElement{
+                   Node::Element(Element{
                        tag: "div".into(),
                        attrs: btreemap!{
                            "class".into() => "some-class".into(),
@@ -688,7 +688,7 @@ mod tests {
                            "click".into() => cb.clone(),
                        },
                        children: vec![
-                           VNode::Element(VElement{
+                           Node::Element(Element{
                                tag: "div".into(),
                                attrs: btreemap!{
                                    "class".into() => "some-class".into()

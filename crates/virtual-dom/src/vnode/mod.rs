@@ -25,32 +25,32 @@ pub use value::Value;
 ///
 /// TODO: Make all of these fields private and create accessor methods
 /// TODO: Create a builder to create instances of VirtualNode::Element with
-/// attrs and children without having to explicitly create a VElement
+/// attrs and children without having to explicitly create a Element
 #[derive(Debug, PartialEq, Clone)]
-pub enum VNode {
-    Element(VElement),
-    Text(VText),
+pub enum Node {
+    Element(Element),
+    Text(Text),
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]
-pub struct VElement {
+pub struct Element {
     pub tag: String,
     pub attrs: BTreeMap<String, Value>,
     pub events: BTreeMap<String, Callback<Value>>,
-    pub children: Vec<VNode>,
+    pub children: Vec<Node>,
     pub namespace: Option<String>,
 }
 
 
 #[derive(Debug, PartialEq, Clone, Default)]
-pub struct VText {
+pub struct Text {
     pub text: String,
 }
 
-impl VElement {
-    /// Create a VElement using the supplied tag name
+impl Element {
+    /// Create a Element using the supplied tag name
     pub fn new(tag: &str) -> Self {
-        VElement {
+        Element {
             tag: tag.to_string(),
             attrs: BTreeMap::new(),
             events: BTreeMap::new(),
@@ -60,8 +60,8 @@ impl VElement {
     }
 }
 
-impl fmt::Display for VElement {
-    // Turn a VElement and all of it's children (recursively) into an HTML string
+impl fmt::Display for Element {
+    // Turn a Element and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{}", self.tag).unwrap();
 
@@ -81,25 +81,25 @@ impl fmt::Display for VElement {
     }
 }
 
-// Turn a VText into an HTML string
-impl fmt::Display for VText {
+// Turn a Text into an HTML string
+impl fmt::Display for Text {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.text)
     }
 }
 
-// Turn a VNode into an HTML string (delegate impl to variants)
-impl fmt::Display for VNode {
+// Turn a Node into an HTML string (delegate impl to variants)
+impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            VNode::Element(element) => write!(f, "{}", element),
-            VNode::Text(text) => write!(f, "{}", text),
+            Node::Element(element) => write!(f, "{}", element),
+            Node::Text(text) => write!(f, "{}", text),
         }
     }
 }
 
-impl From<VElement> for VNode {
-    fn from(v: VElement) -> Self {
-        VNode::Element(v)
+impl From<Element> for Node {
+    fn from(v: Element) -> Self {
+        Node::Element(v)
     }
 }

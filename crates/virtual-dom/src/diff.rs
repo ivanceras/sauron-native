@@ -1,20 +1,20 @@
 use crate::Patch;
-use crate::VNode;
+use crate::Node;
 use crate::Value;
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;
 use maplit::btreemap;
 
-/// Given two VNode's generate Patch's that would turn the old virtual node's
-/// real DOM node equivalent into the new VNode's real DOM node equivalent.
-pub fn diff<'a>(old: &'a VNode, new: &'a VNode) -> Vec<Patch<'a>> {
+/// Given two Node's generate Patch's that would turn the old virtual node's
+/// real DOM node equivalent into the new Node's real DOM node equivalent.
+pub fn diff<'a>(old: &'a Node, new: &'a Node) -> Vec<Patch<'a>> {
     diff_recursive(&old, &new, &mut 0)
 }
 
 fn diff_recursive<'a, 'b>(
-    old: &'a VNode,
-    new: &'a VNode,
+    old: &'a Node,
+    new: &'a Node,
     cur_node_idx: &'b mut usize,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
@@ -25,7 +25,7 @@ fn diff_recursive<'a, 'b>(
         replace = true;
     }
 
-    if let (VNode::Element(old_element), VNode::Element(new_element)) = (old, new) {
+    if let (Node::Element(old_element), Node::Element(new_element)) = (old, new) {
         // Replace if there are different element tags
         if old_element.tag != new_element.tag {
             replace = true;
@@ -45,7 +45,7 @@ fn diff_recursive<'a, 'b>(
     // Handle replacing of a node
     if replace {
         patches.push(Patch::Replace(*cur_node_idx, &new));
-        if let VNode::Element(old_element_node) = old {
+        if let Node::Element(old_element_node) = old {
             for child in old_element_node.children.iter() {
                 increment_node_idx_for_children(child, cur_node_idx);
             }
@@ -58,14 +58,14 @@ fn diff_recursive<'a, 'b>(
     // discriminants.
     match (old, new) {
         // We're comparing two text nodes
-        (VNode::Text(old_text), VNode::Text(new_text)) => {
+        (Node::Text(old_text), Node::Text(new_text)) => {
             if old_text != new_text {
                 patches.push(Patch::ChangeText(*cur_node_idx, &new_text));
             }
         }
 
         // We're comparing two element nodes
-        (VNode::Element(old_element), VNode::Element(new_element)) => {
+        (Node::Element(old_element), Node::Element(new_element)) => {
             let mut add_attributes: BTreeMap<&str, &Value> = BTreeMap::new();
             let mut remove_attributes: Vec<&str> = vec![];
 
@@ -112,7 +112,7 @@ fn diff_recursive<'a, 'b>(
             let new_child_count = new_element.children.len();
 
             if new_child_count > old_child_count {
-                let append_patch: Vec<&'a VNode> =
+                let append_patch: Vec<&'a Node> =
                     new_element.children[old_child_count..].iter().collect();
                 patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
             }
@@ -134,7 +134,7 @@ fn diff_recursive<'a, 'b>(
                 }
             }
         }
-        (VNode::Text(_), VNode::Element(_)) | (VNode::Element(_), VNode::Text(_)) => {
+        (Node::Text(_), Node::Element(_)) | (Node::Element(_), Node::Text(_)) => {
             unreachable!("Unequal variant discriminants should already have been handled");
         }
     };
@@ -143,9 +143,9 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
-fn increment_node_idx_for_children<'a, 'b>(old: &'a VNode, cur_node_idx: &'b mut usize) {
+fn increment_node_idx_for_children<'a, 'b>(old: &'a Node, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
-    if let VNode::Element(element_node) = old {
+    if let Node::Element(element_node) = old {
         for child in element_node.children.iter() {
             increment_node_idx_for_children(&child, cur_node_idx);
         }
@@ -159,11 +159,11 @@ mod tests {
 
     #[test]
     fn test_replace_node() {
-        let old = VNode::Element(VElement {
+        let old = Node::Element(Element {
             tag: "div".into(),
             ..Default::default()
         });
-        let new = VNode::Element(VElement {
+        let new = Node::Element(Element {
             tag: "span".into(),
             ..Default::default()
         });
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn test_simple_diff() {
-        let old = VNode::Element(VElement {
+        let old = Node::Element(Element {
             tag: "div".into(),
             attrs: {
                 let mut hm: BTreeMap<String, Value> = BTreeMap::new();
@@ -189,7 +189,7 @@ mod tests {
             ..Default::default()
         });
 
-        let new = VNode::Element(VElement {
+        let new = Node::Element(Element {
             tag: "div".into(),
             attrs: {
                 let mut hm: BTreeMap<String, Value> = BTreeMap::new();
@@ -206,7 +206,7 @@ mod tests {
 
     #[test]
     fn test_class_changed() {
-        let old = VNode::Element(VElement {
+        let old = Node::Element(Element {
             tag: "div".into(),
             attrs: {
                 let mut hm: BTreeMap<String, Value> = BTreeMap::new();
@@ -217,7 +217,7 @@ mod tests {
             ..Default::default()
         });
 
-        let new = VNode::Element(VElement {
+        let new = Node::Element(Element {
             tag: "div".into(),
             attrs: {
                 let mut hm: BTreeMap<String, Value> = BTreeMap::new();

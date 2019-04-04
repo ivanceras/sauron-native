@@ -1,5 +1,5 @@
 use crate::Callback;
-use crate::{VElement, VNode, VText, Value};
+use crate::{Element, Node, Text, Value};
 use std::collections::HashMap;
 use std::convert::AsRef;
 
@@ -25,7 +25,7 @@ impl From<Callback<Value>> for AttribValue {
     }
 }
 
-impl VElement {
+impl Element {
 
     pub fn set_attribute<V>(mut self, name: &str, value: V) -> Self
     where
@@ -54,7 +54,7 @@ impl VElement {
 
     pub fn add_children<C>(mut self, children: C) -> Self
     where
-        C: AsRef<[VNode]>,
+        C: AsRef<[Node]>,
     {
         for c in children.as_ref() {
             self.children.push(c.clone());
@@ -69,13 +69,13 @@ impl VElement {
 }
 
 #[inline]
-pub fn element<'a, A, C>(tag: &str, attrs: A, children: C) -> VNode
+pub fn element<'a, A, C>(tag: &str, attrs: A, children: C) -> Node
 where
-    C: AsRef<[VNode]>,
+    C: AsRef<[Node]>,
     A: AsRef<[Attribute<'a>]>,
 {
-    VNode::Element(
-        VElement::new(tag)
+    Node::Element(
+        Element::new(tag)
             .add_children(children)
             .add_attributes(attrs),
     )

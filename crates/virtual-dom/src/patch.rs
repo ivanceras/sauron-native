@@ -2,7 +2,7 @@
 //! The Percy Book.
 
 use crate::Value;
-use crate::{VNode, VText};
+use crate::{Node, Text};
 use std::collections::BTreeMap;
 
 /// A Patch encodes an operation that modifies a real DOM element.
@@ -41,18 +41,18 @@ use std::collections::BTreeMap;
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(NodeIdx, Vec<&'a VNode>),
+    AppendChildren(NodeIdx, Vec<&'a Node>),
     /// For a `node_i32`, remove all children besides the first `len`
     TruncateChildren(NodeIdx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(NodeIdx, &'a VNode),
+    Replace(NodeIdx, &'a Node),
     /// Add attributes that the new node has that the old node does not
     AddAttributes(NodeIdx, BTreeMap<&'a str, &'a Value>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
-    ChangeText(NodeIdx, &'a VText),
+    ChangeText(NodeIdx, &'a Text),
 }
 
 type NodeIdx = usize;

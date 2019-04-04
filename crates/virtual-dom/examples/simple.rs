@@ -1,11 +1,11 @@
 use virtual_dom::diff;
-use virtual_dom::{Callback, VElement, VNode, VText, Value};
+use virtual_dom::{Callback, Element, Node, Text, Value};
 
 use std::any::Any;
 use std::collections::BTreeMap;
 
 fn main() {
-    let txt = VNode::Text(VText {
+    let txt = Node::Text(Text {
         text: "World!".into(),
     });
     let v1 = "somev1";
@@ -14,7 +14,7 @@ fn main() {
     let x = 3u8;
     let s = 1;
 
-    let div = VNode::Element(VElement {
+    let div = Node::Element(Element {
         tag: "div".into(),
         attrs: {
             let mut hm: BTreeMap<String, Value> = BTreeMap::new();
@@ -42,7 +42,7 @@ fn main() {
             hm.insert("mousedown".into(), hi.into());
             hm
         },
-        children: vec![VNode::Text(VText {
+        children: vec![Node::Text(Text {
             text: "Hello".into(),
         })],
         namespace: None,
