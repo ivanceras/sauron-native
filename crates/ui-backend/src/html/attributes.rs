@@ -4,10 +4,6 @@ use virtual_dom::builder::attr;
 use virtual_dom::builder::Attribute;
 use virtual_dom::Value;
 
-pub fn r#type<'a>(v: &str) -> Attribute<'a> {
-    attr("type", v)
-}
-
 macro_rules! builder_attributes {
     ( $(
          $(#[$attr:meta])*
@@ -21,6 +17,21 @@ macro_rules! builder_attributes {
                 where V: Into<Value>
                 {
                     attr(stringify!($name), v)
+                }
+         )*
+    };
+    ( $(
+         $(#[$attr:meta])*
+         $name:ident => $attribute:tt;
+       )*
+     ) => {
+        $(
+            $(#[$attr])*
+            #[inline]
+            pub fn $name<'a, V>(v: V) -> Attribute<'a>
+                where V: Into<Value>
+                {
+                    attr($attribute, v)
                 }
          )*
     }
@@ -71,4 +82,10 @@ builder_attributes! {
 
     translate;
 
+
+}
+
+// special case for type attribute, since type is a rust keyword
+builder_attributes!{
+    r#type => "type";
 }

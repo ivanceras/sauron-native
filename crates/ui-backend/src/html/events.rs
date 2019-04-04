@@ -24,19 +24,19 @@ macro_rules! builder_events {
 
 // Mouse events
 builder_events!{
- on_auxclick =>  auxclick;
- on_click   => click;
- on_contextmenu =>  contextmenu;
- on_dblclick   => dblclick;
- on_mousedown =>  mousedown;
- on_mouseenter =>  mouseenter;
- on_mouseleave =>  mouseleave;
- on_mousemove =>  mousemove;
- on_mouseover =>  mouseover;
- on_mouseout =>  mouseout;
- on_mouseup =>  mouseup;
- on_pointerlockchange =>  pointerlockchange;
- on_pointerlockerror =>  pointerlockerror;
- on_select =>  select;
- on_wheel =>  wheel;
+ onauxclick => auxclick;
+ onclick  => click;
+ oncontextmenu =>contextmenu;
+ ondblclick  => dblclick;
+ onmousedown => mousedown;
+ onmouseenter => mouseenter;
+ onmouseleave => mouseleave;
+ onmousemove => mousemove;
+ onmouseover => mouseover;
+ onmouseout => mouseout;
+ onmouseup => mouseup;
+ onpointerlockchange => pointerlockchange;
+ onpointerlockerror => pointerlockerror;
+ onselect => select;
+ onwheel => wheel;
 }

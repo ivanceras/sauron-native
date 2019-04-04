@@ -655,7 +655,7 @@ mod tests {
         };
         let cb: Callback<Value> = clicked.into();
         let div = div(
-            [class("some-class"), r#type("submit"), on_click(cb.clone())],
+            [class("some-class"), r#type("submit"), onclick(cb.clone())],
             [div([class("some-class")], [text("Hello world!")])],
         );
         println!("{:#?}", div);

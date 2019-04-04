@@ -9,7 +9,7 @@ fn main() {
         [
             class("some-class"),
             id("some-id"),
-            on_click(|_| {
+            onclick(|_| {
                 println!("clicked");
             }),
             attr("data-id", 1),
@@ -23,7 +23,7 @@ fn main() {
         [
             class("some-class2"),
             id("some-id2"),
-            on_click(|_| {
+            onclick(|_| {
                 println!("clicked2");
             }),
             attr("data-id", 2),
