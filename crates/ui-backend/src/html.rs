@@ -4,6 +4,7 @@ use virtual_dom::{Node};
 
 pub mod attributes;
 pub mod events;
+pub mod dom_node;
 
 
 macro_rules! builder_constructors {

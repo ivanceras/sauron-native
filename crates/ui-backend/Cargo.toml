@@ -6,3 +6,4 @@ edition = "2018"
 [dependencies]
 virtual_dom = { path = "../virtual-dom" }
 maplit = "1.0.1"
+wasm-bindgen = "0.2.40"
