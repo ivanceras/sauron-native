@@ -4,7 +4,7 @@ use virtual_dom::builder::on;
 use virtual_dom::{Callback,Value};
 
 
-macro_rules! builder_events {
+macro_rules! declare_events {
     ( $(
          $(#[$attr:meta])*
          $name:ident => $event:ident;
@@ -23,20 +23,27 @@ macro_rules! builder_events {
 }
 
 // Mouse events
-builder_events!{
- onauxclick => auxclick;
- onclick  => click;
- oncontextmenu =>contextmenu;
- ondblclick  => dblclick;
- onmousedown => mousedown;
- onmouseenter => mouseenter;
- onmouseleave => mouseleave;
- onmousemove => mousemove;
- onmouseover => mouseover;
- onmouseout => mouseout;
- onmouseup => mouseup;
- onpointerlockchange => pointerlockchange;
- onpointerlockerror => pointerlockerror;
- onselect => select;
- onwheel => wheel;
+declare_events!{
+    onauxclick => auxclick;
+    onclick  => click;
+    oncontextmenu =>contextmenu;
+    ondblclick  => dblclick;
+    onmousedown => mousedown;
+    onmouseenter => mouseenter;
+    onmouseleave => mouseleave;
+    onmousemove => mousemove;
+    onmouseover => mouseover;
+    onmouseout => mouseout;
+    onmouseup => mouseup;
+    onpointerlockchange => pointerlockchange;
+    onpointerlockerror => pointerlockerror;
+    onselect => select;
+    onwheel => wheel;
+}
+
+// keyboard events
+declare_events!{
+    onkeydown => keydown;
+    onkeypress => keypress;
+    onkeyup => keyup;
 }

@@ -4,7 +4,7 @@ use virtual_dom::builder::attr;
 use virtual_dom::builder::Attribute;
 use virtual_dom::Value;
 
-macro_rules! builder_attributes {
+macro_rules! declare_attributes {
     ( $(
          $(#[$attr:meta])*
          $name:ident;
@@ -37,7 +37,7 @@ macro_rules! builder_attributes {
     }
 }
 
-builder_attributes! {
+declare_attributes! {
     accesskey;
 
     autocapitalize;
@@ -86,6 +86,6 @@ builder_attributes! {
 }
 
 // special case for type attribute, since type is a rust keyword
-builder_attributes!{
+declare_attributes!{
     r#type => "type";
 }
