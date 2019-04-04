@@ -1,4 +1,4 @@
-
+//! https://developer.mozilla.org/en-US/docs/Web/Events
 use virtual_dom::builder::Attribute;
 use virtual_dom::builder::on;
 use virtual_dom::{Callback,Value};
@@ -46,4 +46,26 @@ declare_events!{
     onkeydown => keydown;
     onkeypress => keypress;
     onkeyup => keyup;
+}
+
+// focus events 
+declare_events! {
+    onfocus => focus;
+    onblur => blur;
+}
+
+// form events
+declare_events!{
+    onreset => reset;
+    onsubmit => submit;
+}
+
+declare_events! {
+    onbroadcast => broadcast;
+    //CheckboxStateChange
+    onhashchange => hashchange;
+    oninput => input;
+    //RadioStateChange
+    onreadystatechange => readystatechange;
+    //ValueChange
 }
