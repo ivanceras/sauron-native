@@ -91,6 +91,6 @@ declare_attributes! {
 }
 
 // key attributes
-declare_attributes!{
+declare_attributes! {
     key;
 }
