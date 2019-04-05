@@ -1,4 +1,4 @@
-use crate::Node;
+use crate::{Node,Element};
 use crate::Patch;
 use crate::Value;
 use std::cmp::min;
@@ -65,47 +65,10 @@ fn diff_recursive<'a, 'b>(
 
         // We're comparing two element nodes
         (Node::Element(old_element), Node::Element(new_element)) => {
-            let mut add_attributes: BTreeMap<&str, &Value> = BTreeMap::new();
-            let mut remove_attributes: Vec<&str> = vec![];
+            let attributes_patches = diff_attributes(old_element, new_element, cur_node_idx);
+            patches.extend(attributes_patches);
 
-            // TODO: -> split out into func
-            for (new_attr_name, new_attr_val) in new_element.attrs.iter() {
-                match old_element.attrs.get(new_attr_name) {
-                    Some(ref old_attr_val) => {
-                        if old_attr_val != &new_attr_val {
-                            add_attributes.insert(new_attr_name, new_attr_val);
-                        }
-                    }
-                    None => {
-                        add_attributes.insert(new_attr_name, new_attr_val);
-                    }
-                };
-            }
-
-            // TODO: -> split out into func
-            for (old_attr_name, old_attr_val) in old_element.attrs.iter() {
-                if add_attributes.get(&old_attr_name[..]).is_some() {
-                    continue;
-                };
-
-                match new_element.attrs.get(old_attr_name) {
-                    Some(ref new_attr_val) => {
-                        if new_attr_val != &old_attr_val {
-                            remove_attributes.push(old_attr_name);
-                        }
-                    }
-                    None => {
-                        remove_attributes.push(old_attr_name);
-                    }
-                };
-            }
-
-            if add_attributes.len() > 0 {
-                patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
-            }
-            if remove_attributes.len() > 0 {
-                patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
-            }
+            //TODO: also diff the events
 
             let old_child_count = old_element.children.len();
             let new_child_count = new_element.children.len();
@@ -142,6 +105,53 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
+fn diff_attributes<'a,'b>(old_element: &'a Element, new_element: &'a Element, cur_node_idx: &'b mut usize,
+                       ) -> Vec<Patch<'a>> {
+    let mut patches = vec![];
+    let mut add_attributes: BTreeMap<&str, &Value> = BTreeMap::new();
+    let mut remove_attributes: Vec<&str> = vec![];
+
+    // TODO: -> split out into func
+    for (new_attr_name, new_attr_val) in new_element.attrs.iter() {
+        match old_element.attrs.get(new_attr_name) {
+            Some(ref old_attr_val) => {
+                if old_attr_val != &new_attr_val {
+                    add_attributes.insert(new_attr_name, new_attr_val);
+                }
+            }
+            None => {
+                add_attributes.insert(new_attr_name, new_attr_val);
+            }
+        };
+    }
+
+    // TODO: -> split out into func
+    for (old_attr_name, old_attr_val) in old_element.attrs.iter() {
+        if add_attributes.get(&old_attr_name[..]).is_some() {
+            continue;
+        };
+
+        match new_element.attrs.get(old_attr_name) {
+            Some(ref new_attr_val) => {
+                if new_attr_val != &old_attr_val {
+                    remove_attributes.push(old_attr_name);
+                }
+            }
+            None => {
+                remove_attributes.push(old_attr_name);
+            }
+        };
+    }
+
+    if add_attributes.len() > 0 {
+        patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
+    }
+    if remove_attributes.len() > 0 {
+        patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
+    }
+    patches
+}
+
 fn increment_node_idx_for_children<'a, 'b>(old: &'a Node, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
     if let Node::Element(element_node) = old {
@@ -155,6 +165,7 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a Node, cur_node_idx: &'b mut 
 mod tests {
     use super::*;
     use crate::*;
+    use maplit::btreemap;
 
     #[test]
     fn test_replace_node() {
@@ -179,22 +190,18 @@ mod tests {
     fn test_simple_diff() {
         let old = Node::Element(Element {
             tag: "div".into(),
-            attrs: {
-                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
-                hm.insert("id".into(), "some-id".into());
-                hm.insert("class".into(), "some-class".into());
-                hm
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+                "class".into() => "some-class".into(),
             },
             ..Default::default()
         });
 
         let new = Node::Element(Element {
             tag: "div".into(),
-            attrs: {
-                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
-                hm.insert("id".into(), "some-id".into());
-                hm.insert("class".into(), "some-class".into());
-                hm
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+                "class".into() => "some-class".into(),
             },
             ..Default::default()
         });
@@ -207,22 +214,18 @@ mod tests {
     fn test_class_changed() {
         let old = Node::Element(Element {
             tag: "div".into(),
-            attrs: {
-                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
-                hm.insert("id".into(), "some-id".into());
-                hm.insert("class".into(), "some-class".into());
-                hm
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+                "class".into() => "some-class".into(),
             },
             ..Default::default()
         });
 
         let new = Node::Element(Element {
             tag: "div".into(),
-            attrs: {
-                let mut hm: BTreeMap<String, Value> = BTreeMap::new();
-                hm.insert("id".into(), "some-id".into());
-                hm.insert("class".into(), "some-class2".into());
-                hm
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+                "class".into() => "some-class2".into(),
             },
             ..Default::default()
         });
@@ -236,6 +239,32 @@ mod tests {
                 hm.insert("class", &class2);
                 hm
             })]
+        )
+    }
+
+    #[test]
+    fn test_class_removed() {
+        let old = Node::Element(Element {
+            tag: "div".into(),
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+                "class".into() => "some-class".into(),
+            },
+            ..Default::default()
+        });
+
+        let new = Node::Element(Element {
+            tag: "div".into(),
+            attrs: btreemap!{
+                "id".into() => "some-id".into(),
+            },
+            ..Default::default()
+        });
+
+        let diff = diff(&old, &new);
+        assert_eq!(
+            diff,
+            vec![Patch::RemoveAttributes(0, vec!["class"])]
         )
     }
 }
