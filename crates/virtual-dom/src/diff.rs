@@ -1,6 +1,6 @@
-use crate::{Node,Element};
 use crate::Patch;
 use crate::Value;
+use crate::{Element, Node};
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;
@@ -105,8 +105,11 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
-fn diff_attributes<'a,'b>(old_element: &'a Element, new_element: &'a Element, cur_node_idx: &'b mut usize,
-                       ) -> Vec<Patch<'a>> {
+fn diff_attributes<'a, 'b>(
+    old_element: &'a Element,
+    new_element: &'a Element,
+    cur_node_idx: &'b mut usize,
+) -> Vec<Patch<'a>> {
     let mut patches = vec![];
     let mut add_attributes: BTreeMap<&str, &Value> = BTreeMap::new();
     let mut remove_attributes: Vec<&str> = vec![];
@@ -190,7 +193,7 @@ mod tests {
     fn test_simple_diff() {
         let old = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
                 "class".into() => "some-class".into(),
             },
@@ -199,7 +202,7 @@ mod tests {
 
         let new = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
                 "class".into() => "some-class".into(),
             },
@@ -214,7 +217,7 @@ mod tests {
     fn test_class_changed() {
         let old = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
                 "class".into() => "some-class".into(),
             },
@@ -223,7 +226,7 @@ mod tests {
 
         let new = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
                 "class".into() => "some-class2".into(),
             },
@@ -246,7 +249,7 @@ mod tests {
     fn test_class_removed() {
         let old = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
                 "class".into() => "some-class".into(),
             },
@@ -255,16 +258,13 @@ mod tests {
 
         let new = Node::Element(Element {
             tag: "div".into(),
-            attrs: btreemap!{
+            attrs: btreemap! {
                 "id".into() => "some-id".into(),
             },
             ..Default::default()
         });
 
         let diff = diff(&old, &new);
-        assert_eq!(
-            diff,
-            vec![Patch::RemoveAttributes(0, vec!["class"])]
-        )
+        assert_eq!(diff, vec![Patch::RemoveAttributes(0, vec!["class"])])
     }
 }

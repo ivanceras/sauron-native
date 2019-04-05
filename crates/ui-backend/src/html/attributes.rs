@@ -86,6 +86,11 @@ declare_attributes! {
 }
 
 // special case for type attribute, since type is a rust keyword
-declare_attributes!{
+declare_attributes! {
     r#type => "type";
+}
+
+// key attributes
+declare_attributes!{
+    key;
 }

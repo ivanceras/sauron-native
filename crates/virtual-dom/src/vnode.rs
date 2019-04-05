@@ -77,6 +77,12 @@ impl fmt::Display for Element {
     }
 }
 
+impl Text {
+    pub fn new<S: Into<String>>(s: S) -> Self {
+        Text { text: s.into() }
+    }
+}
+
 // Turn a Text into an HTML string
 impl fmt::Display for Text {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

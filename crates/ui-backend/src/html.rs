@@ -1,11 +1,10 @@
 use std::convert::AsRef;
 use virtual_dom::builder::*;
-use virtual_dom::{Node};
+use virtual_dom::Node;
 
 pub mod attributes;
-pub mod events;
 pub mod dom_node;
-
+pub mod events;
 
 macro_rules! builder_constructors {
     ( $(
@@ -587,7 +586,7 @@ mod tests {
     use attributes::*;
     use events::*;
     use maplit::btreemap;
-    use virtual_dom::{Element, Value, Callback, Text};
+    use virtual_dom::{Callback, Element, Text, Value};
 
     #[test]
     fn simple_builder() {
@@ -684,5 +683,179 @@ mod tests {
                 ..Default::default()
             })
         )
+    }
+}
+
+#[cfg(test)]
+mod diff_tests_using_html_syntax {
+    use super::*;
+    use attributes::*;
+    use maplit::btreemap;
+    use virtual_dom::diff;
+    use virtual_dom::Patch;
+    use virtual_dom::{Text, Value};
+
+    #[test]
+    fn replace_node() {
+        let old = div([], []);
+        let new = span([], []);
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::Replace(0, &span([], []))],
+            "Replace the root if the tag changed"
+        );
+
+        let old = div([], [b([], [])]);
+        let new = div([], [strong([], [])]);
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::Replace(1, &strong([], []))],
+            "Replace a child node"
+        );
+
+        let old = div([], [b([], [text("1")]), b([], [])]);
+        let new = div([], [i([], [text("1")]), i([], [])]);
+        assert_eq!(
+            diff(&old, &new),
+            vec![
+                Patch::Replace(1, &i([], [text("1")])),
+                Patch::Replace(3, &i([], [])),
+            ],
+            "Replace node with a child",
+        )
+    }
+
+    #[test]
+    fn add_children() {
+        let old = div([], [b([], [])]); //{ <div> <b></b> </div> },
+        let new = div([], [b([], []), element("new", [], [])]); //{ <div> <b></b> <new></new> </div> },
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AppendChildren(0, vec![&element("new", [], [])])],
+            "Added a new node to the root node",
+        )
+    }
+
+    #[test]
+    fn remove_nodes() {
+        let old = div([], [b([], []), span([], [])]); //{ <div> <b></b> <span></span> </div> },
+        let new = div([], []); //{ <div> </div> },
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::TruncateChildren(0, 0)],
+            "Remove all child nodes at and after child sibling index 1",
+        );
+
+        let old = div(
+            [],
+            [
+                span(
+                    [],
+                    [
+                        b([], []),
+                        // This `i` tag will get removed
+                        i([], []),
+                    ],
+                ),
+                // This `strong` tag will get removed
+                strong([], []),
+            ],
+        );
+
+        let new = div([], [span([], [b([], [])])]);
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
+            "Remove a child and a grandchild node",
+        );
+
+        let old = div([], [b([], [i([], []), i([], [])]), b([], [])]); //{ <div> <b> <i></i> <i></i> </b> <b></b> </div> },
+        let new = div([], [b([], [i([], [])]), i([], [])]); //{ <div> <b> <i></i> </b> <i></i> </div>},
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::TruncateChildren(1, 1), Patch::Replace(4, &i([], [])),],
+            "Removing child and change next node after parent",
+        )
+    }
+
+    #[test]
+    fn add_attributes() {
+        let hello: Value = "hello".into();
+        let attributes = btreemap! {
+        "id" => &hello,
+        };
+
+        let old = div([], []); //{ <div> </div> },
+        let new = div([id("hello")], []); //{ <div id="hello"> </div> },
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AddAttributes(0, attributes.clone())],
+            "Add attributes",
+        );
+
+        let old = div([id("foobar")], []); //{ <div id="foobar"> </div> },
+        let new = div([id("hello")], []); //{ <div id="hello"> </div> },
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AddAttributes(0, attributes)],
+            "Change attribute",
+        );
+    }
+
+    #[test]
+    fn remove_attributes() {
+        let old = div([id("hey-there")], []); //{ <div id="hey-there"></div> },
+        let new = div([], []); //{ <div> </div> },
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::RemoveAttributes(0, vec!["id"])],
+            "Add attributes",
+        );
+    }
+
+    #[test]
+    fn change_attribute() {
+        let changed: Value = "changed".into();
+        let attributes = btreemap! {
+        "id" => &changed,
+        };
+
+        let old = div([id("hey-there")], []); //{ <div id="hey-there"></div> },
+        let new = div([id("changed")], []); //{ <div id="changed"> </div> },
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AddAttributes(0, attributes)],
+            "Add attributes",
+        );
+    }
+
+    #[test]
+    fn replace_text_node() {
+        let old = text("Old"); //{ Old },
+        let new = text("New"); //{ New },
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::ChangeText(0, &Text::new("New"))],
+            "Replace text node",
+        );
+    }
+
+    // Initially motivated by having two elements where all that changed was an event listener
+    // because right now we don't patch event listeners. So.. until we have a solution
+    // for that we can just give them different keys to force a replace.
+    #[test]
+    fn replace_if_different_keys() {
+        let old = div([key(1)], []); //{ <div key="1"> </div> },
+        let new = div([key(2)], []); //{ <div key="2"> </div> },
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::Replace(0, &div([key(2)], []))],
+            "If two nodes have different keys always generate a full replace.",
+        );
     }
 }

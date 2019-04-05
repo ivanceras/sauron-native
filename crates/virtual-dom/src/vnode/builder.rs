@@ -25,8 +25,6 @@ impl From<Callback<Value>> for AttribValue {
 }
 
 impl Element {
-
-
     /// add the attribute values or events callback
     /// into this element
     pub fn add_attributes<'a, A>(mut self, attrs: A) -> Self

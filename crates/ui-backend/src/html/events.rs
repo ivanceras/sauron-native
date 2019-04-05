@@ -1,8 +1,7 @@
 //! https://developer.mozilla.org/en-US/docs/Web/Events
-use virtual_dom::builder::Attribute;
 use virtual_dom::builder::on;
-use virtual_dom::{Callback,Value};
-
+use virtual_dom::builder::Attribute;
+use virtual_dom::{Callback, Value};
 
 macro_rules! declare_events {
     ( $(
@@ -23,7 +22,7 @@ macro_rules! declare_events {
 }
 
 // Mouse events
-declare_events!{
+declare_events! {
     onauxclick => auxclick;
     onclick  => click;
     oncontextmenu =>contextmenu;
@@ -42,20 +41,20 @@ declare_events!{
 }
 
 // keyboard events
-declare_events!{
+declare_events! {
     onkeydown => keydown;
     onkeypress => keypress;
     onkeyup => keyup;
 }
 
-// focus events 
+// focus events
 declare_events! {
     onfocus => focus;
     onblur => blur;
 }
 
 // form events
-declare_events!{
+declare_events! {
     onreset => reset;
     onsubmit => submit;
 }
