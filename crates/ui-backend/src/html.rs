@@ -591,7 +591,7 @@ mod tests {
 
     #[test]
     fn simple_builder() {
-        let div = Element::new("div").set_attribute("class", "some-class");
+        let div = Element::new("div").add_attributes([attr("class", "some-class")]);
 
         assert_eq!(
             div,
@@ -629,7 +629,7 @@ mod tests {
     #[test]
     fn builder_with_children() {
         let div = Element::new("div")
-            .set_attribute("class", "some-class")
+            .add_attributes([attr("class", "some-class")])
             .add_children(vec![Node::Text(Text {
                 text: "Hello".to_string(),
             })]);

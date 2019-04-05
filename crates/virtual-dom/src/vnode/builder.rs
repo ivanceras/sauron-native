@@ -25,14 +25,10 @@ impl From<Callback<Value>> for AttribValue {
 }
 
 impl Element {
-    pub fn set_attribute<V>(mut self, name: &str, value: V) -> Self
-    where
-        V: Into<Value>,
-    {
-        self.attrs.insert(name.into(), value.into());
-        self
-    }
 
+
+    /// add the attribute values or events callback
+    /// into this element
     pub fn add_attributes<'a, A>(mut self, attrs: A) -> Self
     where
         A: AsRef<[Attribute<'a>]>,
@@ -66,6 +62,28 @@ impl Element {
     }
 }
 
+/// Create an element
+///
+///```
+/// use virtual_dom::builder::*;
+/// fn main(){
+///    let old = element(
+///        "div",
+///        [
+///            attr("class", "some-class"),
+///            attr("id", "some-id"),
+///            on("click", |_| {
+///                println!("clicked");
+///            }),
+///            attr("data-id", 1111),
+///            on("mouseover", |_| {
+///                println!("i've been clicked");
+///            }),
+///        ],
+///        [element("div", [], [text("Hello world!")])],
+///    );
+/// }
+///```
 #[inline]
 pub fn element<'a, A, C>(tag: &str, attrs: A, children: C) -> Node
 where
@@ -79,6 +97,7 @@ where
     )
 }
 
+/// Create a textnode element
 #[inline]
 pub fn text<V>(v: V) -> Node
 where
@@ -87,6 +106,7 @@ where
     Node::Text(Text { text: v.into() })
 }
 
+/// Create an attribute
 #[inline]
 pub fn attr<'a, V>(name: &'a str, v: V) -> Attribute<'a>
 where
@@ -98,6 +118,7 @@ where
     }
 }
 
+/// Attach a callback to an event
 #[inline]
 pub fn on<'a, C>(name: &'a str, c: C) -> Attribute<'a>
 where
