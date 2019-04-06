@@ -2,7 +2,7 @@
 //! The Percy Book.
 
 use crate::Value;
-use crate::{Node, Text};
+use crate::{Callback, Node, Text};
 use std::collections::BTreeMap;
 
 /// A Patch encodes an operation that modifies a real DOM element.
@@ -51,6 +51,10 @@ pub enum Patch<'a> {
     AddAttributes(NodeIdx, BTreeMap<&'a str, &'a Value>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
+    /// Add attributes that the new node has that the old node does not
+    AddEventListener(NodeIdx, BTreeMap<&'a str, &'a Callback<Value>>),
+    /// Remove attributes that the old node had that the new node doesn't
+    RemoveEventListener(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
     ChangeText(NodeIdx, &'a Text),
 }
@@ -68,6 +72,8 @@ impl<'a> Patch<'a> {
             Patch::Replace(node_idx, _) => *node_idx,
             Patch::AddAttributes(node_idx, _) => *node_idx,
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
+            Patch::AddEventListener(node_idx, _) => *node_idx,
+            Patch::RemoveEventListener(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
         }
     }

@@ -690,10 +690,11 @@ mod tests {
 mod diff_tests_using_html_syntax {
     use super::*;
     use attributes::*;
+    use events::*;
     use maplit::btreemap;
     use virtual_dom::diff;
     use virtual_dom::Patch;
-    use virtual_dom::{Text, Value};
+    use virtual_dom::{Callback, Text, Value};
 
     #[test]
     fn replace_node() {
@@ -806,13 +807,56 @@ mod diff_tests_using_html_syntax {
     }
 
     #[test]
+    fn add_events() {
+        let func = |_| {
+            println!("hello");
+        };
+        let hello: Callback<Value> = func.into();
+        let events = btreemap! {
+        "click" => &hello,
+        };
+
+        let old = div([], []);
+        let new = div([onclick(hello.clone())], []);
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AddEventListener(0, events.clone())],
+            "Add event listener",
+        );
+
+        let hello2: Callback<Value> = func.into(); //recreated from the func closure, it will not be equal to the callback since the Rc points to a different address.
+        let events2 = btreemap! {
+        "click" => &hello2,
+        };
+        let old = div([onclick(hello.clone())], []);
+        let new = div([onclick(hello2.clone())], []);
+
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::AddEventListener(0, events2.clone())],
+            "Change event listener",
+        );
+    }
+
+    #[test]
     fn remove_attributes() {
         let old = div([id("hey-there")], []); //{ <div id="hey-there"></div> },
         let new = div([], []); //{ <div> </div> },
         assert_eq!(
             diff(&old, &new),
             vec![Patch::RemoveAttributes(0, vec!["id"])],
-            "Add attributes",
+            "Remove attributes",
+        );
+    }
+
+    #[test]
+    fn remove_events() {
+        let old = div([onclick(|_|println!("hi"))], []); 
+        let new = div([], []);
+        assert_eq!(
+            diff(&old, &new),
+            vec![Patch::RemoveEventListener(0, vec!["click"])],
+            "Remove events",
         );
     }
 

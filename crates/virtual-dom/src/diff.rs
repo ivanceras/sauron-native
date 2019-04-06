@@ -1,6 +1,6 @@
 use crate::Patch;
 use crate::Value;
-use crate::{Element, Node};
+use crate::{Callback, Element, Node};
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;
@@ -68,6 +68,9 @@ fn diff_recursive<'a, 'b>(
             let attributes_patches = diff_attributes(old_element, new_element, cur_node_idx);
             patches.extend(attributes_patches);
 
+            let listener_patches = diff_event_listener(old_element, new_element, cur_node_idx);
+            patches.extend(listener_patches);
+
             //TODO: also diff the events
 
             let old_child_count = old_element.children.len();
@@ -105,6 +108,7 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
+// diff the attributes of old element to the new element at this cur_node_idx
 fn diff_attributes<'a, 'b>(
     old_element: &'a Element,
     new_element: &'a Element,
@@ -151,6 +155,60 @@ fn diff_attributes<'a, 'b>(
     }
     if remove_attributes.len() > 0 {
         patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
+    }
+    patches
+}
+
+// diff the events of the old element compared to the new element at this cur_node_idx
+fn diff_event_listener<'a, 'b>(
+    old_element: &'a Element,
+    new_element: &'a Element,
+    cur_node_idx: &'b mut usize,
+) -> Vec<Patch<'a>> {
+    let mut patches = vec![];
+    let mut add_event_listener: BTreeMap<&str, &Callback<Value>> = BTreeMap::new();
+    let mut remove_event_listener: Vec<&str> = vec![];
+
+    // TODO: -> split out into func
+    for (new_attr_name, new_attr_val) in new_element.events.iter() {
+        match old_element.events.get(new_attr_name) {
+            Some(ref old_attr_val) => {
+                if old_attr_val != &new_attr_val {
+                    add_event_listener.insert(new_attr_name, new_attr_val);
+                }
+            }
+            None => {
+                add_event_listener.insert(new_attr_name, new_attr_val);
+            }
+        };
+    }
+
+    // TODO: -> split out into func
+    for (old_attr_name, old_attr_val) in old_element.events.iter() {
+        if add_event_listener.get(&old_attr_name[..]).is_some() {
+            continue;
+        };
+
+        match new_element.events.get(old_attr_name) {
+            Some(ref new_attr_val) => {
+                if new_attr_val != &old_attr_val {
+                    remove_event_listener.push(old_attr_name);
+                }
+            }
+            None => {
+                remove_event_listener.push(old_attr_name);
+            }
+        };
+    }
+
+    if add_event_listener.len() > 0 {
+        patches.push(Patch::AddEventListener(*cur_node_idx, add_event_listener));
+    }
+    if remove_event_listener.len() > 0 {
+        patches.push(Patch::RemoveEventListener(
+            *cur_node_idx,
+            remove_event_listener,
+        ));
     }
     patches
 }
@@ -266,5 +324,54 @@ mod tests {
 
         let diff = diff(&old, &new);
         assert_eq!(diff, vec![Patch::RemoveAttributes(0, vec!["class"])])
+    }
+
+    #[test]
+    fn no_change_event() {
+        let func = |_| println!("Clicked!");
+        let cb: Callback<Value> = func.into();
+        let old = Node::Element(Element {
+            tag: "div".into(),
+            events: btreemap! {
+                "click".into() => cb.clone(),
+            },
+            ..Default::default()
+        });
+
+        let new = Node::Element(Element {
+            tag: "div".into(),
+            events: btreemap! {
+                "click".into() => cb,
+            },
+            ..Default::default()
+        });
+
+        let diff = diff(&old, &new);
+        assert_eq!(diff, vec![])
+    }
+
+    #[test]
+    fn add_event() {
+        let func = |_| println!("Clicked!");
+        let cb: Callback<Value> = func.into();
+
+        let old = Node::Element(Element {
+            tag: "div".into(),
+            ..Default::default()
+        });
+
+        let new = Node::Element(Element {
+            tag: "div".into(),
+            events: btreemap! {
+                "click".into() => cb.clone(),
+            },
+            ..Default::default()
+        });
+
+        let diff = diff(&old, &new);
+        assert_eq!(
+            diff,
+            vec![Patch::AddEventListener(0, btreemap! {"click" => &cb})]
+        )
     }
 }
