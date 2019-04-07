@@ -18,23 +18,6 @@
     let client
     let updateScheduled = false
 
-    window.GlobalJS = function () {}
-    // TODO:
-    // https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
-    window.GlobalJS.prototype.update = function () {
-      if (!updateScheduled) {
-        requestAnimationFrame(() => {
-          client.render()
-
-          updateScheduled = false
-        })
-      }
-
-      updateScheduled = true
-    }
-
-    window.global_js = new GlobalJS()
-
     function main () {
       const { Client } = window.wasm_bindgen
       client = new Client(window.initialState)

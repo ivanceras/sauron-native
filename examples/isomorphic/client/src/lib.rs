@@ -5,10 +5,17 @@ use ui_backend::html::events::*;
 use ui_backend::html::*;
 use ui_backend::*;
 use vdom::builder::*;
+use vdom::Event;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use web_sys;
 use web_sys::console;
+
+// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+// allocator.
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub struct Client {
@@ -16,26 +23,12 @@ pub struct Client {
     vdom: vdom::Node,
 }
 
-// Expose globals from JS for things such as request animation frame
-// that web sys doesn't seem to have yet
-//
-// TODO: Remove this and use RAF from Rust
-// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
-#[wasm_bindgen]
-extern "C" {
-    pub type GlobalJS;
-
-    pub static global_js: GlobalJS;
-
-    #[wasm_bindgen(method)]
-    pub fn update(this: &GlobalJS);
-}
-
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
-    pub fn new(_initial_state: &str) -> Client {
+    pub fn new(initial_state: &str) -> Client {
         console_error_panic_hook::set_once();
+        console::log_1(&format!("What to do with this initial state: {}", initial_state).into());
 
         let html = div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
@@ -44,7 +37,7 @@ impl Client {
                 div(
                     [],
                     [button(
-                        [onclick(|v| {
+                        [onclick(|v: Event| {
                             console::log_1(
                                 &format!("I've been clicked and the value is: {:#?}", v).into(),
                             );
@@ -59,7 +52,7 @@ impl Client {
                         input(
                             [
                                 r#type("text"),
-                                oninput(|v| {
+                                oninput(|v: Event| {
                                     console::log_1(&format!("input has input: {:#?}", v).into());
                                 }),
                                 placeholder("Type here..."),
@@ -74,7 +67,7 @@ impl Client {
                         text("using oninput on a textarea"),
                         textarea(
                             [
-                                oninput(|v| {
+                                oninput(|v: Event| {
                                     console::log_1(
                                         &format!("textarea has changed: {:#?}", v).into(),
                                     );
@@ -92,7 +85,7 @@ impl Client {
                         input(
                             [
                                 r#type("text"),
-                                onchange(|v| {
+                                onchange(|v: Event| {
                                     console::log_1(&format!("input has changed: {:#?}", v).into());
                                 }),
                                 placeholder("Description here..."),
