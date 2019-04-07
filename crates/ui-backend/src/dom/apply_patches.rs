@@ -1,13 +1,12 @@
-
-use vdom::Patch;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use vdom::Patch;
 
+use super::CreatedNode;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, Node, Text};
-use super::CreatedNode;
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
@@ -25,7 +24,6 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<(), Js
 
     let mut element_nodes_to_patch = HashMap::new();
     let mut text_nodes_to_patch = HashMap::new();
-
 
     find_nodes(
         root_node,
@@ -151,7 +149,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<(), JsValue> {
             Ok(())
         }
         Patch::Replace(_node_idx, new_node) => {
-            let created_node= CreatedNode::<Node>::create_dom_node(new_node);
+            let created_node = CreatedNode::<Node>::create_dom_node(new_node);
             node.replace_with_with_node_1(&created_node.node)?;
             Ok(())
         }

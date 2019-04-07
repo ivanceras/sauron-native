@@ -90,7 +90,8 @@ declare_attributes! {
     r#type => "type";
 }
 
-// key attributes
+// common attributes
 declare_attributes! {
+    value;
     key;
 }

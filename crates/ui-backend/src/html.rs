@@ -851,7 +851,7 @@ mod diff_tests_using_html_syntax {
 
     #[test]
     fn remove_events() {
-        let old = div([onclick(|_|println!("hi"))], []); 
+        let old = div([onclick(|_| println!("hi"))], []);
         let new = div([], []);
         assert_eq!(
             diff(&old, &new),

@@ -1,5 +1,5 @@
 //#![deny(warnings)]
-pub mod html;
 mod dom;
+pub mod html;
 
 pub use dom::DomUpdater;

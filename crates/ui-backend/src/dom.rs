@@ -1,13 +1,11 @@
-use vdom::{self,diff,Value};
-use web_sys::{self,Text,Node,Element,EventTarget};
-use wasm_bindgen::JsCast;
 use std::ops::Deref;
-
+use vdom::{self, diff, Value};
+use wasm_bindgen::JsCast;
+use web_sys::{self, Element, EventTarget, Node, Text};
 
 use apply_patches::patch;
 
 mod apply_patches;
-
 
 /// A node along with all of the closures that were created for that
 /// node's events and all of it's child node's events.
@@ -18,16 +16,13 @@ pub struct CreatedNode<T> {
 
 impl<T> CreatedNode<T> {
     pub fn without_closures<N: Into<T>>(node: N) -> Self {
-        CreatedNode {
-            node: node.into(),
-        }
+        CreatedNode { node: node.into() }
     }
 
     pub fn create_text_node(text: &vdom::Text) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
         document.create_text_node(&text.text)
     }
-
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
@@ -37,7 +32,8 @@ impl<T> CreatedNode<T> {
                 CreatedNode::without_closures(Self::create_text_node(text_node))
             }
             vdom::Node::Element(element_node) => {
-                let created_element:CreatedNode<Node> = Self::create_element_node(element_node).into();
+                let created_element: CreatedNode<Node> =
+                    Self::create_element_node(element_node).into();
                 created_element
             }
         }
@@ -48,9 +44,11 @@ impl<T> CreatedNode<T> {
     pub fn create_element_node(velem: &vdom::Element) -> CreatedNode<Element> {
         let document = web_sys::window().unwrap().document().unwrap();
 
-        let element = if let Some(ref namespace) = velem.namespace{
-            document.create_element_ns(Some(namespace), &velem.tag).unwrap()
-        }else{
+        let element = if let Some(ref namespace) = velem.namespace {
+            document
+                .create_element_ns(Some(namespace), &velem.tag)
+                .unwrap()
+        } else {
             document.create_element(&velem.tag).unwrap()
         };
 
@@ -61,8 +59,7 @@ impl<T> CreatedNode<T> {
         });
 
         if velem.events.len() > 0 {
-
-           velem.events.iter().for_each(|(event, callback)| {
+            velem.events.iter().for_each(|(event, callback)| {
                 let current_elem: &EventTarget = element.dyn_ref().unwrap();
                 /*
                 current_elem
@@ -72,7 +69,6 @@ impl<T> CreatedNode<T> {
                     )
                     .unwrap();
                 */
-
             });
         }
 
@@ -113,13 +109,9 @@ impl<T> CreatedNode<T> {
             }
         });
 
-        CreatedNode {
-            node: element,
-        }
+        CreatedNode { node: element }
     }
 }
-
-
 
 /// Used for keeping a real DOM node up to date based on the current Node
 /// and a new incoming Node that represents our latest DOM state.
@@ -127,7 +119,6 @@ pub struct DomUpdater {
     current_vdom: vdom::Node,
     root_node: Node,
 }
-
 
 impl DomUpdater {
     /// Create a new `DomUpdater`.
@@ -146,7 +137,7 @@ impl DomUpdater {
     /// A root `Node` will be created and appended (as a child) to your passed
     /// in mount element.
     pub fn new_append_to_mount(current_vdom: vdom::Node, mount: &Element) -> DomUpdater {
-        let created_node:CreatedNode<Node> = CreatedNode::<Node>::create_dom_node(&current_vdom);
+        let created_node: CreatedNode<Node> = CreatedNode::<Node>::create_dom_node(&current_vdom);
         mount
             .append_child(&created_node.node)
             .expect("Could not append child to mount");
@@ -192,7 +183,6 @@ impl DomUpdater {
     }
 }
 
-
 impl From<CreatedNode<Element>> for CreatedNode<Node> {
     fn from(other: CreatedNode<Element>) -> CreatedNode<Node> {
         CreatedNode {
@@ -200,7 +190,6 @@ impl From<CreatedNode<Element>> for CreatedNode<Node> {
         }
     }
 }
-
 
 impl<T> Deref for CreatedNode<T> {
     type Target = T;

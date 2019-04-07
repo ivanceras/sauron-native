@@ -1,11 +1,10 @@
 use ui_backend::html::attributes::*;
 use ui_backend::html::events::*;
 use ui_backend::html::*;
-use vdom::builder::*;
 use ui_backend::DomUpdater;
+use vdom::builder::*;
 
-fn main(){
-    
+fn main() {
     let html = div(
         [
             class("some-class"),
