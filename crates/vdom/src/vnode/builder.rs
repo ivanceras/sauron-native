@@ -1,5 +1,5 @@
 use crate::Callback;
-use crate::{Element, Node, Text, Value};
+use crate::{Element, Event, Node, Text, Value};
 use std::convert::AsRef;
 
 pub struct Attribute<'a> {
@@ -9,7 +9,7 @@ pub struct Attribute<'a> {
 
 pub enum AttribValue {
     Value(Value),
-    Callback(Callback<Value>),
+    Callback(Callback<Event>),
 }
 
 impl<V: Into<Value>> From<V> for AttribValue {
@@ -18,8 +18,8 @@ impl<V: Into<Value>> From<V> for AttribValue {
     }
 }
 
-impl From<Callback<Value>> for AttribValue {
-    fn from(c: Callback<Value>) -> Self {
+impl From<Callback<Event>> for AttribValue {
+    fn from(c: Callback<Event>) -> Self {
         AttribValue::Callback(c)
     }
 }
@@ -54,7 +54,7 @@ impl Element {
         self
     }
 
-    pub fn add_event_listener(mut self, event: &str, cb: Callback<Value>) -> Self {
+    pub fn add_event_listener(mut self, event: &str, cb: Callback<Event>) -> Self {
         self.events.insert(event.to_string(), cb);
         self
     }
@@ -120,7 +120,7 @@ where
 #[inline]
 pub fn on<'a, C>(name: &'a str, c: C) -> Attribute<'a>
 where
-    C: Into<Callback<Value>>,
+    C: Into<Callback<Event>>,
 {
     Attribute {
         name: name,

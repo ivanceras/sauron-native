@@ -1,6 +1,6 @@
 use std::ops::Deref;
 use vdom::Callback;
-use vdom::{self, diff, Value};
+use vdom::{self, diff};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{self, Element, EventTarget, Node, Text};
@@ -9,6 +9,8 @@ use apply_patches::patch;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use web_sys::console;
+use web_sys::{Event, KeyboardEvent, MouseEvent};
+use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 
 mod apply_patches;
 
@@ -44,7 +46,7 @@ pub struct DomUpdater {
     pub active_closures: ActiveClosure,
 }
 
-pub type ActiveClosure = HashMap<u32, Vec<Closure<FnMut()>>>;
+pub type ActiveClosure = HashMap<u32, Vec<Closure<FnMut(Event)>>>;
 
 impl<T> CreatedNode<T> {
     pub fn without_closures<N: Into<T>>(node: N) -> Self {
@@ -104,33 +106,67 @@ impl<T> CreatedNode<T> {
 
             closures.insert(unique_id, vec![]);
 
-            velem
-                .events
-                .iter()
-                .for_each(|(event, callback): (&String, &Callback<Value>)| {
+            velem.events.iter().for_each(
+                |(event_str, callback): (&String, &Callback<vdom::Event>)| {
                     let current_elem: &EventTarget = element.dyn_ref().unwrap();
 
                     let callback_clone = callback.clone();
 
-                    let closure_wrap: Closure<FnMut()> = Closure::wrap(Box::new(move || {
-                        console::log_1(&"Im triggered here...".into());
-                        let value: Value = "hi".into();
-                        callback_clone.emit(value);
-                    }));
+                    let closure_wrap: Closure<FnMut(Event)> =
+                        Closure::wrap(Box::new(move |event: Event| {
+                            console::log_1(&"This is called".into());
+
+                            let mouse_event: Option<&MouseEvent> = event.dyn_ref();
+                            let key_event: Option<&KeyboardEvent> = event.dyn_ref();
+                            let target: Option<EventTarget> = event.target();
+                            console::log_1(
+                                &format!("mouse_event: {}", mouse_event.is_some()).into(),
+                            );
+                            console::log_1(&format!("key_event: {}", key_event.is_some()).into());
+                            console::log_1(&format!("target: {}", target.is_some()).into());
+
+                            if let Some(mouse_event) = mouse_event {
+                                callback_clone.emit(vdom::Event::MouseEvent(vdom::MouseEvent {
+                                    x: mouse_event.x(),
+                                    y: mouse_event.y(),
+                                }));
+                            } else if let Some(key_event) = key_event {
+                                callback_clone.emit(vdom::Event::KeyEvent(vdom::KeyEvent {
+                                    key: key_event.key(),
+                                    ctrl: key_event.ctrl_key(),
+                                    alt: key_event.alt_key(),
+                                    shift: key_event.shift_key(),
+                                    meta: key_event.meta_key(),
+                                }));
+                            } else if let Some(target) = target {
+                                let input: Option<&HtmlInputElement> = target.dyn_ref();
+                                let textarea: Option<&HtmlTextAreaElement> = target.dyn_ref();
+                                if let Some(input) = input {
+                                    callback_clone.emit(vdom::Event::InputEvent(
+                                        vdom::InputEvent {
+                                            value: input.value(),
+                                        },
+                                    ));
+                                } else if let Some(textarea) = textarea {
+                                    callback_clone.emit(vdom::Event::InputEvent(
+                                        vdom::InputEvent {
+                                            value: textarea.value(),
+                                        },
+                                    ));
+                                }
+                            }
+                        }));
 
                     current_elem
                         .add_event_listener_with_callback(
-                            event,
+                            event_str,
                             closure_wrap.as_ref().unchecked_ref(),
                         )
                         .unwrap();
 
-                    closures
-                        .get_mut(&unique_id)
-                        .unwrap()
-                        .push(closure_wrap);
-
-                });
+                    closures.get_mut(&unique_id).unwrap().push(closure_wrap);
+                },
+            );
         }
 
         let mut previous_node_was_text = false;

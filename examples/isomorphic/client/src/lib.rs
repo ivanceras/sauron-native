@@ -40,14 +40,66 @@ impl Client {
         let html = div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
             [
-                text("Hello world!"),
-                button(
-                    [onclick(|v| {
-                        console::log_1(
-                            &format!("I've been clicked and the value is: {}", v).into(),
-                        );
-                    })],
-                    [text("Click me!")],
+                div([], [text("Hello world!")]),
+                div(
+                    [],
+                    [button(
+                        [onclick(|v| {
+                            console::log_1(
+                                &format!("I've been clicked and the value is: {:#?}", v).into(),
+                            );
+                        })],
+                        [text("Click me!")],
+                    )],
+                ),
+                div(
+                    [],
+                    [
+                        text("Using oninput"),
+                        input(
+                            [
+                                r#type("text"),
+                                oninput(|v| {
+                                    console::log_1(&format!("input has input: {:#?}", v).into());
+                                }),
+                                placeholder("Type here..."),
+                            ],
+                            [],
+                        ),
+                    ],
+                ),
+                div(
+                    [],
+                    [
+                        text("using oninput on a textarea"),
+                        textarea(
+                            [
+                                oninput(|v| {
+                                    console::log_1(
+                                        &format!("textarea has changed: {:#?}", v).into(),
+                                    );
+                                }),
+                                placeholder("Description here..."),
+                            ],
+                            [],
+                        ),
+                    ],
+                ),
+                div(
+                    [],
+                    [
+                        text("Using onchange"),
+                        input(
+                            [
+                                r#type("text"),
+                                onchange(|v| {
+                                    console::log_1(&format!("input has changed: {:#?}", v).into());
+                                }),
+                                placeholder("Description here..."),
+                            ],
+                            [],
+                        ),
+                    ],
                 ),
             ],
         );

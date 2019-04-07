@@ -1,7 +1,7 @@
 //! https://developer.mozilla.org/en-US/docs/Web/Events
 use vdom::builder::on;
 use vdom::builder::Attribute;
-use vdom::{Callback, Value};
+use vdom::{Callback, Event};
 
 macro_rules! declare_events {
     ( $(
@@ -13,7 +13,7 @@ macro_rules! declare_events {
             $(#[$attr])*
             #[inline]
             pub fn $name<'a, F>(f: F) -> Attribute<'a>
-                where F: Into<Callback<Value>>
+                where F: Into<Callback<Event>>
                 {
                     on(stringify!($event), f)
                 }
@@ -67,4 +67,5 @@ declare_events! {
     //RadioStateChange
     onreadystatechange => readystatechange;
     //ValueChange
+    onchange => change;
 }

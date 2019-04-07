@@ -585,7 +585,7 @@ mod tests {
     use attributes::*;
     use events::*;
     use maplit::btreemap;
-    use vdom::{Callback, Element, Text, Value};
+    use vdom::{Callback, Element, Event, Text};
 
     #[test]
     fn simple_builder() {
@@ -605,10 +605,10 @@ mod tests {
 
     #[test]
     fn builder_with_event() {
-        let cb = |x: Value| {
+        let cb = |x: Event| {
             println!("hello! {:?}", x);
         };
-        let callback: Callback<Value> = cb.into();
+        let callback: Callback<Event> = cb.into();
         let div = Element::new("div").add_event_listener("click", callback.clone());
 
         assert_eq!(
@@ -652,7 +652,7 @@ mod tests {
         let clicked = |_| {
             println!("clicked");
         };
-        let cb: Callback<Value> = clicked.into();
+        let cb: Callback<Event> = clicked.into();
         let div = div(
             [class("some-class"), r#type("submit"), onclick(cb.clone())],
             [div([class("some-class")], [text("Hello world!")])],
@@ -693,7 +693,7 @@ mod diff_tests_using_html_syntax {
     use maplit::btreemap;
     use vdom::diff;
     use vdom::Patch;
-    use vdom::{Callback, Text, Value};
+    use vdom::{Callback, Event, Text, Value};
 
     #[test]
     fn replace_node() {
@@ -810,7 +810,7 @@ mod diff_tests_using_html_syntax {
         let func = |_| {
             println!("hello");
         };
-        let hello: Callback<Value> = func.into();
+        let hello: Callback<Event> = func.into();
         let events = btreemap! {
         "click" => &hello,
         };
@@ -823,7 +823,7 @@ mod diff_tests_using_html_syntax {
             "Add event listener",
         );
 
-        let hello2: Callback<Value> = func.into(); //recreated from the func closure, it will not be equal to the callback since the Rc points to a different address.
+        let hello2: Callback<Event> = func.into(); //recreated from the func closure, it will not be equal to the callback since the Rc points to a different address.
         let events2 = btreemap! {
         "click" => &hello2,
         };

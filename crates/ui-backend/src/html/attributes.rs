@@ -94,4 +94,5 @@ declare_attributes! {
 declare_attributes! {
     value;
     key;
+    placeholder;
 }

@@ -1,6 +1,6 @@
 use crate::Patch;
 use crate::Value;
-use crate::{Callback, Element, Node};
+use crate::{Callback, Element, Event, Node};
 use std::cmp::min;
 use std::collections::BTreeMap;
 use std::mem;
@@ -166,7 +166,7 @@ fn diff_event_listener<'a, 'b>(
     cur_node_idx: &'b mut usize,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
-    let mut add_event_listener: BTreeMap<&str, &Callback<Value>> = BTreeMap::new();
+    let mut add_event_listener: BTreeMap<&str, &Callback<Event>> = BTreeMap::new();
     let mut remove_event_listener: Vec<&str> = vec![];
 
     // TODO: -> split out into func
@@ -329,7 +329,7 @@ mod tests {
     #[test]
     fn no_change_event() {
         let func = |_| println!("Clicked!");
-        let cb: Callback<Value> = func.into();
+        let cb: Callback<Event> = func.into();
         let old = Node::Element(Element {
             tag: "div".into(),
             events: btreemap! {
@@ -353,7 +353,7 @@ mod tests {
     #[test]
     fn add_event() {
         let func = |_| println!("Clicked!");
-        let cb: Callback<Value> = func.into();
+        let cb: Callback<Event> = func.into();
 
         let old = Node::Element(Element {
             tag: "div".into(),

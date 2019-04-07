@@ -4,8 +4,10 @@ use std::fmt;
 use crate::Callback;
 
 pub mod builder;
+mod event;
 mod value;
 
+pub use event::{Event, InputEvent, KeyEvent, MouseEvent};
 pub use value::Value;
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -33,7 +35,7 @@ pub enum Node {
 pub struct Element {
     pub tag: String,
     pub attrs: BTreeMap<String, Value>,
-    pub events: BTreeMap<String, Callback<Value>>,
+    pub events: BTreeMap<String, Callback<Event>>,
     pub children: Vec<Node>,
     pub namespace: Option<String>,
 }
