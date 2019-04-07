@@ -1,4 +1,4 @@
-//#![deny(warnings)]
+#![deny(warnings)]
 mod dom;
 pub mod html;
 

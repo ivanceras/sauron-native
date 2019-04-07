@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use vdom::Patch;
 
+use super::ActiveClosure;
 use super::CreatedNode;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -11,7 +12,7 @@ use web_sys::{Element, Node, Text};
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
 /// This is usually used after diffing two virtual nodes.
-pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<(), JsValue> {
+pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<ActiveClosure, JsValue> {
     let root_node: Node = root_node.into();
 
     let mut cur_node_idx = 0;
@@ -24,6 +25,9 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<(), Js
 
     let mut element_nodes_to_patch = HashMap::new();
     let mut text_nodes_to_patch = HashMap::new();
+
+    // Closure that were added to the DOM during this patch operation.
+    let mut active_closures = HashMap::new();
 
     find_nodes(
         root_node,
@@ -38,6 +42,7 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<(), Js
 
         if let Some(element) = element_nodes_to_patch.get(&patch_node_idx) {
             let new_closures = apply_element_patch(&element, &patch)?;
+            active_closures.extend(new_closures);
             continue;
         }
 
@@ -49,7 +54,7 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<(), Js
         unreachable!("Getting here means we didn't find the element or next node that we were supposed to patch.")
     }
 
-    Ok(())
+    Ok(active_closures)
 }
 
 fn find_nodes(
@@ -117,41 +122,42 @@ fn find_nodes(
     }
 }
 
-fn apply_element_patch(node: &Element, patch: &Patch) -> Result<(), JsValue> {
+fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosure, JsValue> {
+    let active_closures = HashMap::new();
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
                 node.set_attribute(attrib_name, &attrib_val.to_string())?;
             }
 
-            Ok(())
+            Ok(active_closures)
         }
         Patch::RemoveAttributes(_node_idx, attributes) => {
             for attrib_name in attributes.iter() {
                 node.remove_attribute(attrib_name)?;
             }
 
-            Ok(())
+            Ok(active_closures)
         }
 
         Patch::AddEventListener(_node_idx, events) => {
-            for (event, callback) in events.iter() {
+            for (event, _callback) in events.iter() {
                 println!("TODO: add event: {}", event);
             }
 
-            Ok(())
+            Ok(active_closures)
         }
         Patch::RemoveEventListener(_node_idx, events) => {
             for event in events.iter() {
                 println!("TODO: remove event: {}", event);
             }
 
-            Ok(())
+            Ok(active_closures)
         }
         Patch::Replace(_node_idx, new_node) => {
             let created_node = CreatedNode::<Node>::create_dom_node(new_node);
             node.replace_with_with_node_1(&created_node.node)?;
-            Ok(())
+            Ok(created_node.closures)
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.child_nodes();
@@ -183,17 +189,18 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<(), JsValue> {
                 child_count -= 1;
             }
 
-            Ok(())
+            Ok(active_closures)
         }
         Patch::AppendChildren(_node_idx, new_nodes) => {
             let parent = &node;
-
+            let mut active_closures = HashMap::new();
             for new_node in new_nodes {
                 let created_node = CreatedNode::<Node>::create_dom_node(&new_node);
                 parent.append_child(&created_node.node)?;
+                active_closures.extend(created_node.closures);
             }
 
-            Ok(())
+            Ok(active_closures)
         }
         Patch::ChangeText(_node_idx, _new_node) => {
             unreachable!("Elements should not receive ChangeText patches.")
@@ -207,10 +214,8 @@ fn apply_text_patch(node: &Text, patch: &Patch) -> Result<(), JsValue> {
             node.set_node_value(Some(&new_node.text));
         }
         Patch::Replace(_node_idx, new_node) => {
-            /*
-            let created_node:CreatedNode<Node> = CreatedNode::create_dom_node(new_node);
+            let created_node = CreatedNode::<Node>::create_dom_node(new_node);
             node.replace_with_with_node_1(&created_node.node)?;
-            */
         }
         other => unreachable!(
             "Text nodes should only receive ChangeText or Replace patches, not {:?}.",

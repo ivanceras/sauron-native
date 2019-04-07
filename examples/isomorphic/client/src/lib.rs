@@ -1,17 +1,14 @@
+//#![deny(warnings)]
 use console_error_panic_hook;
-use std::rc::Rc;
 use ui_backend::html::attributes::*;
 use ui_backend::html::events::*;
 use ui_backend::html::*;
 use ui_backend::*;
 use vdom::builder::*;
-use vdom::*;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::console;
-use web_sys::Element;
 
 #[wasm_bindgen]
 pub struct Client {
@@ -39,7 +36,6 @@ impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(_initial_state: &str) -> Client {
         console_error_panic_hook::set_once();
-        console::log_1(&"here here..".into());
 
         let html = div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
@@ -63,7 +59,6 @@ impl Client {
             .unwrap();
         let dom_updater = DomUpdater::new_replace_mount(html.clone(), root_node);
 
-        console::log_1(&"it is done!".into());
         Client {
             dom_updater,
             vdom: html,
@@ -72,5 +67,7 @@ impl Client {
 
     pub fn render(&mut self) {
         console::log_1(&"updating render function".into());
+        let vdom = self.vdom.clone();
+        self.dom_updater.update(vdom);
     }
 }

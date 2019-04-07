@@ -2,21 +2,31 @@ use std::ops::Deref;
 use vdom::Callback;
 use vdom::{self, diff, Value};
 use wasm_bindgen::closure::Closure;
-use wasm_bindgen::convert::IntoWasmAbi;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::JsCast;
 use web_sys::{self, Element, EventTarget, Node, Text};
 
 use apply_patches::patch;
-use js_sys::Function;
+use std::collections::HashMap;
+use std::sync::Mutex;
 use web_sys::console;
 
 mod apply_patches;
+
+// Used to uniquely identify elements that contain closures so that the DomUpdater can
+// look them up by their unique id.
+// When the DomUpdater sees that the element no longer exists it will drop all of it's
+// Rc'd Closures for those events.
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
+}
 
 /// A node along with all of the closures that were created for that
 /// node's events and all of it's child node's events.
 pub struct CreatedNode<T> {
     /// A `Node` or `Element` that was created from a `Node`
     pub node: T,
+    closures: ActiveClosure,
 }
 
 /// Used for keeping a real DOM node up to date based on the current Node
@@ -24,11 +34,24 @@ pub struct CreatedNode<T> {
 pub struct DomUpdater {
     current_vdom: vdom::Node,
     root_node: Node,
+
+    /// The closures that are currently attached to elements in the page.
+    ///
+    /// We keep these around so that they don't get dropped (and thus stop working);
+    ///
+    /// FIXME: Drop them when the element is no longer in the page. Need to figure out
+    /// a good strategy for when to do this.
+    pub active_closures: ActiveClosure,
 }
+
+pub type ActiveClosure = HashMap<u32, Vec<Closure<FnMut()>>>;
 
 impl<T> CreatedNode<T> {
     pub fn without_closures<N: Into<T>>(node: N) -> Self {
-        CreatedNode { node: node.into() }
+        CreatedNode {
+            node: node.into(),
+            closures: HashMap::with_capacity(0),
+        }
     }
 
     pub fn create_text_node(text: &vdom::Text) -> Text {
@@ -64,6 +87,8 @@ impl<T> CreatedNode<T> {
             document.create_element(&velem.tag).unwrap()
         };
 
+        let mut closures = HashMap::new();
+
         velem.attrs.iter().for_each(|(name, value)| {
             element
                 .set_attribute(name, &value.to_string())
@@ -71,6 +96,14 @@ impl<T> CreatedNode<T> {
         });
 
         if velem.events.len() > 0 {
+            let unique_id = create_unique_identifier();
+
+            element
+                .set_attribute("data-vdom-id".into(), &unique_id.to_string())
+                .expect("Could not set attribute on element");
+
+            closures.insert(unique_id, vec![]);
+
             velem
                 .events
                 .iter()
@@ -79,18 +112,24 @@ impl<T> CreatedNode<T> {
 
                     let callback_clone = callback.clone();
 
-                    let closure: Closure<FnMut()> = Closure::wrap(Box::new(move || {
+                    let closure_wrap: Closure<FnMut()> = Closure::wrap(Box::new(move || {
                         console::log_1(&"Im triggered here...".into());
                         let value: Value = "hi".into();
                         callback_clone.emit(value);
                     }));
 
                     current_elem
-                        .add_event_listener_with_callback(event, closure.as_ref().unchecked_ref())
+                        .add_event_listener_with_callback(
+                            event,
+                            closure_wrap.as_ref().unchecked_ref(),
+                        )
                         .unwrap();
 
-                    //TODO: keep track of the closures to prevent leaking
-                    closure.forget();
+                    closures
+                        .get_mut(&unique_id)
+                        .unwrap()
+                        .push(closure_wrap);
+
                 });
         }
 
@@ -125,13 +164,17 @@ impl<T> CreatedNode<T> {
 
                     let child = Self::create_element_node(element_node);
                     let child_elem: Element = child.node;
+                    closures.extend(child.closures);
 
                     element.append_child(&child_elem).unwrap();
                 }
             }
         });
 
-        CreatedNode { node: element }
+        CreatedNode {
+            node: element,
+            closures,
+        }
     }
 }
 
@@ -144,6 +187,7 @@ impl DomUpdater {
         DomUpdater {
             current_vdom,
             root_node: created_node.node,
+            active_closures: created_node.closures,
         }
     }
 
@@ -159,6 +203,7 @@ impl DomUpdater {
         DomUpdater {
             current_vdom,
             root_node: created_node.node,
+            active_closures: created_node.closures,
         }
     }
 
@@ -174,6 +219,7 @@ impl DomUpdater {
         DomUpdater {
             current_vdom,
             root_node: created_node.node,
+            active_closures: created_node.closures,
         }
     }
 
@@ -183,8 +229,8 @@ impl DomUpdater {
     /// seeing the latest state of the application.
     pub fn update(&mut self, new_vdom: vdom::Node) {
         let patches = diff(&self.current_vdom, &new_vdom);
-
-        patch(self.root_node.clone(), &patches).unwrap();
+        let active_closures = patch(self.root_node.clone(), &patches).unwrap();
+        self.active_closures.extend(active_closures);
         self.current_vdom = new_vdom;
     }
 
@@ -197,10 +243,17 @@ impl DomUpdater {
     }
 }
 
+fn create_unique_identifier() -> u32 {
+    let mut elem_unique_id = ELEM_UNIQUE_ID.lock().unwrap();
+    *elem_unique_id += 1;
+    *elem_unique_id
+}
+
 impl From<CreatedNode<Element>> for CreatedNode<Node> {
     fn from(other: CreatedNode<Element>) -> CreatedNode<Node> {
         CreatedNode {
             node: other.node.into(),
+            closures: other.closures,
         }
     }
 }
