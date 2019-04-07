@@ -3,7 +3,6 @@ use vdom::builder::*;
 use vdom::Node;
 
 pub mod attributes;
-pub mod dom_node;
 pub mod events;
 
 macro_rules! builder_constructors {

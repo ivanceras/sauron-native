@@ -10,6 +10,7 @@ use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys;
+use web_sys::console;
 use web_sys::Element;
 
 #[wasm_bindgen]
@@ -38,23 +39,18 @@ impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(_initial_state: &str) -> Client {
         console_error_panic_hook::set_once();
+        console::log_1(&"here here..".into());
 
         let html = div(
-            [
-                class("some-class"),
-                id("some-id"),
-                onclick(|_| {
-                    println!("clicked");
-                }),
-                attr("data-id", 1),
-                on("mouseover", |_| {
-                    println!("i've been clicked");
-                }),
-            ],
+            [class("some-class"), id("some-id"), attr("data-id", 1)],
             [
                 text("Hello world!"),
-                input([r#type("button"), class("client"), value("Click me!")], []),
-                button([], [text("Other button")]),
+                button(
+                    [onclick(|_| {
+                        println!("i've been clicked");
+                    })],
+                    [text("Click me!")],
+                ),
             ],
         );
 
@@ -65,6 +61,7 @@ impl Client {
             .unwrap();
         let dom_updater = DomUpdater::new_replace_mount(html.clone(), root_node);
 
+        console::log_1(&"it is done!".into());
         Client {
             dom_updater,
             vdom: html,
@@ -72,6 +69,6 @@ impl Client {
     }
 
     pub fn render(&mut self) {
-        self.dom_updater.update(self.vdom.clone());
+        console::log_1(&"updating render function".into());
     }
 }

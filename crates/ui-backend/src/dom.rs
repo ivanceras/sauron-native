@@ -1,9 +1,14 @@
 use std::ops::Deref;
+use vdom::Callback;
 use vdom::{self, diff, Value};
-use wasm_bindgen::JsCast;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::convert::IntoWasmAbi;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{self, Element, EventTarget, Node, Text};
 
 use apply_patches::patch;
+use js_sys::Function;
+use web_sys::console;
 
 mod apply_patches;
 
@@ -12,6 +17,13 @@ mod apply_patches;
 pub struct CreatedNode<T> {
     /// A `Node` or `Element` that was created from a `Node`
     pub node: T,
+}
+
+/// Used for keeping a real DOM node up to date based on the current Node
+/// and a new incoming Node that represents our latest DOM state.
+pub struct DomUpdater {
+    current_vdom: vdom::Node,
+    root_node: Node,
 }
 
 impl<T> CreatedNode<T> {
@@ -59,17 +71,22 @@ impl<T> CreatedNode<T> {
         });
 
         if velem.events.len() > 0 {
-            velem.events.iter().for_each(|(event, callback)| {
-                let current_elem: &EventTarget = element.dyn_ref().unwrap();
-                /*
-                current_elem
-                    .add_event_listener_with_callback(
-                        event,
-                        ||{callback.emit(value);}
-                    )
-                    .unwrap();
-                */
-            });
+            velem
+                .events
+                .iter()
+                .for_each(|(event, callback): (&String, &Callback<Value>)| {
+                    let current_elem: &EventTarget = element.dyn_ref().unwrap();
+
+                    let closure: Closure<FnMut()> = Closure::wrap(Box::new(|| {
+                        console::log_1(&"Im triggered here...".into());
+                    }));
+
+                    current_elem
+                        .add_event_listener_with_callback(event, closure.as_ref().unchecked_ref())
+                        .unwrap();
+
+                    closure.forget();
+                });
         }
 
         let mut previous_node_was_text = false;
@@ -111,13 +128,6 @@ impl<T> CreatedNode<T> {
 
         CreatedNode { node: element }
     }
-}
-
-/// Used for keeping a real DOM node up to date based on the current Node
-/// and a new incoming Node that represents our latest DOM state.
-pub struct DomUpdater {
-    current_vdom: vdom::Node,
-    root_node: Node,
 }
 
 impl DomUpdater {
@@ -170,7 +180,6 @@ impl DomUpdater {
         let patches = diff(&self.current_vdom, &new_vdom);
 
         patch(self.root_node.clone(), &patches).unwrap();
-
         self.current_vdom = new_vdom;
     }
 
