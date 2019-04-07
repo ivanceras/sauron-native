@@ -46,8 +46,10 @@ impl Client {
             [
                 text("Hello world!"),
                 button(
-                    [onclick(|_| {
-                        println!("i've been clicked");
+                    [onclick(|v| {
+                        console::log_1(
+                            &format!("I've been clicked and the value is: {}", v).into(),
+                        );
                     })],
                     [text("Click me!")],
                 ),

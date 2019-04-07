@@ -77,14 +77,19 @@ impl<T> CreatedNode<T> {
                 .for_each(|(event, callback): (&String, &Callback<Value>)| {
                     let current_elem: &EventTarget = element.dyn_ref().unwrap();
 
-                    let closure: Closure<FnMut()> = Closure::wrap(Box::new(|| {
+                    let callback_clone = callback.clone();
+
+                    let closure: Closure<FnMut()> = Closure::wrap(Box::new(move || {
                         console::log_1(&"Im triggered here...".into());
+                        let value: Value = "hi".into();
+                        callback_clone.emit(value);
                     }));
 
                     current_elem
                         .add_event_listener_with_callback(event, closure.as_ref().unchecked_ref())
                         .unwrap();
 
+                    //TODO: keep track of the closures to prevent leaking
                     closure.forget();
                 });
         }
