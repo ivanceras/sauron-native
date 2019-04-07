@@ -1,6 +1,6 @@
 use std::convert::AsRef;
-use virtual_dom::builder::*;
-use virtual_dom::Node;
+use vdom::builder::*;
+use vdom::Node;
 
 pub mod attributes;
 pub mod dom_node;
@@ -586,7 +586,7 @@ mod tests {
     use attributes::*;
     use events::*;
     use maplit::btreemap;
-    use virtual_dom::{Callback, Element, Text, Value};
+    use vdom::{Callback, Element, Text, Value};
 
     #[test]
     fn simple_builder() {
@@ -692,9 +692,9 @@ mod diff_tests_using_html_syntax {
     use attributes::*;
     use events::*;
     use maplit::btreemap;
-    use virtual_dom::diff;
-    use virtual_dom::Patch;
-    use virtual_dom::{Callback, Text, Value};
+    use vdom::diff;
+    use vdom::Patch;
+    use vdom::{Callback, Text, Value};
 
     #[test]
     fn replace_node() {

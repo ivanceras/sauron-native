@@ -63,7 +63,7 @@ impl Element {
 /// Create an element
 ///
 ///```
-/// use virtual_dom::builder::*;
+/// use vdom::builder::*;
 /// fn main(){
 ///    let old = element(
 ///        "div",

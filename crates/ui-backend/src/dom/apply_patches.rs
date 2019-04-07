@@ -1,5 +1,5 @@
 
-use virtual_dom::Patch;
+use vdom::Patch;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::collections::HashSet;

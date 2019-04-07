@@ -1,5 +1,5 @@
 [package]
-name = "virtual_dom"
+name = "vdom"
 edition = "2018"
 version = "0.1.0"
 

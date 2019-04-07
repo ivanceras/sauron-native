@@ -1,7 +1,7 @@
 use ui_backend::html::attributes::*;
 use ui_backend::html::events::*;
 use ui_backend::html::*;
-use virtual_dom::builder::*;
+use vdom::builder::*;
 use ui_backend::DomUpdater;
 
 fn main(){

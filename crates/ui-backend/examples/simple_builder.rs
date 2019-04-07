@@ -1,8 +1,8 @@
 use ui_backend::html::attributes::*;
 use ui_backend::html::events::*;
 use ui_backend::html::*;
-use virtual_dom::builder::*;
-use virtual_dom::diff;
+use vdom::builder::*;
+use vdom::diff;
 
 fn main() {
     let old = div(

@@ -1,7 +1,7 @@
 //! https://developer.mozilla.org/en-US/docs/Web/Events
-use virtual_dom::builder::on;
-use virtual_dom::builder::Attribute;
-use virtual_dom::{Callback, Value};
+use vdom::builder::on;
+use vdom::builder::Attribute;
+use vdom::{Callback, Value};
 
 macro_rules! declare_events {
     ( $(

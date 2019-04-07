@@ -1,5 +1,4 @@
-use virtual_dom as vdom;
-use vdom::{diff,Value};
+use vdom::{self,diff,Value};
 use web_sys::{self,Text,Node,Element,EventTarget};
 use wasm_bindgen::JsCast;
 use std::ops::Deref;

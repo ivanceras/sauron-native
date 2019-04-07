@@ -1,8 +1,8 @@
 //! https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 //!
-use virtual_dom::builder::attr;
-use virtual_dom::builder::Attribute;
-use virtual_dom::Value;
+use vdom::builder::attr;
+use vdom::builder::Attribute;
+use vdom::Value;
 
 macro_rules! declare_attributes {
     ( $(

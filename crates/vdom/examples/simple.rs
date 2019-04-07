@@ -1,5 +1,5 @@
-use virtual_dom::builder::*;
-use virtual_dom::diff;
+use vdom::builder::*;
+use vdom::diff;
 
 fn main() {
     let old = element(
