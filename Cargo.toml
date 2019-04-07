@@ -6,6 +6,7 @@ edition = "2018"
 
 [workspace]
 members = [
-    "crates/virtual-dom",
+    "crates/vdom",
     "crates/ui-backend",
+    "examples/isomorphic/client",
 ]
