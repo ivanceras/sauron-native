@@ -1,9 +1,9 @@
 //#![deny(warnings)]
 use console_error_panic_hook;
-use ui_backend::html::attributes::*;
-use ui_backend::html::events::*;
-use ui_backend::html::*;
-use ui_backend::*;
+use html_backend::html::attributes::*;
+use html_backend::html::events::*;
+use html_backend::html::*;
+use html_backend::*;
 use vdom::builder::*;
 use vdom::Event;
 use wasm_bindgen;

@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 vdom = { path = "../../../crates/vdom" }
-ui-backend = { path = "../../../crates/ui-backend" }
+html-backend = { path = "../../../crates/html-backend" }
 
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. It is slower than the default
