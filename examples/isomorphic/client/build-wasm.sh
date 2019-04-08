@@ -1,6 +1,8 @@
 
 #!/bin/bash
 
+. ./bootstrap.sh
+
 cd $(dirname $0)
 
 mkdir -p build/
