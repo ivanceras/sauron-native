@@ -110,3 +110,5 @@ impl_from!(i32 => I32);
 impl_from!(i64 => I64);
 impl_from!(i128 => I128);
 impl_from!(isize => Isize);
+impl_from!(f32 => F32);
+impl_from!(f64 => F64);
