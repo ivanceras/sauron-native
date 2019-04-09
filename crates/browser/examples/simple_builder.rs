@@ -1,6 +1,6 @@
-use html_backend::html::attributes::*;
-use html_backend::html::events::*;
-use html_backend::html::*;
+use browser::html::attributes::*;
+use browser::html::events::*;
+use browser::html::*;
 use vdom::builder::*;
 use vdom::diff;
 

@@ -10,7 +10,6 @@ impl<IN, F: Fn(IN) + 'static> From<F> for Callback<IN> {
         Callback(Rc::new(func))
     }
 }
-
 impl<IN> fmt::Debug for Callback<IN> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "||{{..}}")

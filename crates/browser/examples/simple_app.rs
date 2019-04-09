@@ -1,7 +1,7 @@
-use html_backend::html::attributes::*;
-use html_backend::html::events::*;
-use html_backend::html::*;
-use html_backend::DomUpdater;
+use browser::html::attributes::*;
+use browser::html::events::*;
+use browser::html::*;
+use browser::DomUpdater;
 use vdom::builder::*;
 
 fn main() {
