@@ -34,6 +34,7 @@ pub struct Client {
 
 pub struct State {
     click_count: u32,
+    time: Date,
     listeners: Vec<Box<(Fn() -> () + 'static)>>,
 }
 
@@ -44,6 +45,7 @@ pub struct App {
 #[derive(Debug)]
 pub enum Msg {
     Click,
+    Clock,
 }
 
 // Expose globals from JS for things such as request animation frame
@@ -74,12 +76,7 @@ impl Client {
 
         let app = App::new(1);
 
-        app.store.borrow_mut().subscribe(Box::new(|| {
-            web_sys::console::log_1(&"Updating state".into());
-            global_js.update();
-        }));
-
-        setup_clock();
+        //setup_clock();
         let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
         let client = Client { app, dom_updater };
         client
@@ -96,6 +93,7 @@ impl State {
     pub fn new(count: u32) -> State {
         State {
             click_count: count,
+            time: Date::new_0(),
             listeners: vec![],
         }
     }
@@ -108,6 +106,7 @@ impl State {
         console::log_1(&format!("Msg got here: {:?}", msg).into());
         match msg {
             Msg::Click => self.increment_click(),
+            Msg::Clock => self.update_time(),
         };
 
         // Whenever we update state we'll let all of our state listeners know that state was
@@ -125,6 +124,14 @@ impl State {
     fn increment_click(&mut self) {
         self.click_count += 1;
     }
+
+    fn update_time(&mut self) {
+        self.time = Date::new_0();
+    }
+
+    fn time(&self) -> &Date {
+        &self.time
+    }
 }
 
 impl App {
@@ -132,8 +139,20 @@ impl App {
         let mut state = State::new(count);
         state.subscribe(Box::new(|| {
             web_sys::console::log_1(&"Updating state".into());
+            global_js.update();
         }));
         let store = Rc::new(RefCell::new(state));
+
+        let store_clone = Rc::clone(&store);
+
+        let a = Closure::wrap(
+            Box::new(move || store_clone.borrow_mut().msg(&Msg::Clock)) as Box<dyn Fn()>
+        );
+        window().set_interval_with_callback_and_timeout_and_arguments_0(
+            a.as_ref().unchecked_ref(),
+            1000,
+        );
+        a.forget();
 
         App { store }
     }
@@ -141,11 +160,16 @@ impl App {
     fn view(&self) -> vdom::Node {
         let store_clone = Rc::clone(&self.store);
         let count: u32 = self.store.borrow().click_count();
+        let current_time = self
+            .store
+            .borrow()
+            .time()
+            .to_locale_string("en-GB", &JsValue::undefined());
         div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
             [
                 div([], [text(format!("Hello world! {}", count))]),
-                div([id("current-time")], []),
+                div([id("current-time")], [text(current_time)]),
                 div(
                     [],
                     [button(
@@ -210,40 +234,4 @@ impl App {
             ],
         )
     }
-}
-
-// Set up a clock on our page and update it each second to ensure it's got
-// an accurate date.
-//
-// Note the usage of `Closure` here because the closure is "long lived",
-// basically meaning it has to persist beyond the call to this one function.
-// Also of note here is the `.as_ref().unchecked_ref()` chain, which is who
-// you can extract `&Function`, what `web-sys` expects, from a `Closure`
-// which only hands you `&JsValue` via `AsRef`.
-fn setup_clock() -> Result<(), JsValue> {
-    //update_time(&current_time);
-    let a = Closure::wrap(Box::new(move || update_time()) as Box<dyn Fn()>);
-    window()
-        .set_interval_with_callback_and_timeout_and_arguments_0(a.as_ref().unchecked_ref(), 1000)?;
-    fn update_time() {
-        let current_time = document()
-            .get_element_by_id("current-time")
-            .expect("should have #current-time on the page");
-        current_time.set_inner_html(&String::from(
-            Date::new_0().to_locale_string("en-GB", &JsValue::undefined()),
-        ));
-    }
-
-    // The instances of `Closure` that we created will invalidate their
-    // corresponding JS callback whenever they're dropped, so if we were to
-    // normally return from `run` then both of our registered closures will
-    // raise exceptions when invoked.
-    //
-    // Normally we'd store these handles to later get dropped at an appropriate
-    // time but for now we want these to be global handlers so we use the
-    // `forget` method to drop them without invalidating the closure. Note that
-    // this is leaking memory in Rust, so this should be done judiciously!
-    a.forget();
-
-    Ok(())
 }
