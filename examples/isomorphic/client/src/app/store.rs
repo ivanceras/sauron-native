@@ -1,5 +1,5 @@
-use web_sys::console;
 use js_sys::Date;
+use web_sys::console;
 
 #[derive(Debug)]
 pub enum Msg {

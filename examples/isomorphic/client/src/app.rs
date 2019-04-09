@@ -1,4 +1,3 @@
-
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
@@ -17,8 +16,7 @@ use web_sys;
 use web_sys::console;
 use web_sys::{Document, Element, Window};
 
-use store::{Store,Msg};
-
+use store::{Msg, Store};
 
 mod store;
 
@@ -27,7 +25,6 @@ pub struct App {
 }
 
 impl App {
-
     pub fn new(count: u32) -> App {
         let mut store = Store::new(count);
         store.subscribe(Box::new(|| {
@@ -40,12 +37,10 @@ impl App {
         let clock = Closure::wrap(
             Box::new(move || store_clone.borrow_mut().msg(&Msg::Clock)) as Box<dyn Fn()>
         );
-        /*
         window().set_interval_with_callback_and_timeout_and_arguments_0(
             clock.as_ref().unchecked_ref(),
             1000,
         );
-        */
         clock.forget();
 
         App { store: rc_store }

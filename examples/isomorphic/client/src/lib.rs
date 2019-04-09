@@ -36,8 +36,6 @@ pub struct Client {
     dom_updater: DomUpdater,
 }
 
-
-
 // Expose globals from JS for things such as request animation frame
 // that web sys doesn't seem to have yet
 //
@@ -52,7 +50,6 @@ extern "C" {
     #[wasm_bindgen(method)]
     pub fn update(this: &GlobalJS);
 }
-
 
 #[wasm_bindgen]
 impl Client {
@@ -77,5 +74,3 @@ impl Client {
         self.dom_updater.update(vdom);
     }
 }
-
-
