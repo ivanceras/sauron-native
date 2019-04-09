@@ -94,6 +94,19 @@ where
             .add_attributes(attrs),
     )
 }
+#[inline]
+pub fn element_with_namespace<'a, A, C>(tag: &str, namespace: &str, attrs: A, children: C) -> Node
+where
+    C: AsRef<[Node]>,
+    A: AsRef<[Attribute<'a>]>,
+{
+    Node::Element(
+        Element::new(tag)
+            .namespace(namespace)
+            .add_children(children)
+            .add_attributes(attrs),
+    )
+}
 
 /// Create a textnode element
 #[inline]
