@@ -30,7 +30,7 @@ pub struct Client {
 }
 
 pub struct State {
-    click_count: Rc<Cell<u32>>,
+    click_count: u32,
     listeners: Vec<Box<(Fn() -> () + 'static)>>,
 }
 
@@ -78,30 +78,22 @@ impl Client {
             global_js.update();
         }));
 
-        let dom_updater = DomUpdater::new_replace_mount(
-            app.view(),
-            root_node,
-        );
-        let client = Client {
-            app, 
-            dom_updater,
-        };
+        let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
+        let client = Client { app, dom_updater };
         client
     }
-
 
     pub fn render(&mut self) {
         console::log_1(&"in render function".into());
         let vdom = self.app.view();
         self.dom_updater.update(vdom);
     }
-
 }
 
 impl State {
     pub fn new(count: u32) -> State {
         State {
-            click_count: Rc::new(Cell::new(count)),
+            click_count: count,
             listeners: vec![],
         }
     }
@@ -125,11 +117,11 @@ impl State {
     }
 
     pub fn click_count(&self) -> u32 {
-        self.click_count.get()
+        self.click_count
     }
 
     fn increment_click(&mut self) {
-        self.click_count.set(self.click_count.get() + 1);
+        self.click_count += 1;
     }
 }
 
