@@ -58,12 +58,11 @@ impl Element {
     }
 
     /// set the namespace of this element
-    pub fn namespace(mut self, namespace: &str)-> Self {
+    pub fn namespace(mut self, namespace: &str) -> Self {
         self.namespace = Some(namespace.to_string());
         self
     }
 }
-
 
 impl fmt::Display for Element {
     // Turn a Element and all of it's children (recursively) into an HTML string

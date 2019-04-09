@@ -24,6 +24,28 @@ impl From<Callback<Event>> for AttribValue {
     }
 }
 
+impl Node {
+    fn as_element(&mut self) -> Option<&mut Element> {
+        match *self {
+            Node::Element(ref mut element) => Some(element),
+            Node::Text(_) => None,
+        }
+    }
+
+    /// Append children to this element
+    pub fn children<C>(mut self, children: C) -> Self
+    where
+        C: AsRef<[Node]>,
+    {
+        if let Some(element) = self.as_element() {
+            for child in children.as_ref() {
+                element.children.push(child.clone());
+            }
+        }
+        self
+    }
+}
+
 impl Element {
     /// add the attribute values or events callback
     /// into this element
