@@ -172,8 +172,8 @@ impl<T> CreatedNode<T> {
 
                     //FIXME: closures are forgotten here in order to pass the wasm_bindgen_test
                     // in tests/create_element/click_event
-                    //closures.get_mut(&unique_id).unwrap().push(closure_wrap);
-                    closure_wrap.forget();
+                    closures.get_mut(&unique_id).unwrap().push(closure_wrap);
+                    //closure_wrap.forget();
                 },
             );
         }

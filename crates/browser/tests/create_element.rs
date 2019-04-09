@@ -65,22 +65,31 @@ fn div_with_attributes() {
 // the event listener.
 #[wasm_bindgen_test]
 fn click_event() {
+    console_error_panic_hook::set_once();
+
+    let document = web_sys::window().unwrap().document().unwrap();
+    let body = document.body().unwrap();
+
     let clicked = Rc::new(Cell::new(false));
     let clicked_clone = Rc::clone(&clicked);
 
+    let elem_id = "click-on-div";
     let vdiv = div(
-        [onclick(move |_ev: vdom::Event| {
-            console::log_1(&"clicked event called".into());
-            clicked_clone.set(true);
-        })],
+        [
+            id(elem_id),
+            onclick(move |_ev: vdom::Event| {
+                console::log_1(&"clicked event called".into());
+                clicked_clone.set(true);
+            }),
+        ],
         [],
     );
 
+    let mut dom_updater = DomUpdater::new_append_to_mount(vdiv, &body);
+
     let click_event = Event::new("click").unwrap();
 
-    let div: Node = CreatedNode::<Node>::create_dom_node(&vdiv)
-        .node
-        .unchecked_into();
+    let div = document.get_element_by_id(&elem_id).unwrap();
 
     (EventTarget::from(div))
         .dispatch_event(&click_event)
