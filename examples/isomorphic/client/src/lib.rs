@@ -1,4 +1,4 @@
-#![deny(warnings)]
+//#![deny(warnings)]
 #![deny(clippy::all)]
 use browser::html::attributes::*;
 use browser::html::events::*;
@@ -7,6 +7,7 @@ use browser::*;
 use console_error_panic_hook;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+use std::sync::Mutex;
 use vdom::builder::*;
 use vdom::Event;
 use wasm_bindgen;
@@ -20,10 +21,12 @@ use web_sys::console;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+use lazy_static::lazy_static;
+
 #[wasm_bindgen]
 pub struct Client {
     app: App,
-    pub dom_updater: DomUpdater,
+    dom_updater: DomUpdater,
 }
 
 pub struct State {
@@ -40,6 +43,21 @@ pub enum Msg {
     Click,
 }
 
+// Expose globals from JS for things such as request animation frame
+// that web sys doesn't seem to have yet
+//
+// TODO: Remove this and use RAF from Rust
+// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
+#[wasm_bindgen]
+extern "C" {
+    pub type GlobalJS;
+
+    pub static global_js: GlobalJS;
+
+    #[wasm_bindgen(method)]
+    pub fn update(this: &GlobalJS);
+}
+
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
@@ -54,20 +72,30 @@ impl Client {
             .unwrap();
 
         let app = App::new(1);
-        let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
 
-        let mut client = Client { app, dom_updater };
-        client.update();
+        app.store.borrow_mut().subscribe(Box::new(|| {
+            web_sys::console::log_1(&"Updating state".into());
+            global_js.update();
+        }));
+
+        let dom_updater = DomUpdater::new_replace_mount(
+            app.view(),
+            root_node,
+        );
+        let client = Client {
+            app, 
+            dom_updater,
+        };
         client
     }
 
-    fn update(&mut self) {
-        self.app.store.borrow_mut().subscribe(Box::new(|| {
-            web_sys::console::log_1(&"Updating state from client".into());
-            //TODO: make it possible to call here
-            //self.dom_updater.update(self.app.view());
-        }));
+
+    pub fn render(&mut self) {
+        console::log_1(&"in render function".into());
+        let vdom = self.app.view();
+        self.dom_updater.update(vdom);
     }
+
 }
 
 impl State {
@@ -91,6 +119,7 @@ impl State {
         // Whenever we update state we'll let all of our state listeners know that state was
         // updated
         for callback in self.listeners.iter() {
+            console::log_1(&"Calling callback...".into());
             callback();
         }
     }
@@ -117,10 +146,11 @@ impl App {
 
     fn view(&self) -> vdom::Node {
         let store_clone = Rc::clone(&self.store);
+        let count: u32 = self.store.borrow().click_count();
         div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
             [
-                div([], [text("Hello world!")]),
+                div([], [text(format!("Hello world! {}", count))]),
                 div(
                     [],
                     [button(

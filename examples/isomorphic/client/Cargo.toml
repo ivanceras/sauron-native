@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 console_error_panic_hook = "0.1"
 vdom = { path = "../../../crates/vdom" }
 browser = { path = "../../../crates/browser" }
+lazy_static = "1.0"
 
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. It is slower than the default
