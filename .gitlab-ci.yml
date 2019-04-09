@@ -1,9 +1,6 @@
 stages:
   - build
 
-services:
-  - node:latest
-
 rust-latest:
   stage: build
   image: rust:latest
@@ -19,7 +16,9 @@ rust-nightly:
   image: rustlang/rust:nightly
   before_script:
       - cargo install wasm-pack
+      - curl --retry 5 -LO https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
+      - tar xf geckodriver-v0.21.0-linux64.tar.gz
   script:
     - cargo build --all --verbose
     - cargo test --all --verbose
-    - wasm-pack test crates/browser --node
+    - GECKODRIVER=$(pwd)/geckodriver ./test.sh
