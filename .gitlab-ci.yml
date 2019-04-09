@@ -15,7 +15,12 @@ rust-nightly:
   stage: build
   image: rustlang/rust:nightly
   before_script:
+      - uname -a
       - cargo install wasm-pack
+      - apt search firefox
+      - add-apt-repository ppa:mozillateam/firefox-stable
+      - apt update
+      - apt search firefox
       - apt install -y firefox
       - curl --retry 5 -LO https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
       - tar xf geckodriver-v0.24.0-linux64.tar.gz
