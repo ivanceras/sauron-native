@@ -2,7 +2,7 @@ stages:
   - build
 
 services:
-  - firefox: latest
+  - firefox:latest
 
 rust-latest:
   stage: build
