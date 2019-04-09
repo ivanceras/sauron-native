@@ -32,14 +32,14 @@ pub struct Client {
     dom_updater: DomUpdater,
 }
 
-pub struct State {
+pub struct Store {
     click_count: u32,
     time: Date,
     listeners: Vec<Box<(Fn() -> () + 'static)>>,
 }
 
 pub struct App {
-    pub store: Rc<RefCell<State>>,
+    pub store: Rc<RefCell<Store>>,
 }
 
 #[derive(Debug)]
@@ -76,7 +76,6 @@ impl Client {
 
         let app = App::new(1);
 
-        //setup_clock();
         let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
         let client = Client { app, dom_updater };
         client
@@ -89,9 +88,9 @@ impl Client {
     }
 }
 
-impl State {
-    pub fn new(count: u32) -> State {
-        State {
+impl Store {
+    pub fn new(count: u32) -> Store {
+        Store {
             click_count: count,
             time: Date::new_0(),
             listeners: vec![],
@@ -136,25 +135,24 @@ impl State {
 
 impl App {
     fn new(count: u32) -> App {
-        let mut state = State::new(count);
-        state.subscribe(Box::new(|| {
-            web_sys::console::log_1(&"Updating state".into());
+        let mut store = Store::new(count);
+        store.subscribe(Box::new(|| {
+            web_sys::console::log_1(&"Updating store".into());
             global_js.update();
         }));
-        let store = Rc::new(RefCell::new(state));
+        let rc_store = Rc::new(RefCell::new(store));
+        let store_clone = Rc::clone(&rc_store);
 
-        let store_clone = Rc::clone(&store);
-
-        let a = Closure::wrap(
+        let clock = Closure::wrap(
             Box::new(move || store_clone.borrow_mut().msg(&Msg::Clock)) as Box<dyn Fn()>
         );
         window().set_interval_with_callback_and_timeout_and_arguments_0(
-            a.as_ref().unchecked_ref(),
+            clock.as_ref().unchecked_ref(),
             1000,
         );
-        a.forget();
+        clock.forget();
 
-        App { store }
+        App { store: rc_store }
     }
 
     fn view(&self) -> vdom::Node {
