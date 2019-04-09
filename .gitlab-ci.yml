@@ -4,13 +4,19 @@ stages:
 rust-latest:
   stage: build
   image: rust:latest
+  before_script:
+      - cargo install wasm-pack
   script:
     - cargo build --all --verbose
     - cargo test --all --verbose
+  allow_failure: true
 
 rust-nightly:
   stage: build
   image: rustlang/rust:nightly
+  before_script:
+      - cargo install wasm-pack
   script:
     - cargo build --all --verbose
     - cargo test --all --verbose
+    - ./test.sh
