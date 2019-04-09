@@ -7,7 +7,7 @@ edition = "2018"
 [workspace]
 members = [
     "crates/vdom",
-    "crates/html-backend",
+    "crates/browser",
     "examples/isomorphic/client",
 ]
 
