@@ -12,6 +12,7 @@ use vdom::builder::*;
 use vdom::Event;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::console;
 
@@ -65,9 +66,7 @@ impl Client {
         console_error_panic_hook::set_once();
         console::log_1(&format!("What to do with this initial state: {}", initial_state).into());
 
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        let root_node = document
+        let root_node = document()
             .get_element_by_id("isomorphic-rust-web-app")
             .unwrap();
 
@@ -88,6 +87,25 @@ impl Client {
         let vdom = self.app.view();
         self.dom_updater.update(vdom);
     }
+}
+fn window() -> web_sys::Window {
+    web_sys::window().expect("no global `window` exists")
+}
+
+fn request_animation_frame(f: &Closure<FnMut()>) {
+    window()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
+}
+
+fn document() -> web_sys::Document {
+    window()
+        .document()
+        .expect("should have a document on window")
+}
+
+fn body() -> web_sys::HtmlElement {
+    document().body().expect("document should have a body")
 }
 
 impl State {
