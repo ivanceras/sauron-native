@@ -1,6 +1,9 @@
 stages:
   - build
 
+services:
+  - node:latest
+
 rust-latest:
   stage: build
   image: rust:latest
@@ -19,4 +22,4 @@ rust-nightly:
   script:
     - cargo build --all --verbose
     - cargo test --all --verbose
-    - ./test.sh
+    - wasm-pack test crates/browser --node
