@@ -96,3 +96,12 @@ declare_attributes! {
     key;
     placeholder;
 }
+
+// svg attributes
+
+declare_attributes! {
+    cx;
+    cy;
+    r;
+    xmlns;
+}
