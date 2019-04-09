@@ -3,11 +3,13 @@ use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
 use browser::*;
+use std::cell::Cell;
+use std::rc::Rc;
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use web_sys::{Element, Event, EventTarget, MouseEvent};
+use web_sys::{console, Element, Event, EventTarget, MouseEvent, Node};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -53,4 +55,36 @@ fn div_with_attributes() {
     assert!(div.class_list().contains("classes"));;
 
     assert_eq!(div.class_list().length(), 2);
+}
+
+//FIXME: this fails because the closure is already dropped
+// when the event is dispatched
+// TODO: This now passed, when `closure_wrap.forget()` is called
+// in `DomUpdater.create_element_node`, but then the closures
+// will be leaking and there is no way to remove that closure from
+// the event listener.
+#[wasm_bindgen_test]
+fn click_event() {
+    let clicked = Rc::new(Cell::new(false));
+    let clicked_clone = Rc::clone(&clicked);
+
+    let vdiv = div(
+        [onclick(move |_ev: vdom::Event| {
+            console::log_1(&"clicked event called".into());
+            clicked_clone.set(true);
+        })],
+        [],
+    );
+
+    let click_event = Event::new("click").unwrap();
+
+    let div: Node = CreatedNode::<Node>::create_dom_node(&vdiv)
+        .node
+        .unchecked_into();
+
+    (EventTarget::from(div))
+        .dispatch_event(&click_event)
+        .unwrap();
+
+    assert_eq!(*clicked, Cell::new(true));
 }
