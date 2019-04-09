@@ -1,6 +1,9 @@
 stages:
   - build
 
+services:
+  - firefox: latest
+
 rust-latest:
   stage: build
   image: rust:latest
