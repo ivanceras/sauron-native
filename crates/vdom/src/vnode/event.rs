@@ -10,6 +10,7 @@ pub enum Event {
     MouseEvent(MouseEvent),
     KeyEvent(KeyEvent),
     InputEvent(InputEvent),
+    Generic(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
