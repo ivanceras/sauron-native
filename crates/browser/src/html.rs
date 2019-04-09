@@ -35,7 +35,7 @@ macro_rules! builder_constructors {
                 where C: AsRef<[Node]>,
                       A: AsRef<[Attribute<'a>]>,
                 {
-                    element(stringify!($name), attrs, children)
+                    element_with_namespace(stringify!($name), $namespace, attrs, children)
                 }
         )*
     }
@@ -64,10 +64,13 @@ builder_constructors! {
     /// [`<meta>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta)
     /// element.
     meta;
+    // FIXME: conflicts with style attribute when both are imported
+    /*
     /// Build a
     /// [`<style>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/style)
     /// element.
     style;
+    */
     /// Build a
     /// [`<title>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/title)
     /// element.
@@ -577,6 +580,14 @@ builder_constructors! {
     /// [`<rect>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect)
     /// element.
     rect <> "http://www.w3.org/2000/svg";
+
+}
+
+builder_constructors! {
+    defs <> "http://www.w3.org/2000/svg";
+    stop <> "http://www.w3.org/2000/svg";
+    #[allow(non_snake_case)]
+    radialGradient <> "http://www.w3.org/2000/svg";
 }
 
 #[cfg(test)]

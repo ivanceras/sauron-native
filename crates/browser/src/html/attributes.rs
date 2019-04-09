@@ -98,10 +98,16 @@ declare_attributes! {
 }
 
 // svg attributes
-
 declare_attributes! {
     cx;
     cy;
     r;
     xmlns;
+    offset;
+}
+
+// sizing attribtes
+declare_attributes! {
+    width;
+    height;
 }
