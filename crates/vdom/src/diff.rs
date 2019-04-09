@@ -71,8 +71,6 @@ fn diff_recursive<'a, 'b>(
             let listener_patches = diff_event_listener(old_element, new_element, cur_node_idx);
             patches.extend(listener_patches);
 
-            //TODO: also diff the events
-
             let old_child_count = old_element.children.len();
             let new_child_count = new_element.children.len();
 
@@ -104,7 +102,6 @@ fn diff_recursive<'a, 'b>(
         }
     };
 
-    //    new_root.create_element()
     patches
 }
 

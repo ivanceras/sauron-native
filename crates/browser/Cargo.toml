@@ -30,3 +30,18 @@ features = [
     "CharacterData",
     "Window",
 ]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2.33"
+console_error_panic_hook = "0.1.5"
+
+[dev-dependencies.web-sys]
+version = "0.3"
+features = [
+    "DomTokenList",
+    "HtmlInputElement",
+    "Event",
+    "MouseEvent",
+    "InputEvent",
+    "console",
+]
