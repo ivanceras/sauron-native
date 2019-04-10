@@ -1,6 +1,6 @@
 use browser::html::attributes::*;
-use browser::svg::*;
 use browser::svg::attributes::*;
+use browser::svg::*;
 use vdom::Node;
 
 #[test]

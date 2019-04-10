@@ -2,7 +2,7 @@ use std::convert::AsRef;
 use vdom::builder::*;
 use vdom::Node;
 
-pub use vdom::builder::{attr,text,on};
+pub use vdom::builder::{attr, on, text};
 #[macro_use]
 pub mod attributes;
 pub mod events;
@@ -546,7 +546,6 @@ builder_constructors! {
     /// element.
     template;
 }
-
 
 #[cfg(test)]
 mod tests {

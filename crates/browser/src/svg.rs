@@ -1,7 +1,7 @@
 use vdom::Node;
 
-pub use vdom::builder::{element, element_with_namespace, attr};
 use vdom::builder::Attribute;
+pub use vdom::builder::{attr, element, element_with_namespace};
 
 pub mod attributes;
 

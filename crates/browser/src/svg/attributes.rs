@@ -1,4 +1,3 @@
-
 pub use vdom::builder::attr;
 use vdom::builder::Attribute;
 use vdom::Value;
@@ -23,18 +22,28 @@ declare_attributes! {
 }
 // attributes that has dash
 declare_attributes! {
+
     #[allow(non_snake_case)]
     strokeWidth => "stroke-width";
+
     #[allow(non_snake_case)]
     stopColor => "stop-color";
+
     #[allow(non_snake_case)]
     stopOpacity => "stop-opacity";
+
     #[allow(non_snake_case)]
     strokeLinecap => "stroke-linecap";
+
     #[allow(non_snake_case)]
     strokeDasharray => "stroke-dasharray";
+
     #[allow(non_snake_case)]
     strokeDashoffset => "stroke-dashoffset";
+
     #[allow(non_snake_case)]
     transformOrigin => "transform-origin";
+
+    #[allow(non_snake_case)]
+    strokeOpacity => "stroke-opacity";
 }

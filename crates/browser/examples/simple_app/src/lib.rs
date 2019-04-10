@@ -1,8 +1,8 @@
 use browser::html::attributes::*;
+use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
 use browser::DomUpdater;
-use browser::html::attributes::*;
 
 use wasm_bindgen::prelude::*;
 
@@ -17,24 +17,26 @@ pub struct Client {
 /// ```
 ///
 #[wasm_bindgen]
-impl Client{
+impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Client {
         let html = div(
-            [
-                class("some-class"),
-                id("some-id"),
-                attr("data-id", 1),
-            ],
-            [input([class("client"), r#type("button"), value("Click me!"),
-                onclick(|_| {
-                    browser::log("i've been clicked");
-                }),
-            ], [])],
+            [class("some-class"), id("some-id"), attr("data-id", 1)],
+            [input(
+                [
+                    class("client"),
+                    r#type("button"),
+                    value("Click me!"),
+                    onclick(|_| {
+                        browser::log("i've been clicked");
+                    }),
+                ],
+                [],
+            )],
         );
         browser::log("hello from here!");
         let body = browser::body();
         let dom_updater = DomUpdater::new_append_to_mount(html, &body);
-        Client{dom_updater}
+        Client { dom_updater }
     }
 }

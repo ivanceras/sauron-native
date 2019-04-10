@@ -22,6 +22,6 @@ pub fn body() -> web_sys::HtmlElement {
     document().body().expect("document should have a body")
 }
 
-pub fn log(s: &str){
+pub fn log(s: &str) {
     web_sys::console::log_1(&s.into());
 }

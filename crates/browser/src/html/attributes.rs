@@ -97,14 +97,13 @@ declare_attributes! {
     placeholder;
 }
 
-
 // sizing attribtes
 declare_attributes! {
     width;
     height;
 }
 
-// attributes with dash 
+// attributes with dash
 declare_attributes! {
 
     #[allow(non_snake_case)]
@@ -113,4 +112,3 @@ declare_attributes! {
     #[allow(non_snake_case)]
     fontSize => "font-size";
 }
-
