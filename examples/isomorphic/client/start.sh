@@ -8,6 +8,6 @@ if . ./build-wasm.sh; then
        cargo install basic-http-server
     fi
 
-    basic-http-server ./build/
+    basic-http-server ./build/ -a 0.0.0.0:4001 
 
 fi

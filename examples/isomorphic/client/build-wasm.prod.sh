@@ -1,13 +1,14 @@
 
 #!/bin/bash
 
-. ./bootstrap.sh
 
 cd $(dirname $0)
 
 rm -rf dist/
 mkdir -p dist/
 
-cp static/index.html dist/
+. ./copy_files.sh
 
-wasm-pack build --target no-modules --no-typescript --out-dir ./dist --release -- --features wee_alloc
+if . ./bootstrap.sh; then
+    wasm-pack build --target no-modules --no-typescript --out-dir ./dist --release -- --features wee_alloc
+fi
