@@ -1,6 +1,6 @@
 //! https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 //!
-use vdom::builder::attr;
+pub use vdom::builder::attr;
 use vdom::builder::Attribute;
 use vdom::Value;
 

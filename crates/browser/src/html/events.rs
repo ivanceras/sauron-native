@@ -1,5 +1,5 @@
 //! https://developer.mozilla.org/en-US/docs/Web/Events
-use vdom::builder::on;
+pub use vdom::builder::on;
 use vdom::builder::Attribute;
 use vdom::{Callback, Event};
 

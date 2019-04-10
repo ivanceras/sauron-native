@@ -8,7 +8,6 @@ use web_sys::{self, Element, EventTarget, Node, Text};
 use apply_patches::patch;
 use std::collections::HashMap;
 use std::sync::Mutex;
-use web_sys::console;
 use web_sys::{Event, KeyboardEvent, MouseEvent};
 use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 
@@ -114,19 +113,9 @@ impl<T> CreatedNode<T> {
 
                     let closure_wrap: Closure<FnMut(Event)> =
                         Closure::wrap(Box::new(move |event: Event| {
-                            console::log_1(
-                                &format!("This is called with event name: {}", event.type_())
-                                    .into(),
-                            );
-
                             let mouse_event: Option<&MouseEvent> = event.dyn_ref();
                             let key_event: Option<&KeyboardEvent> = event.dyn_ref();
                             let target: Option<EventTarget> = event.target();
-                            console::log_1(
-                                &format!("mouse_event: {}", mouse_event.is_some()).into(),
-                            );
-                            console::log_1(&format!("key_event: {}", key_event.is_some()).into());
-                            console::log_1(&format!("target: {}", target.is_some()).into());
 
                             if let Some(mouse_event) = mouse_event {
                                 callback_clone.emit(vdom::Event::MouseEvent(vdom::MouseEvent {
@@ -157,7 +146,6 @@ impl<T> CreatedNode<T> {
                                         },
                                     ));
                                 } else {
-                                    console::log_1(&"Calling here with generic event".into());
                                     callback_clone.emit(vdom::Event::Generic(event.type_()));
                                 }
                             }
