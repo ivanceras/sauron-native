@@ -1,7 +1,6 @@
 
 #!/bin/bash
 
-. ./bootstrap.sh
 
 cd $(dirname $0)
 
@@ -10,4 +9,6 @@ mkdir -p dist/
 
 cp static/index.html build/
 
-wasm-pack build --target no-modules --no-typescript --out-dir ./build
+if . ./bootstrap.sh; then
+    wasm-pack build --target no-modules --no-typescript --out-dir ./build
+fi
