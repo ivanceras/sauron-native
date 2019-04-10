@@ -10,6 +10,6 @@ pub use vnode::builder;
 pub use callback::Callback;
 pub use diff::diff;
 pub use patch::Patch;
-pub use view::View;
+pub use view::{View,Widget,Component};
 pub use vnode::{Element, Node, Text, Value};
 pub use vnode::{Event, InputEvent, KeyEvent, MouseEvent};
