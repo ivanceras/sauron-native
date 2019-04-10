@@ -104,3 +104,13 @@ declare_attributes! {
     height;
 }
 
+// attributes with dash 
+declare_attributes! {
+
+    #[allow(non_snake_case)]
+    fontFamily => "font-family";
+
+    #[allow(non_snake_case)]
+    fontSize => "font-size";
+}
+
