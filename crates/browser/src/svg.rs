@@ -51,6 +51,7 @@ builder_constructors! {
     defs <> "http://www.w3.org/2000/svg";
     stop <> "http://www.w3.org/2000/svg";
     g <> "http://www.w3.org/2000/svg";
+    tspan <> "http://www.w3.org/2000/svg";
     #[allow(non_snake_case)]
     radialGradient <> "http://www.w3.org/2000/svg";
 }
