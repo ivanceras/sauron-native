@@ -8,6 +8,7 @@ edition = "2018"
 members = [
     "crates/vdom",
     "crates/browser",
+    "crates/browser/examples/simple_app",
     "crates/ui-orbtk",
     "examples/isomorphic/client",
 ]

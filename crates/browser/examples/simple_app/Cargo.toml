@@ -1,0 +1,14 @@
+
+[package]
+name = "simple_app"
+version = "0.1.0"
+authors = ["lee"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+vdom = { path = "../../../vdom" }
+browser = { path = "../../../browser" }
+wasm-bindgen = "0.2.40"
