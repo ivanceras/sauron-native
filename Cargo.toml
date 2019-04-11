@@ -9,8 +9,11 @@ members = [
     "crates/vdom",
     "crates/browser",
     "crates/browser/examples/simple_app",
-    #"crates/ui-orbtk",
     "examples/isomorphic/client",
+]
+
+exclude = [
+    "crates/ui-orbtk",
 ]
 
 #[profile.release]
