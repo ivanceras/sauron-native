@@ -117,7 +117,7 @@ where
     )
 }
 #[inline]
-pub fn element_with_namespace<'a, A, C>(tag: &str, namespace: &str, attrs: A, children: C) -> Node
+pub fn element_ns<'a, A, C>(tag: &str, namespace: &str, attrs: A, children: C) -> Node
 where
     C: AsRef<[Node]>,
     A: AsRef<[Attribute<'a>]>,
