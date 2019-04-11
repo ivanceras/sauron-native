@@ -43,8 +43,7 @@ fn patches_dom() {
 fn updates_active_closure_on_replace() {
     console_error_panic_hook::set_once();
 
-    let document = web_sys::window().unwrap().document().unwrap();
-    let body = document.body().unwrap();
+    let body = browser::body();
 
     let old = div([], []);
     let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
@@ -78,7 +77,61 @@ fn updates_active_closure_on_replace() {
     assert_eq!(&*text.borrow(), "Start Text");
 
     // After dispatching the oninput event our `text` should have a value of the input elements value.
-    let input = document.get_element_by_id(&elem_id).unwrap();
+    let input = browser::document().get_element_by_id(&elem_id).unwrap();
+    web_sys::EventTarget::from(input)
+        .dispatch_event(&input_event)
+        .unwrap();
+
+    assert_eq!(&*text.borrow(), "End Text");
+}
+
+// When you replace a DOM node with another DOM node we need to make sure that the closures
+// from the new DOM node are stored by the DomUpdater otherwise they'll get dropped and
+// won't work.
+#[wasm_bindgen_test]
+fn updates_active_closures_on_append() {
+    console_error_panic_hook::set_once();
+
+    let body = browser::body();
+
+    let old = div([], []);
+    let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
+
+    let text = Rc::new(RefCell::new("Start Text".to_string()));
+    let text_clone = Rc::clone(&text);
+
+    let elem_id = "update-active-closures-on-append";
+
+    {
+        let append_node = div(
+            [],
+            [input(
+                [
+                    id(elem_id),
+                    oninput(move |event: vdom::Event| match event {
+                        vdom::Event::InputEvent(input) => {
+                            *text_clone.borrow_mut() = input.value;
+                        }
+                        _ => unimplemented!(),
+                    }),
+                    value("End Text"),
+                ],
+                [],
+            )],
+        );
+
+        // New node gets appended into the DOM.
+        // We are testing that we've stored this new node's closures even though `new` will be dropped
+        // at the end of this block.
+        dom_updater.update(append_node);
+    }
+
+    let input_event = InputEvent::new("input").unwrap();
+
+    assert_eq!(&*text.borrow(), "Start Text");
+
+    // After dispatching the oninput event our `text` should have a value of the input elements value.
+    let input = browser::document().get_element_by_id(elem_id).unwrap();
     web_sys::EventTarget::from(input)
         .dispatch_event(&input_event)
         .unwrap();

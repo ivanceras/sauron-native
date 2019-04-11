@@ -87,7 +87,7 @@ fn click_event() {
         [],
     );
 
-    let mut dom_updater = DomUpdater::new_append_to_mount(vdiv, &body);
+    let dom_updater = DomUpdater::new_append_to_mount(vdiv, &body);
 
     let click_event = Event::new("click").unwrap();
 

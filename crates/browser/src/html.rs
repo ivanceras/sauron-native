@@ -37,7 +37,7 @@ macro_rules! builder_constructors {
                 where C: AsRef<[Node]>,
                       A: AsRef<[Attribute<'a>]>,
                 {
-                    element_with_namespace(stringify!($name), $namespace, attrs, children)
+                    element_ns(stringify!($name), $namespace, attrs, children)
                 }
         )*
     }
