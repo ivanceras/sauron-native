@@ -1,3 +1,4 @@
+#![deny(warnings)]
 use browser::dom::CreatedNode;
 use browser::html::attributes::*;
 use browser::html::events::*;
@@ -11,7 +12,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use web_sys::{console, Element, Event, EventTarget, MouseEvent, Node};
+use web_sys::{console, Element, Event, EventTarget};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -87,7 +88,7 @@ fn click_event() {
         [],
     );
 
-    let dom_updater = DomUpdater::new_append_to_mount(vdiv, &body);
+    let _dom_updater = DomUpdater::new_append_to_mount(vdiv, &body);
 
     let click_event = Event::new("click").unwrap();
 

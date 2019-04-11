@@ -655,6 +655,8 @@ mod tests {
 
 #[cfg(test)]
 mod diff_tests_using_html_syntax {
+
+    #![deny(warnings)]
     use super::*;
     use attributes::*;
     use events::*;

@@ -1,4 +1,4 @@
-use browser::html::attributes::*;
+#![deny(warnings)]
 use browser::svg::attributes::*;
 use browser::svg::*;
 use vdom::Node;

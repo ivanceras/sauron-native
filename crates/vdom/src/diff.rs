@@ -221,6 +221,7 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a Node, cur_node_idx: &'b mut 
 
 #[cfg(test)]
 mod tests {
+    #![deny(warnings)]
     use super::*;
     use crate::*;
     use maplit::btreemap;

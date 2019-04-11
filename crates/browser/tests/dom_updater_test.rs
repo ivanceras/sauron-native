@@ -1,15 +1,14 @@
-use browser::dom::CreatedNode;
+#![deny(warnings)]
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
 use browser::*;
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 
-use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
-use web_sys::{console, Element, Event, EventTarget, InputEvent, MouseEvent, Node};
+use web_sys::InputEvent;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -32,7 +31,9 @@ fn patches_dom() {
     document
         .body()
         .unwrap()
-        .append_child(&dom_updater.root_node());
+        .append_child(&dom_updater.root_node())
+        .unwrap();
+
     assert_eq!(document.query_selector("#patched").unwrap().is_some(), true);
 }
 

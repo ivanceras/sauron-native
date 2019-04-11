@@ -1,7 +1,7 @@
+#![deny(warnings)]
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
-use vdom::builder::*;
 use vdom::diff;
 
 fn main() {

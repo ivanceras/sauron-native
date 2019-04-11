@@ -1,7 +1,7 @@
+#![deny(warnings)]
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
-use browser::*;
 use vdom::builder::*;
 use vdom::diff;
 use vdom::{Callback, Event, Patch, Text, Value};

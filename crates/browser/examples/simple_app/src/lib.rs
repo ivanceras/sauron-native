@@ -1,4 +1,4 @@
-use browser::html::attributes::*;
+#![deny(warnings)]
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct Client {
-    dom_updater: DomUpdater,
+    _dom_updater: DomUpdater,
 }
 
 /// Build using
@@ -36,7 +36,7 @@ impl Client {
         );
         browser::log("hello from here!");
         let body = browser::body();
-        let dom_updater = DomUpdater::new_append_to_mount(html, &body);
-        Client { dom_updater }
+        let _dom_updater = DomUpdater::new_append_to_mount(html, &body);
+        Client { _dom_updater }
     }
 }

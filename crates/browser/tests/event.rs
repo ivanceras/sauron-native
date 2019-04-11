@@ -1,8 +1,8 @@
+#![deny(warnings)]
 #![feature(proc_macro_hygiene)]
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
-use std::cell::Cell;
 use std::rc::Rc;
 use wasm_bindgen_test::*;
 
@@ -12,8 +12,6 @@ use browser::html::events::*;
 use browser::html::*;
 use browser::*;
 use std::cell::RefCell;
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use web_sys::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -44,7 +42,7 @@ fn on_input() {
     let input_event = InputEvent::new("input").unwrap();
 
     let body = browser::body();
-    let dom_updater = DomUpdater::new_append_to_mount(input, &body);
+    let _dom_updater = DomUpdater::new_append_to_mount(input, &body);
 
     let input_element = document().get_element_by_id(&elem_id).unwrap();
 
