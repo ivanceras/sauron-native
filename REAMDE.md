@@ -8,4 +8,4 @@ An attempt to create a true native, true cross platform UI for your rust applica
 - orbtk
 - libui-rs
 - html
-- ncurses
+- tui-rs 
