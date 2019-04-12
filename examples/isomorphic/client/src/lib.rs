@@ -4,6 +4,7 @@ use browser::*;
 use console_error_panic_hook;
 use vdom::Component;
 use vdom::View;
+use vdom::Widget;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use web_sys;
@@ -54,7 +55,9 @@ impl Client {
         let app = App::new(1);
 
         let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
-        Client { app, dom_updater }
+        let mut client = Client { app, dom_updater };
+        client.subscribe();
+        client
     }
 
     /// set up the app.store
@@ -68,6 +71,7 @@ impl Client {
 
     pub fn render(&mut self) {
         console::log_1(&"in render function".into());
+        self.app.update();
         let vdom = self.app.view();
         self.dom_updater.update(vdom);
     }

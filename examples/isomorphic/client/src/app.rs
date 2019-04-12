@@ -8,8 +8,6 @@ use vdom::Event;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys;
-use web_sys::console;
 
 use store::{Msg, Store};
 use vdom::Component;
@@ -76,9 +74,7 @@ impl View for App {
                     [],
                     [button(
                         [onclick(move |v: Event| {
-                            console::log_1(
-                                &format!("I've been clicked and the value is: {:#?}", v).into(),
-                            );
+                            browser::log(format!("I've been clicked and the value is: {:#?}", v));
                             store_clone.borrow_mut().msg(&Msg::Click);
                         })],
                         [text("Click me!")],
@@ -92,7 +88,7 @@ impl View for App {
                             [
                                 r#type("text"),
                                 oninput(|v: Event| {
-                                    console::log_1(&format!("input has input: {:#?}", v).into());
+                                    browser::log(format!("input has input: {:#?}", v));
                                 }),
                                 placeholder("Type here..."),
                             ],
@@ -107,9 +103,7 @@ impl View for App {
                         textarea(
                             [
                                 oninput(|v: Event| {
-                                    console::log_1(
-                                        &format!("textarea has changed: {:#?}", v).into(),
-                                    );
+                                    browser::log(format!("textarea has changed: {:#?}", v));
                                 }),
                                 placeholder("Description here..."),
                             ],
@@ -125,7 +119,7 @@ impl View for App {
                             [
                                 r#type("text"),
                                 onchange(|v: Event| {
-                                    console::log_1(&format!("input has changed: {:#?}", v).into());
+                                    browser::log(format!("input has changed: {:#?}", v));
                                 }),
                                 placeholder("Description here..."),
                             ],

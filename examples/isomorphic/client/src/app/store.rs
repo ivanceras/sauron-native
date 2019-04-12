@@ -1,5 +1,4 @@
 use js_sys::Date;
-use web_sys::console;
 
 #[derive(Debug)]
 pub enum Msg {
@@ -27,7 +26,6 @@ impl Store {
     }
 
     pub fn msg(&mut self, msg: &Msg) {
-        console::log_1(&format!("Msg got here: {:?}", msg).into());
         match msg {
             Msg::Click => self.increment_click(),
             Msg::Clock => self.update_time(),
@@ -36,7 +34,6 @@ impl Store {
         // Whenever we update state we'll let all of our state listeners know that state was
         // updated
         for callback in self.listeners.iter() {
-            console::log_1(&"Calling callback...".into());
             callback();
         }
     }
