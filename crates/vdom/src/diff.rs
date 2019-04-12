@@ -17,12 +17,8 @@ fn diff_recursive<'a, 'b>(
     cur_node_idx: &'b mut usize,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
-    let mut replace = false;
-
     // Different enum variants, replace!
-    if mem::discriminant(old) != mem::discriminant(new) {
-        replace = true;
-    }
+    let mut replace = mem::discriminant(old) != mem::discriminant(new);
 
     if let (Node::Element(old_element), Node::Element(new_element)) = (old, new) {
         // Replace if there are different element tags
@@ -86,7 +82,7 @@ fn diff_recursive<'a, 'b>(
 
             let min_count = min(old_child_count, new_child_count);
             for index in 0..min_count {
-                *cur_node_idx = *cur_node_idx + 1;
+                *cur_node_idx += 1;
                 let old_child = &old_element.children[index];
                 let new_child = &new_element.children[index];
                 patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
@@ -147,10 +143,10 @@ fn diff_attributes<'a, 'b>(
         };
     }
 
-    if add_attributes.len() > 0 {
+    if !add_attributes.is_empty() {
         patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
     }
-    if remove_attributes.len() > 0 {
+    if !remove_attributes.is_empty() {
         patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
     }
     patches
@@ -198,10 +194,10 @@ fn diff_event_listener<'a, 'b>(
         };
     }
 
-    if add_event_listener.len() > 0 {
+    if !add_event_listener.is_empty(){
         patches.push(Patch::AddEventListener(*cur_node_idx, add_event_listener));
     }
-    if remove_event_listener.len() > 0 {
+    if !remove_event_listener.is_empty(){
         patches.push(Patch::RemoveEventListener(
             *cur_node_idx,
             remove_event_listener,
@@ -210,7 +206,7 @@ fn diff_event_listener<'a, 'b>(
     patches
 }
 
-fn increment_node_idx_for_children<'a, 'b>(old: &'a Node, cur_node_idx: &'b mut usize) {
+fn increment_node_idx_for_children(old: &Node, cur_node_idx: &mut usize) {
     *cur_node_idx += 1;
     if let Node::Element(element_node) = old {
         for child in element_node.children.iter() {

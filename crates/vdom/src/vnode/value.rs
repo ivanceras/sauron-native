@@ -37,19 +37,19 @@ impl Value {
             Value::Bool(_) => None,
             Value::String(_v) => None,
             Value::Vec(_v) => None,
-            Value::U8(v) => Some(*v as f64),
-            Value::U16(v) => Some(*v as f64),
-            Value::U32(v) => Some(*v as f64),
+            Value::U8(v) => Some(f64::from(*v)),
+            Value::U16(v) => Some(f64::from(*v)),
+            Value::U32(v) => Some(f64::from(*v)),
             Value::U64(v) => Some(*v as f64),
             Value::U128(v) => Some(*v as f64),
-            Value::Usize(v) => Some(*v as f64),
-            Value::I8(v) => Some(*v as f64),
-            Value::I16(v) => Some(*v as f64),
-            Value::I32(v) => Some(*v as f64),
+            Value::Usize(v) => Some(* v as f64),
+            Value::I8(v) => Some(f64::from(*v)),
+            Value::I16(v) => Some(f64::from(*v)),
+            Value::I32(v) => Some(f64::from(*v)),
             Value::I64(v) => Some(*v as f64),
             Value::I128(v) => Some(*v as f64),
             Value::Isize(v) => Some(*v as f64),
-            Value::F32(v) => Some(*v as f64),
+            Value::F32(v) => Some(f64::from(*v)),
             Value::F64(v) => Some(*v),
         }
     }
@@ -64,7 +64,7 @@ impl fmt::Display for Value {
                 f,
                 "{}",
                 v.iter()
-                    .map(|i| i.to_string())
+                    .map(ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(" ")
             ),

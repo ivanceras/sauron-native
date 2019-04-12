@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![deny(clippy::all)]
 mod callback;
 mod diff;
 mod patch;

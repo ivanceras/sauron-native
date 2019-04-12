@@ -141,24 +141,24 @@ where
 
 /// Create an attribute
 #[inline]
-pub fn attr<'a, V>(name: &'a str, v: V) -> Attribute<'a>
+pub fn attr<V>(name: &str, v: V) -> Attribute
 where
     V: Into<Value>,
 {
     Attribute {
-        name: name,
+        name,
         value: v.into().into(),
     }
 }
 
 /// Attach a callback to an event
 #[inline]
-pub fn on<'a, C>(name: &'a str, c: C) -> Attribute<'a>
+pub fn on<C>(name: &str, c: C) -> Attribute
 where
     C: Into<Callback<Event>>,
 {
     Attribute {
-        name: name,
+        name,
         value: c.into().into(),
     }
 }
