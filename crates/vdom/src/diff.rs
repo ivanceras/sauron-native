@@ -194,10 +194,10 @@ fn diff_event_listener<'a, 'b>(
         };
     }
 
-    if !add_event_listener.is_empty(){
+    if !add_event_listener.is_empty() {
         patches.push(Patch::AddEventListener(*cur_node_idx, add_event_listener));
     }
-    if !remove_event_listener.is_empty(){
+    if !remove_event_listener.is_empty() {
         patches.push(Patch::RemoveEventListener(
             *cur_node_idx,
             remove_event_listener,

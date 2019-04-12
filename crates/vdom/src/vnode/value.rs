@@ -42,7 +42,7 @@ impl Value {
             Value::U32(v) => Some(f64::from(*v)),
             Value::U64(v) => Some(*v as f64),
             Value::U128(v) => Some(*v as f64),
-            Value::Usize(v) => Some(* v as f64),
+            Value::Usize(v) => Some(*v as f64),
             Value::I8(v) => Some(f64::from(*v)),
             Value::I16(v) => Some(f64::from(*v)),
             Value::I32(v) => Some(f64::from(*v)),
