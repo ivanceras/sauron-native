@@ -2,21 +2,19 @@ use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
 use browser::*;
-use console_error_panic_hook;
-use js_sys::{Array, Date};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Mutex;
-use vdom::builder::*;
 use vdom::Event;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::console;
-use web_sys::{Document, Element, Window};
 
 use store::{Msg, Store};
+use vdom::Component;
+use vdom::View;
+use vdom::Widget;
 
 mod store;
 
@@ -26,27 +24,42 @@ pub struct App {
 
 impl App {
     pub fn new(count: u32) -> App {
-        let mut store = Store::new(count);
-        store.subscribe(Box::new(|| {
-            web_sys::console::log_1(&"Updating store".into());
-            super::global_js.update();
-        }));
+        let store = Store::new(count);
+
         let rc_store = Rc::new(RefCell::new(store));
         let store_clone = Rc::clone(&rc_store);
 
         let clock = Closure::wrap(
             Box::new(move || store_clone.borrow_mut().msg(&Msg::Clock)) as Box<dyn Fn()>
         );
-        window().set_interval_with_callback_and_timeout_and_arguments_0(
-            clock.as_ref().unchecked_ref(),
-            1000,
-        );
+        window()
+            .set_interval_with_callback_and_timeout_and_arguments_0(
+                clock.as_ref().unchecked_ref(),
+                1000,
+            )
+            .expect("Unable to start interval");
         clock.forget();
 
         App { store: rc_store }
     }
+}
 
-    pub fn view(&self) -> vdom::Node {
+impl Component for App {
+    /// Whatever changes in the store the callback
+    /// will be called
+    fn subscribe(&mut self, callback: Box<Fn()>) {
+        self.store.borrow_mut().subscribe(callback);
+    }
+}
+
+impl Widget for App {
+    fn update(&mut self) {
+        // nothing to update
+    }
+}
+
+impl View for App {
+    fn view(&self) -> vdom::Node {
         let store_clone = Rc::clone(&self.store);
         let count: u32 = self.store.borrow().click_count();
         let current_time = self

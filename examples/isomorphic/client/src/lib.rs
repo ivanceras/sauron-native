@@ -1,22 +1,13 @@
-//#![deny(warnings)]
+#![deny(warnings)]
 #![deny(clippy::all)]
-use browser::html::attributes::*;
-use browser::html::events::*;
-use browser::html::*;
 use browser::*;
 use console_error_panic_hook;
-use js_sys::{Array, Date};
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
-use std::sync::Mutex;
-use vdom::builder::*;
-use vdom::Event;
+use vdom::Component;
+use vdom::View;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::console;
-use web_sys::{Document, Element, Window};
 
 use app::App;
 
@@ -27,8 +18,6 @@ mod app;
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-use lazy_static::lazy_static;
 
 #[wasm_bindgen]
 pub struct Client {
@@ -66,6 +55,15 @@ impl Client {
 
         let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
         Client { app, dom_updater }
+    }
+
+    /// set up the app.store
+    /// whenever there is a changes to the store
+    /// the app.update function will be called
+    pub fn subscribe(&mut self) {
+        self.app.subscribe(Box::new(|| {
+            global_js.update();
+        }));
     }
 
     pub fn render(&mut self) {
