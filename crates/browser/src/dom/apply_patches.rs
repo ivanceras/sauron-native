@@ -168,7 +168,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosure, J
             //  and trim all children that come after our new desired `num_children_remaining`
             let mut non_separator_children_found = 0;
 
-            #[allow(clippy::mut_range_bound)] 
+            #[allow(clippy::mut_range_bound)]
             for index in 0 as u32..child_count {
                 let child = children
                     .get(min(index, child_count - 1))
