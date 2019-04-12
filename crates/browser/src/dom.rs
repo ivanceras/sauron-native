@@ -96,11 +96,11 @@ impl<T> CreatedNode<T> {
                 .expect("Set element attribute in create element");
         });
 
-        if velem.events.len() > 0 {
+        if !velem.events.is_empty() {
             let unique_id = create_unique_identifier();
 
             element
-                .set_attribute("data-vdom-id".into(), &unique_id.to_string())
+                .set_attribute("data-vdom-id", &unique_id.to_string())
                 .expect("Could not set attribute on element");
 
             closures.insert(unique_id, vec![]);

@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![deny(clippy::all)]
 pub mod dom;
 #[macro_use]
 pub mod html;

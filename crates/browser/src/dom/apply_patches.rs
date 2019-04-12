@@ -12,7 +12,7 @@ use web_sys::{Element, Node, Text};
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
 /// This is usually used after diffing two virtual nodes.
-pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<ActiveClosure, JsValue> {
+pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClosure, JsValue> {
     let root_node: Node = root_node.into();
 
     let mut cur_node_idx = 0;
@@ -64,7 +64,7 @@ fn find_nodes(
     element_nodes_to_patch: &mut HashMap<usize, Element>,
     text_nodes_to_patch: &mut HashMap<usize, Text>,
 ) {
-    if nodes_to_find.len() == 0 {
+    if nodes_to_find.is_empty() {
         return;
     }
 
@@ -168,6 +168,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosure, J
             //  and trim all children that come after our new desired `num_children_remaining`
             let mut non_separator_children_found = 0;
 
+            #[allow(clippy::mut_range_bound)] 
             for index in 0 as u32..child_count {
                 let child = children
                     .get(min(index, child_count - 1))
