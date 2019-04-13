@@ -15,8 +15,10 @@ lazy_static = "1.0"
 version = "0.3"
 features = [
     "Comment",
+    "console",
     "Document",
     "Element",
+    "Event",
     "HtmlElement",
     "EventTarget",
     "KeyboardEvent",

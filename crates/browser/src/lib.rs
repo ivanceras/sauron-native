@@ -9,3 +9,5 @@ mod util;
 
 pub use dom::DomUpdater;
 pub use util::*;
+pub use vdom::builder::Attribute;
+pub use vdom::Node;
