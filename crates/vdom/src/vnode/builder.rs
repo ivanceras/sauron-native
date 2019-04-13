@@ -44,12 +44,31 @@ impl Node {
         }
         self
     }
+
+    /// add attributes to the node
+    pub fn attributes<'a, A>(mut self, attributes: A) -> Self
+    where
+        A: AsRef<[Attribute<'a>]>,
+    {
+        if let Some(elm) = self.as_element() {
+            elm.add_attributes_ref(attributes.as_ref());
+        }
+        self
+    }
 }
 
 impl Element {
+    pub fn add_attributes<'a, A>(mut self, attrs: A) -> Self
+    where
+        A: AsRef<[Attribute<'a>]>,
+    {
+        self.add_attributes_ref(attrs);
+        self
+    }
+
     /// add the attribute values or events callback
     /// into this element
-    pub fn add_attributes<'a, A>(mut self, attrs: A) -> Self
+    pub fn add_attributes_ref<'a, A>(&mut self, attrs: A) -> &mut Self
     where
         A: AsRef<[Attribute<'a>]>,
     {
