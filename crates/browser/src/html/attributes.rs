@@ -95,12 +95,15 @@ declare_attributes! {
     value;
     key;
     placeholder;
+    display;
 }
 
 // sizing attribtes
 declare_attributes! {
     width;
     height;
+    rows;
+    cols;
 }
 
 // attributes with dash
@@ -111,4 +114,7 @@ declare_attributes! {
 
     #[allow(non_snake_case)]
     fontSize => "font-size";
+
+    #[allow(non_snake_case)]
+    flexDirection => "flex-direction";
 }
