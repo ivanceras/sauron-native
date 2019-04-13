@@ -15,6 +15,6 @@ pub trait Widget: View {
 /// This is the main app, the app
 /// routes whenever there is changes in the store
 /// this callback will be called
-pub trait Component: Widget {
+pub trait Component: Widget + View {
     fn subscribe(&mut self, f: Box<Fn()>);
 }
