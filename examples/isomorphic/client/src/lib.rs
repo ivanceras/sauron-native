@@ -56,14 +56,14 @@ impl Client {
 
         let dom_updater = DomUpdater::new_replace_mount(app.view(), root_node);
         let mut client = Client { app, dom_updater };
-        client.subscribe();
+        client.init_subscrption();
         client
     }
 
     /// set up the app.store
     /// whenever there is a changes to the store
     /// the app.update function will be called
-    pub fn subscribe(&mut self) {
+    pub fn init_subscrption(&mut self) {
         self.app.subscribe(Box::new(|| {
             global_js.update();
         }));
