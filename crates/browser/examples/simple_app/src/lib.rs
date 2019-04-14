@@ -1,4 +1,4 @@
-#![deny(warnings)]
+//#![deny(warnings)]
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
@@ -16,9 +16,8 @@ pub struct Client {
 /// $ wasm-pack build --target no-modules
 /// ```
 ///
-#[wasm_bindgen]
 impl Client {
-    #[wasm_bindgen(constructor)]
+
     pub fn new() -> Client {
         let html = div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
@@ -39,4 +38,11 @@ impl Client {
         let _dom_updater = DomUpdater::new_append_to_mount(html, &body);
         Client { _dom_updater }
     }
+}
+
+
+#[wasm_bindgen]
+pub fn initialize() -> Client {
+    let client = Client::new();
+    client
 }
