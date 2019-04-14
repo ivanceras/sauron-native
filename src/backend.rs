@@ -30,3 +30,26 @@ pub mod html {
         }
     }
 }
+
+pub mod tui {
+
+    use crate::Widget;
+    use tui::widgets::Block;
+
+    pub struct TuiWidget(Box<tui::widgets::Widget>);
+
+    impl Into<TuiWidget> for crate::Widget{
+
+        fn into(self) -> TuiWidget {
+            match self {
+                Widget::View(_view) =>  {
+                    TuiWidget(Box::new(Block::default()))
+                }
+                Widget::Row(_row) => {
+                    TuiWidget(Box::new(Block::default()))
+                }
+            }
+        }
+    }
+
+}

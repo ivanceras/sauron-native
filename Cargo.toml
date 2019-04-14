@@ -6,6 +6,8 @@ edition = "2018"
 
 [dependencies]
 browser = { path = "crates/browser" }
+vdom = { path = "crates/vdom" }
+tui = "0.5.0"
 
 [workspace]
 members = [
