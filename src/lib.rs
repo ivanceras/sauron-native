@@ -3,7 +3,6 @@
 #![feature(type_alias_enum_variants)]
 
 pub mod backend;
-pub mod layout;
 pub mod widget;
 
 pub type WidgetNode = vdom::Node<widget::Widget>;
