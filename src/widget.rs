@@ -1,45 +1,41 @@
-use crate::layout::Direction;
+use crate::WidgetNode;
+use vdom::builder::element;
+use vdom::builder::Attribute;
 
-#[derive(Debug,Clone)]
-pub struct View {
-    pub direction: Direction,
-}
-
-impl Default for View {
-    fn default() -> Self {
-        View {
-            direction: Direction::Vertical,
-        }
-    }
-}
-
-#[derive(Debug,Clone)]
-pub struct Row {
-    pub direction: Direction,
-}
-
-impl Default for Row {
-    fn default() -> Self {
-        Row {
-            direction: Direction::Vertical,
-        }
-    }
-}
-
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum Widget {
-    View(View),
-    Row(Row),
+    View,
+    Row,
+    Button(String),
 }
 
-impl From<View> for Widget {
-    fn from(view: View) -> Self {
-        Widget::View(view)
-    }
+pub fn widget<'a, A, C>(widget: Widget, attrs: A, children: C) -> WidgetNode
+where
+    C: AsRef<[WidgetNode]>,
+    A: AsRef<[Attribute<'a>]>,
+{
+    element(widget, attrs, children)
 }
 
-impl From<Row> for Widget {
-    fn from(row: Row) -> Self {
-        Widget::Row(row)
-    }
+pub fn view<'a, A, C>(attrs: A, children: C) -> WidgetNode
+where
+    C: AsRef<[WidgetNode]>,
+    A: AsRef<[Attribute<'a>]>,
+{
+    widget(Widget::View, attrs, children)
+}
+
+pub fn row<'a, A, C>(attrs: A, children: C) -> WidgetNode
+where
+    C: AsRef<[WidgetNode]>,
+    A: AsRef<[Attribute<'a>]>,
+{
+    widget(Widget::Row, attrs, children)
+}
+
+pub fn button<'a, A>(attrs: A, txt: &str) -> WidgetNode
+where
+    A: AsRef<[Attribute<'a>]>,
+{
+    widget(Widget::Button(txt.to_string()), attrs, [])
 }

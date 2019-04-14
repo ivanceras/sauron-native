@@ -28,7 +28,7 @@ impl<T> Node<T>
 where
     T: Clone,
 {
-    fn as_element(&mut self) -> Option<&mut Element<T>> {
+    pub fn as_element(&mut self) -> Option<&mut Element<T>> {
         match *self {
             Node::Element(ref mut element) => Some(element),
             Node::Text(_) => None,

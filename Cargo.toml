@@ -8,6 +8,13 @@ edition = "2018"
 browser = { path = "crates/browser" }
 vdom = { path = "crates/vdom" }
 tui = "0.5.0"
+termion = { version = "1.5"}
+
+[dev-dependencies]
+stderrlog = "0.4"
+rand = "0.6"
+failure = "0.1"
+structopt = "0.2"
 
 [workspace]
 members = [
