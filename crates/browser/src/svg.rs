@@ -1,5 +1,3 @@
-use vdom::Node;
-
 use vdom::builder::Attribute;
 pub use vdom::builder::{attr, element, element_ns};
 

@@ -1,6 +1,6 @@
 pub mod html {
     use crate::layout::Direction;
-    use crate::widgets::Widget;
+    use crate::widget::Widget;
     use browser::html::attributes::*;
     use browser::html::*;
     use browser::Attribute;

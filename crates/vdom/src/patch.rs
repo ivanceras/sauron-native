@@ -39,14 +39,14 @@ use std::collections::BTreeMap;
 ///
 /// The patching process is tested in a real browser in crates/virtual-dom-rs/tests/diff_patch.rs
 #[derive(Debug, PartialEq)]
-pub enum Patch<'a> {
+pub enum Patch<'a, T> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(NodeIdx, Vec<&'a Node>),
+    AppendChildren(NodeIdx, Vec<&'a Node<T>>),
     /// For a `node_i32`, remove all children besides the first `len`
     TruncateChildren(NodeIdx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(NodeIdx, &'a Node),
+    Replace(NodeIdx, &'a Node<T>),
     /// Add attributes that the new node has that the old node does not
     AddAttributes(NodeIdx, BTreeMap<&'a str, &'a Value>),
     /// Remove attributes that the old node had that the new node doesn't
@@ -61,7 +61,7 @@ pub enum Patch<'a> {
 
 type NodeIdx = usize;
 
-impl<'a> Patch<'a> {
+impl<'a, T> Patch<'a, T> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
     /// index of the DOM node that this patch should apply to. DOM nodes are indexed
     /// depth first with the root node in the tree having index 0.

@@ -24,8 +24,11 @@ impl From<Callback<Event>> for AttribValue {
     }
 }
 
-impl Node {
-    fn as_element(&mut self) -> Option<&mut Element> {
+impl<T> Node<T>
+where
+    T: Clone,
+{
+    fn as_element(&mut self) -> Option<&mut Element<T>> {
         match *self {
             Node::Element(ref mut element) => Some(element),
             Node::Text(_) => None,
@@ -35,7 +38,7 @@ impl Node {
     /// Append children to this element
     pub fn children<C>(mut self, children: C) -> Self
     where
-        C: AsRef<[Node]>,
+        C: AsRef<[Node<T>]>,
     {
         if let Some(element) = self.as_element() {
             for child in children.as_ref() {
@@ -57,7 +60,7 @@ impl Node {
     }
 }
 
-impl Element {
+impl<T> Element<T> {
     pub fn add_attributes<'a, A>(mut self, attrs: A) -> Self
     where
         A: AsRef<[Attribute<'a>]>,
@@ -87,7 +90,8 @@ impl Element {
 
     pub fn add_children<C>(mut self, children: C) -> Self
     where
-        C: AsRef<[Node]>,
+        C: AsRef<[Node<T>]>,
+        T: Clone,
     {
         for c in children.as_ref() {
             self.children.push(c.clone());
@@ -124,10 +128,11 @@ impl Element {
 /// }
 ///```
 #[inline]
-pub fn element<'a, A, C>(tag: &str, attrs: A, children: C) -> Node
+pub fn element<'a, A, C, T>(tag: T, attrs: A, children: C) -> Node<T>
 where
-    C: AsRef<[Node]>,
+    C: AsRef<[Node<T>]>,
     A: AsRef<[Attribute<'a>]>,
+    T: Clone,
 {
     Node::Element(
         Element::new(tag)
@@ -136,10 +141,11 @@ where
     )
 }
 #[inline]
-pub fn element_ns<'a, A, C>(tag: &str, namespace: &str, attrs: A, children: C) -> Node
+pub fn element_ns<'a, A, C, T>(tag: T, namespace: &str, attrs: A, children: C) -> Node<T>
 where
-    C: AsRef<[Node]>,
+    C: AsRef<[Node<T>]>,
     A: AsRef<[Attribute<'a>]>,
+    T: Clone,
 {
     Node::Element(
         Element::new(tag)
@@ -151,7 +157,7 @@ where
 
 /// Create a textnode element
 #[inline]
-pub fn text<V>(v: V) -> Node
+pub fn text<V, T>(v: V) -> Node<T>
 where
     V: Into<String>,
 {

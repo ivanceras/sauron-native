@@ -1,7 +1,7 @@
+use crate::Patch;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use vdom::Patch;
 
 use super::ActiveClosure;
 use super::CreatedNode;

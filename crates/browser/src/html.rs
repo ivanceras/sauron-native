@@ -1,6 +1,6 @@
+use crate::Node;
 use std::convert::AsRef;
 use vdom::builder::*;
-use vdom::Node;
 
 pub use vdom::builder::{attr, on, text};
 #[macro_use]
@@ -33,8 +33,8 @@ macro_rules! builder_constructors {
         $(
             $(#[$attr])*
             #[inline]
-            pub fn $name<'a, A, C>(attrs: A, children: C) -> Node
-                where C: AsRef<[Node]>,
+            pub fn $name<'a, A, C>(attrs: A, children: C) -> crate::Node
+                where C: AsRef<[crate::Node]>,
                       A: AsRef<[Attribute<'a>]>,
                 {
                     element_ns(stringify!($name), $namespace, attrs, children)
@@ -550,10 +550,11 @@ builder_constructors! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Element;
     use attributes::*;
     use events::*;
     use maplit::btreemap;
-    use vdom::{Callback, Element, Event, Text};
+    use vdom::{Callback, Event, Text};
 
     #[test]
     fn simple_builder() {
@@ -848,8 +849,8 @@ mod diff_tests_using_html_syntax {
 
     #[test]
     fn replace_text_node() {
-        let old = text("Old"); //{ Old },
-        let new = text("New"); //{ New },
+        let old: crate::Node = text("Old"); //{ Old },
+        let new: crate::Node = text("New"); //{ New },
 
         assert_eq!(
             diff(&old, &new),

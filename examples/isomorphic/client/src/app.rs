@@ -1,18 +1,19 @@
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
+use browser::Event;
 use browser::*;
 use std::cell::RefCell;
 use std::rc::Rc;
-use vdom::Event;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+use browser::Component;
+use browser::Node;
+use browser::View;
+use browser::Widget;
 use store::{Msg, Store};
-use vdom::Component;
-use vdom::View;
-use vdom::Widget;
 
 mod store;
 
@@ -57,7 +58,7 @@ impl Widget for App {
 }
 
 impl View for App {
-    fn view(&self) -> vdom::Node {
+    fn view(&self) -> Node {
         let store_clone = Rc::clone(&self.store);
         let count: u32 = self.store.borrow().click_count();
         let current_time = self

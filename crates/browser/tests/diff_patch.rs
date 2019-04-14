@@ -2,6 +2,7 @@
 use browser::html::attributes::*;
 use browser::html::events::*;
 use browser::html::*;
+use browser::Node;
 use vdom::builder::*;
 use vdom::diff;
 use vdom::{Callback, Event, Patch, Text, Value};
@@ -194,8 +195,8 @@ fn change_attribute() {
 
 #[wasm_bindgen_test]
 fn replace_text_node() {
-    let old = text("Old"); //{ Old },
-    let new = text("New"); //{ New },
+    let old: Node = text("Old"); //{ Old },
+    let new: Node = text("New"); //{ New },
 
     assert_eq!(
         diff(&old, &new),

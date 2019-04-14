@@ -33,7 +33,7 @@ pub struct CreatedNode<T> {
 /// Used for keeping a real DOM node up to date based on the current Node
 /// and a new incoming Node that represents our latest DOM state.
 pub struct DomUpdater {
-    current_vdom: vdom::Node,
+    current_vdom: crate::Node,
     root_node: Node,
 
     /// The closures that are currently attached to elements in the page.
@@ -62,12 +62,12 @@ impl<T> CreatedNode<T> {
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
-    pub fn create_dom_node(vnode: &vdom::Node) -> CreatedNode<Node> {
+    pub fn create_dom_node(vnode: &crate::Node) -> CreatedNode<Node> {
         match vnode {
-            vdom::Node::Text(text_node) => {
+            crate::Node::Text(text_node) => {
                 CreatedNode::without_closures(Self::create_text_node(text_node))
             }
-            vdom::Node::Element(element_node) => {
+            crate::Node::Element(element_node) => {
                 let created_element: CreatedNode<Node> =
                     Self::create_element_node(element_node).into();
                 created_element
@@ -77,7 +77,7 @@ impl<T> CreatedNode<T> {
 
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element_node(velem: &vdom::Element) -> CreatedNode<Element> {
+    pub fn create_element_node(velem: &crate::Element) -> CreatedNode<Element> {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = if let Some(ref namespace) = velem.namespace {
@@ -167,7 +167,7 @@ impl<T> CreatedNode<T> {
 
         velem.children.iter().for_each(|child| {
             match child {
-                vdom::Node::Text(text_node) => {
+                crate::Node::Text(text_node) => {
                     let current_node = element.as_ref() as &web_sys::Node;
 
                     // We ensure that the text siblings are patched by preventing the browser from merging
@@ -189,7 +189,7 @@ impl<T> CreatedNode<T> {
 
                     previous_node_was_text = true;
                 }
-                vdom::Node::Element(element_node) => {
+                crate::Node::Element(element_node) => {
                     previous_node_was_text = false;
 
                     let child = Self::create_element_node(element_node);
@@ -212,7 +212,7 @@ impl DomUpdater {
     /// Create a new `DomUpdater`.
     ///
     /// A root `Node` will be created but not added to your DOM.
-    pub fn new(current_vdom: vdom::Node) -> DomUpdater {
+    pub fn new(current_vdom: crate::Node) -> DomUpdater {
         let created_node = CreatedNode::<Node>::create_dom_node(&current_vdom);
         DomUpdater {
             current_vdom,
@@ -225,7 +225,7 @@ impl DomUpdater {
     ///
     /// A root `Node` will be created and appended (as a child) to your passed
     /// in mount element.
-    pub fn new_append_to_mount(current_vdom: vdom::Node, mount: &Element) -> DomUpdater {
+    pub fn new_append_to_mount(current_vdom: crate::Node, mount: &Element) -> DomUpdater {
         let created_node: CreatedNode<Node> = CreatedNode::<Node>::create_dom_node(&current_vdom);
         mount
             .append_child(&created_node.node)
@@ -241,7 +241,7 @@ impl DomUpdater {
     ///
     /// A root `Node` will be created and it will replace your passed in mount
     /// element.
-    pub fn new_replace_mount(current_vdom: vdom::Node, mount: Element) -> DomUpdater {
+    pub fn new_replace_mount(current_vdom: crate::Node, mount: Element) -> DomUpdater {
         let created_node = CreatedNode::<Node>::create_dom_node(&current_vdom);
         mount
             .replace_with_with_node_1(&created_node.node)
@@ -257,7 +257,7 @@ impl DomUpdater {
     ///
     /// Then use that diff to patch the real DOM in the user's browser so that they are
     /// seeing the latest state of the application.
-    pub fn update(&mut self, new_vdom: vdom::Node) {
+    pub fn update(&mut self, new_vdom: crate::Node) {
         let patches = diff(&self.current_vdom, &new_vdom);
         let active_closures = patch(self.root_node.clone(), &patches).unwrap();
         self.active_closures.extend(active_closures);

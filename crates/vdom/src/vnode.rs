@@ -26,17 +26,17 @@ pub use value::Value;
 /// TODO: Create a builder to create instances of VirtualNode::Element with
 /// attrs and children without having to explicitly create a Element
 #[derive(Debug, PartialEq, Clone)]
-pub enum Node {
-    Element(Element),
+pub enum Node<T> {
+    Element(Element<T>),
     Text(Text),
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]
-pub struct Element {
-    pub tag: String,
+pub struct Element<T> {
+    pub tag: T,
     pub attrs: BTreeMap<String, Value>,
     pub events: BTreeMap<String, Callback<Event>>,
-    pub children: Vec<Node>,
+    pub children: Vec<Node<T>>,
     pub namespace: Option<String>,
 }
 
@@ -45,11 +45,11 @@ pub struct Text {
     pub text: String,
 }
 
-impl Element {
+impl<T> Element<T> {
     /// Create a Element using the supplied tag name
-    pub fn new(tag: &str) -> Self {
+    pub fn new(tag: T) -> Self {
         Element {
-            tag: tag.to_string(),
+            tag,
             attrs: BTreeMap::new(),
             events: BTreeMap::new(),
             children: vec![],
@@ -64,10 +64,13 @@ impl Element {
     }
 }
 
-impl fmt::Display for Element {
+impl<T> fmt::Display for Element<T>
+where
+    T: ToString,
+{
     // Turn a Element and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "<{}", self.tag).unwrap();
+        write!(f, "<{}", self.tag.to_string()).unwrap();
 
         for (attr, value) in self.attrs.iter() {
             write!(f, r#" {}="{}""#, attr, value)?;
@@ -79,7 +82,7 @@ impl fmt::Display for Element {
             write!(f, "{}", child.to_string())?;
         }
 
-        write!(f, "</{}>", self.tag)?;
+        write!(f, "</{}>", self.tag.to_string())?;
 
         Ok(())
     }
@@ -99,7 +102,10 @@ impl fmt::Display for Text {
 }
 
 // Turn a Node into an HTML string (delegate impl to variants)
-impl fmt::Display for Node {
+impl<T> fmt::Display for Node<T>
+where
+    T: ToString,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Node::Element(element) => write!(f, "{}", element),
@@ -108,8 +114,8 @@ impl fmt::Display for Node {
     }
 }
 
-impl From<Element> for Node {
-    fn from(v: Element) -> Self {
+impl<T> From<Element<T>> for Node<T> {
+    fn from(v: Element<T>) -> Self {
         Node::Element(v)
     }
 }

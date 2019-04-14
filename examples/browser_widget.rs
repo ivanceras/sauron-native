@@ -1,6 +1,6 @@
-use caesar::widgets::View;
-use caesar::widgets::Widget;
 use browser::Node;
+use caesar::widget::View;
+use caesar::widget::Widget;
 
 fn main() {
     println!("browser widget");

@@ -32,7 +32,6 @@ pub enum Widget {
 }
 
 impl From<View> for Widget {
-
     fn from(view: View) -> Self {
         Widget::View(view)
     }

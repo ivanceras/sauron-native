@@ -9,7 +9,6 @@ crate-type = ["cdylib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-vdom = { path = "../../../crates/vdom" }
 browser = { path = "../../../crates/browser" }
 lazy_static = "1.0"
 
