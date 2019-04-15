@@ -5,10 +5,10 @@ authors = ["lee"]
 edition = "2018"
 
 [dependencies]
-sauron = { path = "../sauron" }
-sauron_vdom = { path = "../sauron/crates/sauron_vdom" }
+sauron = "0.1.0"
+sauron_vdom = "0.1.0"
 tui = { version = "0.5.0", optional = true }
-termion = { version = "1.5", optional= true}
+termion = { version = "1.5", optional= true }
 
 [dev-dependencies]
 stderrlog = "0.4"
@@ -30,4 +30,8 @@ members = [
 exclude = [
     "crates/ui-orbtk",
 ]
+
+[replace]
+"sauron:0.1.0" = { path = "../sauron" }
+"sauron_vdom:0.1.0" = { path = "../sauron/crates/sauron_vdom" }
 
