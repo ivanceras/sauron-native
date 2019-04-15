@@ -1,11 +1,13 @@
 //#![deny(warnings)]
 use std::io;
+use std::io::Stdout;
 use termion::event::Event as TermEvent;
 use termion::event::Key as TermKey;
 use termion::event::MouseButton as TermMouseButton;
 use termion::event::MouseEvent as TermMouseEvent;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
+use termion::raw::RawTerminal;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout};
@@ -120,6 +122,40 @@ impl Default for App {
     }
 }
 
+fn draw_ui<B>(mut f: tui::Frame<B>, app: &mut App)
+where
+    B: tui::backend::Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .margin(0)
+        .constraints(
+            [
+                Constraint::Length(3),
+                Constraint::Length(4),
+                Constraint::Min(1),
+            ]
+            .as_ref(),
+        )
+        .split(f.size());
+    Paragraph::new([Text::raw(&app.input)].iter())
+        .style(Style::default().fg(Color::Yellow))
+        .block(Block::default().borders(Borders::ALL).title("SQL"))
+        .render(&mut f, chunks[0]);
+    Paragraph::new([Text::raw(&app.formatted)].iter())
+        .style(Style::default().fg(Color::Yellow))
+        .block(Block::default().borders(Borders::ALL))
+        .render(&mut f, chunks[1]);
+    let messages = app
+        .messages
+        .iter()
+        .enumerate()
+        .map(|(i, m)| Text::raw(format!("{}: {}", i, m)));
+    List::new(messages)
+        .block(Block::default().borders(Borders::ALL).title("Data"))
+        .render(&mut f, chunks[2]);
+}
+
 fn main() -> Result<(), failure::Error> {
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
@@ -134,34 +170,7 @@ fn main() -> Result<(), failure::Error> {
     loop {
         // Draw UI
         terminal.draw(|mut f| {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .margin(0)
-                .constraints(
-                    [
-                        Constraint::Length(3),
-                        Constraint::Length(4),
-                        Constraint::Min(1),
-                    ]
-                    .as_ref(),
-                )
-                .split(f.size());
-            Paragraph::new([Text::raw(&app.input)].iter())
-                .style(Style::default().fg(Color::Yellow))
-                .block(Block::default().borders(Borders::ALL).title("SQL"))
-                .render(&mut f, chunks[0]);
-            Paragraph::new([Text::raw(&app.formatted)].iter())
-                .style(Style::default().fg(Color::Yellow))
-                .block(Block::default().borders(Borders::ALL))
-                .render(&mut f, chunks[1]);
-            let messages = app
-                .messages
-                .iter()
-                .enumerate()
-                .map(|(i, m)| Text::raw(format!("{}: {}", i, m)));
-            List::new(messages)
-                .block(Block::default().borders(Borders::ALL).title("Data"))
-                .render(&mut f, chunks[2]);
+            draw_ui(f, &mut app);
         })?;
 
         // Handle input
