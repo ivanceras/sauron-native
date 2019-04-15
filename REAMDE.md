@@ -1,6 +1,8 @@
-## Caesar
+## Sauron
 a rust UI library that conquers all platforms ranging from desktop to mobile devices.
 An attempt to create a true native, true cross platform UI for your rust applications.
+
+One UI to rule them all
 
 
 ## Backend
@@ -8,4 +10,4 @@ An attempt to create a true native, true cross platform UI for your rust applica
 - orbtk
 - libui-rs
 - html
-- tui-rs 
+- tui-rs (termion, crossterm)

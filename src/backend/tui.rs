@@ -24,11 +24,11 @@ impl<'t> Into<TuiWidget<'t>> for crate::widget::Widget {
 impl<'t> Into<TuiWidget<'t>> for Node {
     fn into(self) -> TuiWidget<'t> {
         match self.0 {
-            vdom::Node::Element(velm) => {
+            sauron_vdom::Node::Element(velm) => {
                 let mut tag: TuiWidget = velm.tag.into();
                 tag
             }
-            vdom::Node::Text(txt) => TuiWidget::Text(Text::raw(txt.text)),
+            sauron_vdom::Node::Text(txt) => TuiWidget::Text(Text::raw(txt.text)),
         }
     }
 }

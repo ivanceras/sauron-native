@@ -1,12 +1,12 @@
 [package]
-name = "caesar"
+name = "sauron_ui"
 version = "0.1.0"
 authors = ["lee"]
 edition = "2018"
 
 [dependencies]
-browser = { path = "crates/browser" }
-vdom = { path = "crates/vdom" }
+sauron = { path = "../sauron" }
+sauron_vdom = { path = "../sauron/crates/sauron_vdom" }
 tui = { version = "0.5.0", optional = true }
 termion = { version = "1.5", optional= true}
 
@@ -15,12 +15,15 @@ stderrlog = "0.4"
 rand = "0.6"
 failure = "0.1"
 structopt = "0.2"
+wasm-bindgen-test = "0.2.33"
+cfg-if = "0.1.7"
+
+
+[features]
+with-tui = ["tui", "termion"]
 
 [workspace]
 members = [
-    "crates/vdom",
-    "crates/browser",
-    "crates/browser/examples/simple_app",
     "examples/isomorphic/client",
     "examples/cross_widget",
 ]

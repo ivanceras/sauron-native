@@ -1,6 +1,6 @@
 use crate::WidgetNode;
-use vdom::builder::element;
-use vdom::builder::Attribute;
+use sauron_vdom::builder::element;
+use sauron_vdom::builder::Attribute;
 
 #[derive(Debug, Clone)]
 pub enum Widget {

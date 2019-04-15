@@ -1,9 +1,9 @@
 use crate::widget::Widget;
-use browser::html::attributes::*;
-use browser::html::*;
+use sauron::html::attributes::*;
+use sauron::html::*;
 
-impl Into<browser::Node> for Widget {
-    fn into(self) -> browser::Node {
+impl Into<sauron::Node> for Widget {
+    fn into(self) -> sauron::Node {
         match self {
             Widget::Column => div(
                 [style(
@@ -25,15 +25,15 @@ impl Into<browser::Node> for Widget {
     }
 }
 
-impl Into<browser::Node> for crate::Node {
-    fn into(self) -> browser::Node {
+impl Into<sauron::Node> for crate::Node {
+    fn into(self) -> sauron::Node {
         match self.0 {
-            vdom::Node::Element(velm) => {
-                let mut tag: browser::Node = velm.tag.into();
+            sauron_vdom::Node::Element(velm) => {
+                let mut tag: sauron::Node = velm.tag.into();
                 if let Some(element) = tag.as_element() {
                     for child in velm.children {
                         let child_node = crate::Node(child);
-                        let cnode: browser::Node = child_node.into();
+                        let cnode: sauron::Node = child_node.into();
                         element.children.push(cnode);
                     }
                     for (att, att_value) in velm.attrs {
@@ -45,7 +45,7 @@ impl Into<browser::Node> for crate::Node {
                 }
                 tag
             }
-            vdom::Node::Text(txt) => text(txt.text),
+            sauron_vdom::Node::Text(txt) => text(txt.text),
         }
     }
 }

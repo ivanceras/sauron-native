@@ -1,18 +1,18 @@
-use browser::html::attributes::*;
-use browser::html::events::*;
-use browser::html::*;
-use browser::Event;
-use browser::*;
+use sauron::html::attributes::*;
+use sauron::html::events::*;
+use sauron::html::*;
+use sauron::Event;
+use sauron::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use browser::Component;
-use browser::Node;
-use browser::View;
-use browser::Widget;
+use sauron::Component;
+use sauron::Node;
+use sauron::View;
+use sauron::Widget;
 use store::{Msg, Store};
 
 mod store;
@@ -75,7 +75,7 @@ impl View for App {
                     [],
                     [button(
                         [onclick(move |v: Event| {
-                            browser::log(format!("I've been clicked and the value is: {:#?}", v));
+                            sauron::log(format!("I've been clicked and the value is: {:#?}", v));
                             store_clone.borrow_mut().msg(&Msg::Click);
                         })],
                         [text("Click me!")],
@@ -89,7 +89,7 @@ impl View for App {
                             [
                                 r#type("text"),
                                 oninput(|v: Event| {
-                                    browser::log(format!("input has input: {:#?}", v));
+                                    sauron::log(format!("input has input: {:#?}", v));
                                 }),
                                 placeholder("Type here..."),
                             ],
@@ -104,7 +104,7 @@ impl View for App {
                         textarea(
                             [
                                 oninput(|v: Event| {
-                                    browser::log(format!("textarea has changed: {:#?}", v));
+                                    sauron::log(format!("textarea has changed: {:#?}", v));
                                 }),
                                 placeholder("Description here..."),
                             ],
@@ -120,7 +120,7 @@ impl View for App {
                             [
                                 r#type("text"),
                                 onchange(|v: Event| {
-                                    browser::log(format!("input has changed: {:#?}", v));
+                                    sauron::log(format!("input has changed: {:#?}", v));
                                 }),
                                 placeholder("Description here..."),
                             ],

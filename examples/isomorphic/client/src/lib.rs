@@ -1,10 +1,10 @@
 #![deny(warnings)]
 #![deny(clippy::all)]
-use browser::Component;
-use browser::View;
-use browser::Widget;
-use browser::*;
 use console_error_panic_hook;
+use sauron::Component;
+use sauron::View;
+use sauron::Widget;
+use sauron::*;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use web_sys;

@@ -1,8 +1,8 @@
 use crate::store::Msg;
 use crate::store::Store;
-use caesar::event::on;
-use caesar::widget::*;
-use caesar::Node;
+use sauron_ui::event::on;
+use sauron_ui::widget::*;
+use sauron_ui::Node;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -29,7 +29,7 @@ impl App {
                 column([], []),
                 button(
                     [on("click", move |_| {
-                        caesar::browser::log("hello");
+                        sauron_ui::browser::log("hello");
                         store.borrow_mut().msg(&Msg::Click)
                     })],
                     &format!("Hello: {}", click_count),

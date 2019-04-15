@@ -1,5 +1,5 @@
 use app::App;
-use caesar::browser::*;
+use sauron_ui::browser::*;
 use wasm_bindgen::prelude::*;
 
 mod app;
@@ -27,7 +27,7 @@ impl Client {
         let app = App::new(1);
 
         let widget_dom = app.view();
-        let browser_dom: caesar::browser::Node = widget_dom.into();
+        let browser_dom: sauron_ui::browser::Node = widget_dom.into();
         let dom_updater = DomUpdater::new_replace_mount(browser_dom, root_node);
         let mut client = Client { app, dom_updater };
         client.init_subscrption();
@@ -44,7 +44,7 @@ impl Client {
     }
 
     pub fn render(&mut self) {
-        caesar::browser::log("in render function");
+        sauron_ui::browser::log("in render function");
         self.app.update();
         let vdom = self.app.view();
         self.dom_updater.update(vdom.into());
