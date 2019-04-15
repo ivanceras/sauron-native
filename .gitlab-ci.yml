@@ -5,7 +5,7 @@ rust-nightly:
   stage: build
   image: rustlang/rust:nightly
   before_script:
-      - cd .. && git clone https://gitlab.com/ivanceras/sauron.git
+      - cd .. && git clone https://github.com/ivanceras/sauron.git
       - cd -
       - apt update
       - apt install -y firefox-esr
