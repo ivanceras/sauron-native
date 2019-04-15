@@ -1,8 +1,16 @@
 [package]
 name = "sauron_ui"
 version = "0.1.0"
-authors = ["lee"]
+authors = [ "Jovansonlee Cesar <ivanceras@gmail.com>" ]
+license = "Commercial"
+description = "An html library for building client side webapps"
+repository = "https://github.com/ivanceras/sauron"
+documentation = "https://docs.rs/sauron"
+readme = "README.md"
+keywords = ["html", "dom", "web"]
 edition = "2018"
+
+publish = false
 
 [dependencies]
 sauron = "0.1.0"
