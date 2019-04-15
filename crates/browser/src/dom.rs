@@ -110,6 +110,7 @@ impl<T> CreatedNode<T> {
                     let current_elem: &EventTarget = element.dyn_ref().unwrap();
 
                     let callback_clone = callback.clone();
+                    let event_name_str = event_str.to_string();
 
                     let closure_wrap: Closure<FnMut(Event)> =
                         Closure::wrap(Box::new(move |event: Event| {
@@ -118,10 +119,15 @@ impl<T> CreatedNode<T> {
                             let target: Option<EventTarget> = event.target();
 
                             if let Some(mouse_event) = mouse_event {
-                                callback_clone.emit(vdom::Event::MouseEvent(vdom::MouseEvent {
-                                    x: mouse_event.x(),
-                                    y: mouse_event.y(),
-                                }));
+                                if event_name_str == "click" {
+                                    callback_clone.emit(vdom::Event::MouseEvent(
+                                        vdom::MouseEvent::Press(
+                                            vdom::MouseButton::Left,
+                                            mouse_event.x() as u16,
+                                            mouse_event.y() as u16,
+                                        ),
+                                    ));
+                                }
                             } else if let Some(key_event) = key_event {
                                 callback_clone.emit(vdom::Event::KeyEvent(vdom::KeyEvent {
                                     key: key_event.key(),
