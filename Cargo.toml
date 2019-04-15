@@ -24,7 +24,6 @@ with-tui = ["tui", "termion"]
 
 [workspace]
 members = [
-    "examples/isomorphic/client",
     "examples/cross_widget",
 ]
 
