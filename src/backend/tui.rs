@@ -1,4 +1,3 @@
-
 use crate::widget::Widget;
 use crate::Node;
 use tui::layout::Direction;
@@ -13,9 +12,10 @@ pub enum TuiWidget {
 impl Into<TuiWidget> for crate::widget::Widget {
     fn into(self) -> TuiWidget {
         match self {
-            Widget::View => TuiWidget::Layout(Layout::default().direction(Direction::Vertical)),
+            Widget::Column => TuiWidget::Layout(Layout::default().direction(Direction::Vertical)),
             Widget::Row => TuiWidget::Layout(Layout::default().direction(Direction::Horizontal)),
             Widget::Button(txt) => TuiWidget::Text(txt),
+            Widget::Text(txt) => TuiWidget::Text(txt),
         }
     }
 }

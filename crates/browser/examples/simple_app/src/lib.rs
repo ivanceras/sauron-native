@@ -17,7 +17,6 @@ pub struct Client {
 /// ```
 ///
 impl Client {
-
     pub fn new() -> Client {
         let html = div(
             [class("some-class"), id("some-id"), attr("data-id", 1)],
@@ -39,7 +38,6 @@ impl Client {
         Client { _dom_updater }
     }
 }
-
 
 #[wasm_bindgen]
 pub fn initialize() -> Client {

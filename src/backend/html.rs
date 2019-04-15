@@ -1,4 +1,3 @@
-
 use crate::widget::Widget;
 use browser::html::attributes::*;
 use browser::html::*;
@@ -6,7 +5,7 @@ use browser::html::*;
 impl Into<browser::Node> for Widget {
     fn into(self) -> browser::Node {
         match self {
-            Widget::View => div(
+            Widget::Column => div(
                 [style(
                     "display:flexbox;\
                      flex-direction:column",
@@ -20,7 +19,8 @@ impl Into<browser::Node> for Widget {
                 )],
                 [],
             ),
-            Widget::Button(txt) => button([], [text(txt)]),
+            Widget::Button(txt) => input([r#type("button"), value(txt)], []),
+            Widget::Text(txt) => text(txt),
         }
     }
 }
@@ -28,13 +28,19 @@ impl Into<browser::Node> for Widget {
 impl Into<browser::Node> for crate::Node {
     fn into(self) -> browser::Node {
         match self.0 {
-            vdom::Node::Element(element) => {
-                let mut tag: browser::Node = element.tag.into();
-                if let Some(elm) = tag.as_element() {
-                    for child in element.children {
+            vdom::Node::Element(velm) => {
+                let mut tag: browser::Node = velm.tag.into();
+                if let Some(element) = tag.as_element() {
+                    for child in velm.children {
                         let child_node = crate::Node(child);
                         let cnode: browser::Node = child_node.into();
-                        elm.children.push(cnode);
+                        element.children.push(cnode);
+                    }
+                    for (att, att_value) in velm.attrs {
+                        element.attrs.insert(att, att_value);
+                    }
+                    for (evt, callback) in velm.events {
+                        element.events.insert(evt, callback);
                     }
                 }
                 tag

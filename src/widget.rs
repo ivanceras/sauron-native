@@ -4,9 +4,10 @@ use vdom::builder::Attribute;
 
 #[derive(Debug, Clone)]
 pub enum Widget {
-    View,
+    Column,
     Row,
     Button(String),
+    Text(String),
 }
 
 pub fn widget<'a, A, C>(widget: Widget, attrs: A, children: C) -> WidgetNode
@@ -17,12 +18,12 @@ where
     element(widget, attrs, children)
 }
 
-pub fn view<'a, A, C>(attrs: A, children: C) -> WidgetNode
+pub fn column<'a, A, C>(attrs: A, children: C) -> WidgetNode
 where
     C: AsRef<[WidgetNode]>,
     A: AsRef<[Attribute<'a>]>,
 {
-    widget(Widget::View, attrs, children)
+    widget(Widget::Column, attrs, children)
 }
 
 pub fn row<'a, A, C>(attrs: A, children: C) -> WidgetNode
