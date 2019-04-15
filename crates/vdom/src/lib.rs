@@ -13,4 +13,4 @@ pub use diff::diff;
 pub use patch::Patch;
 pub use view::{Component, View, Widget};
 pub use vnode::{Element, Node, Text, Value};
-pub use vnode::{Event, InputEvent, KeyEvent, MouseEvent};
+pub use vnode::{Event, InputEvent, KeyEvent, MouseButton, MouseEvent};

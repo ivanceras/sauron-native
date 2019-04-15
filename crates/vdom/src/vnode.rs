@@ -7,7 +7,7 @@ pub mod builder;
 mod event;
 mod value;
 
-pub use event::{Event, InputEvent, KeyEvent, MouseEvent};
+pub use event::{Event, InputEvent, KeyEvent, MouseButton, MouseEvent};
 pub use value::Value;
 
 /// When building your views you'll typically use the `html!` macro to generate
