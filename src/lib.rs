@@ -4,6 +4,11 @@
 
 pub mod event {
     pub use vdom::builder::on;
+    pub use vdom::Event;
+    pub use vdom::InputEvent;
+    pub use vdom::KeyEvent;
+    pub use vdom::MouseButton;
+    pub use vdom::MouseEvent;
 }
 
 pub mod browser {

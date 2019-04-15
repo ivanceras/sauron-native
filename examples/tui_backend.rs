@@ -1,13 +1,15 @@
+//#![deny(warnings)]
 use std::io;
-use termion::event::Event;
-use termion::event::Key;
-use termion::event::MouseEvent;
+use termion::event::Event as TermEvent;
+use termion::event::Key as TermKey;
+use termion::event::MouseButton as TermMouseButton;
+use termion::event::MouseEvent as TermMouseEvent;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout};
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, Text, Widget};
 use tui::Terminal;
 
@@ -15,32 +17,25 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+use caesar::event::*;
 use termion::input::TermRead;
-
-pub enum MyEvent {
-    Input(Key),
-    MouseEvent(MouseEvent),
-    Tick,
-}
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
-    rx: mpsc::Receiver<MyEvent>,
+    rx: mpsc::Receiver<Event>,
     input_handle: thread::JoinHandle<()>,
     tick_handle: thread::JoinHandle<()>,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Config {
-    pub exit_key: Key,
     pub tick_rate: Duration,
 }
 
 impl Default for Config {
     fn default() -> Config {
         Config {
-            exit_key: Key::Char('q'),
             tick_rate: Duration::from_millis(250),
         }
     }
@@ -60,12 +55,25 @@ impl Events {
                 for evt in stdin.events() {
                     let evt = evt.unwrap();
                     match evt {
-                        Event::Key(k) => {
-                            tx.send(MyEvent::Input(k));
+                        TermEvent::Key(k) => {
+                            if let TermKey::Char(ch) = k {
+                                tx.send(Event::KeyEvent(KeyEvent::new(ch)));
+                            }
                         }
-                        Event::Mouse(me) => {
-                            tx.send(MyEvent::MouseEvent(me));
-                        }
+                        TermEvent::Mouse(me) => match me {
+                            TermMouseEvent::Press(btn, x, y) => match btn {
+                                TermMouseButton::Left => {
+                                    let event = Event::MouseEvent(MouseEvent::Press(
+                                        MouseButton::Left,
+                                        x,
+                                        y,
+                                    ));
+                                    tx.send(event);
+                                }
+                                _ => {}
+                            },
+                            _ => {}
+                        },
                         _ => {}
                     }
                 }
@@ -76,7 +84,7 @@ impl Events {
             thread::spawn(move || {
                 let tx = tx.clone();
                 loop {
-                    tx.send(MyEvent::Tick).unwrap();
+                    tx.send(Event::Tick).unwrap();
                     thread::sleep(config.tick_rate);
                 }
             })
@@ -88,7 +96,7 @@ impl Events {
         }
     }
 
-    pub fn next(&self) -> Result<MyEvent, mpsc::RecvError> {
+    pub fn next(&self) -> Result<Event, mpsc::RecvError> {
         self.rx.recv()
     }
 }
@@ -156,36 +164,19 @@ fn main() -> Result<(), failure::Error> {
                 .render(&mut f, chunks[2]);
         })?;
 
-        // Put the cursor back inside the input box
-        /*
-        write!(
-            terminal.backend_mut(),
-            "{}",
-            Goto(4 + app.input.width() as u16, 4)
-        )?;
-        */
-
         // Handle input
         match events.next()? {
-            MyEvent::Input(input) => match input {
-                Key::Char('q') => {
+            Event::KeyEvent(key) => match key.key.as_ref() {
+                "q" => {
                     break;
                 }
-                Key::Char('\n') => {
+                "\n" => {
                     app.formatted = app.input.to_uppercase();
                     app.messages.push(app.input.drain(..).collect());
                 }
-                Key::Char(c) => {
-                    app.input.push(c);
-                }
-                Key::Backspace => {
-                    app.input.pop();
-                }
-                input => {
-                    app.messages.push(format!("event: {:?}", input));
-                }
+                key => app.input.push_str(key),
             },
-            MyEvent::MouseEvent(me) => {
+            Event::MouseEvent(me) => {
                 app.messages.push(format!("Event: {:#?}", me));
                 if app.messages.len() > 20 {
                     app.messages = vec![];
