@@ -2,29 +2,33 @@ use crate::widget::Widget;
 use crate::Node;
 use tui::layout::Direction;
 use tui::layout::Layout;
+use tui::widgets::Text;
 
-pub enum TuiWidget {
+pub enum TuiWidget<'t> {
     Layout(Layout),
     Widget(Box<tui::widgets::Widget>),
-    Text(String),
+    Text(Text<'t>),
 }
 
-impl Into<TuiWidget> for crate::widget::Widget {
-    fn into(self) -> TuiWidget {
+impl<'t> Into<TuiWidget<'t>> for crate::widget::Widget {
+    fn into(self) -> TuiWidget<'t> {
         match self {
             Widget::Column => TuiWidget::Layout(Layout::default().direction(Direction::Vertical)),
             Widget::Row => TuiWidget::Layout(Layout::default().direction(Direction::Horizontal)),
-            Widget::Button(txt) => TuiWidget::Text(txt),
-            Widget::Text(txt) => TuiWidget::Text(txt),
+            Widget::Button(txt) => TuiWidget::Text(Text::raw(txt)),
+            Widget::Text(txt) => TuiWidget::Text(Text::raw(txt)),
         }
     }
 }
 
-impl From<Node> for TuiWidget {
-    fn from(node: Node) -> Self {
-        match node.0 {
-            vdom::Node::Element(element) => element.tag.into(),
-            vdom::Node::Text(txt) => TuiWidget::Text(txt.text),
+impl<'t> Into<TuiWidget<'t>> for Node {
+    fn into(self) -> TuiWidget<'t> {
+        match self.0 {
+            vdom::Node::Element(velm) => {
+                let mut tag: TuiWidget = velm.tag.into();
+                tag
+            }
+            vdom::Node::Text(txt) => TuiWidget::Text(Text::raw(txt.text)),
         }
     }
 }

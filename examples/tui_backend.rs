@@ -19,7 +19,11 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+use caesar::backend::tui::TuiWidget;
 use caesar::event::*;
+use caesar::widget::*;
+use caesar::Node;
+use caesar::WidgetNode;
 use termion::input::TermRead;
 
 /// A small event handler that wrap termion input and tick events. Each event
@@ -122,6 +126,13 @@ impl Default for App {
     }
 }
 
+impl App {
+    fn view(&self) -> Node {
+        let vdom = row([], [column([], [])]);
+        Node(vdom)
+    }
+}
+
 fn draw_ui<B>(mut f: tui::Frame<B>, app: &mut App)
 where
     B: tui::backend::Backend,
@@ -138,32 +149,52 @@ where
             .as_ref(),
         )
         .split(f.size());
+
+    let widget: WidgetNode = text("HI --> ");
+    let caesar_node: Node = Node(widget);
+    let tuiw: TuiWidget = caesar_node.into();
+
     Paragraph::new([Text::raw(&app.input)].iter())
         .style(Style::default().fg(Color::Yellow))
-        .block(Block::default().borders(Borders::ALL).title("SQL"))
         .render(&mut f, chunks[0]);
+
     Paragraph::new([Text::raw(&app.formatted)].iter())
         .style(Style::default().fg(Color::Yellow))
         .block(Block::default().borders(Borders::ALL))
         .render(&mut f, chunks[1]);
-    let messages = app
+
+    let mut messages: Vec<Text> = app
         .messages
         .iter()
         .enumerate()
-        .map(|(i, m)| Text::raw(format!("{}: {}", i, m)));
-    List::new(messages)
+        .map(|(i, m)| Text::raw(format!("{}: {}", i, m)))
+        .collect();
+
+    match tuiw {
+        TuiWidget::Text(txt) => {
+            messages.push(txt);
+        }
+        _ => {}
+    }
+
+    List::new(messages.into_iter())
         .block(Block::default().borders(Borders::ALL).title("Data"))
         .render(&mut f, chunks[2]);
 }
 
-fn main() -> Result<(), failure::Error> {
-    // Terminal initialization
+fn setup_terminal(
+) -> Result<Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>, io::Error>
+{
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = MouseTerminal::from(stdout);
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+    Terminal::new(backend)
+}
 
+fn main() -> Result<(), failure::Error> {
+    // Terminal initialization
+    let mut terminal = setup_terminal()?;
     let events = Events::new();
     let mut app = App::default();
 

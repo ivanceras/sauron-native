@@ -40,3 +40,7 @@ where
 {
     widget(Widget::Button(txt.to_string()), attrs, [])
 }
+
+pub fn text(txt: &str) -> WidgetNode {
+    widget(Widget::Text(txt.to_string()), [], [])
+}

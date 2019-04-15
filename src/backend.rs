@@ -1,3 +1,3 @@
 pub mod html;
-#[cfg(features = "termion")]
+#[cfg(feature = "termion")]
 pub mod tui;
