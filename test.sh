@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cargo test --all --features "with-tui"
+cargo test --all --features "with-tui with-html"
 
 
 # Install wasm-pack if it isn't installed yet

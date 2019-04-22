@@ -1,5 +1,7 @@
-use sauron::{html::attributes::*, Node};
-use sauron_ui::{backend::html::widget_tree_to_html_node, event::on, widget::*, Component};
+use sauron::html::attributes::*;
+use sauron_ui::{
+    backend::html::widget_tree_to_html_node, event::on, widget::*, Component, Node, Program,
+};
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
@@ -16,21 +18,19 @@ pub enum Msg {
 
 impl App {
     pub fn new(count: u32) -> App {
-        App {
-            click_count: count,
-        }
+        App { click_count: count }
     }
 }
 
 impl Component<Msg> for App {
     fn update(&mut self, msg: Msg) {
-        match msg{
+        match msg {
             Msg::Click => self.click_count += 1,
         }
     }
 
     fn view(&self) -> Node<Msg> {
-        let widget = row(
+        row(
             [],
             [
                 column(
@@ -46,7 +46,6 @@ impl Component<Msg> for App {
                     &format!("Hello: {}", self.click_count),
                 ),
             ],
-        );
-        widget_tree_to_html_node(widget)
+        )
     }
 }

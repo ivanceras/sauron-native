@@ -4,6 +4,7 @@ use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(feature = "with-tui")] {
+        use sauron_ui::backend::tui::widget_node_tree_to_tui_widget;
         use std::io;
         use std::io::Stdout;
         use termion::event::Event as TermEvent;
@@ -23,12 +24,14 @@ cfg_if! {
         use std::sync::mpsc;
         use std::thread;
         use std::time::Duration;
+        use std::fmt::Debug;
 
         use sauron_ui::backend::tui::TuiWidget;
         use sauron_ui::event::*;
         use sauron_ui::widget::*;
         use sauron_ui::Node;
         use termion::input::TermRead;
+        use sauron_ui::Component;
 
         /// A small event handler that wrap termion input and tick events. Each event
         /// type is handled in its own thread and returned to a common `Receiver`
@@ -111,6 +114,11 @@ cfg_if! {
             }
         }
 
+        #[derive(Clone,Debug)]
+        enum Msg{
+            Click,
+        }
+
         /// App holds the state of the application
         struct App {
             /// Current value of the input box
@@ -130,10 +138,13 @@ cfg_if! {
             }
         }
 
-        impl App {
-            fn view(&self) -> Node {
+        impl Component<Msg> for App {
+            fn update(&mut self, msg: Msg) {
+            }
+            fn view(&self) -> Node<Msg>
+            {
                 let vdom = row([], [column([], [])]);
-                Node(vdom)
+                vdom
             }
         }
 
@@ -154,9 +165,8 @@ cfg_if! {
                 )
                 .split(f.size());
 
-            let widget: WidgetNode = text("HI --> ");
-            let caesar_node: Node = Node(widget);
-            let tuiw: TuiWidget = caesar_node.into();
+            let widget:Node<Msg> = text("HI --> ");
+            let tuiw: TuiWidget = widget_node_tree_to_tui_widget(widget);
 
             Paragraph::new([Text::raw(&app.input)].iter())
                 .style(Style::default().fg(Color::Yellow))

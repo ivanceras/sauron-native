@@ -1,4 +1,5 @@
 use crate::widget::Widget;
+use std::fmt::Debug;
 use tui::{
     layout::{Direction, Layout},
     widgets::Text,
@@ -19,27 +20,21 @@ fn widget_to_tui_widget<'t>(widget: crate::Widget) -> TuiWidget<'t> {
     }
 }
 
-fn widget_node_tree_to_tui_widget<'t, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget<'t> {
+#[allow(unused)]
+pub fn widget_node_tree_to_tui_widget<'t, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget<'t>
+where
+    MSG: Clone + Debug + 'static,
+{
     match widget_node {
         crate::Node::Element(widget) => {
-            let mut tui_node: TuiWidget = widget_to_tui_widget(widget.tag);
-            if let Some(tui_element) = widget_node.as_element() {
-                for widget_child in widget.children {
-                    let mut tui_child: TuiWidget = widget_node_tree_to_tui_widget(widget_child);
-                    if let Some(child_element) = tui_child.as_element() {
-                        for (name, value) in &child_element.attrs {
-                            println!(
-                                "What to do with {}={} in an {} tui widget",
-                                name, value, child_element
-                            );
-                        }
-                        for (event, cb) in &child_element.events {
-                            println!(
-                                "What to do with event {} in {} tui widget",
-                                event, child_element
-                            );
-                        }
-                    }
+            let tui_node: TuiWidget = widget_to_tui_widget(widget.tag);
+            for widget_child in widget.children {
+                let mut _tui_child: TuiWidget = widget_node_tree_to_tui_widget(widget_child);
+                for (name, value) in &widget.attrs {
+                    println!("What to do with {}={} in an tui widget", name, value);
+                }
+                for (event, _cb) in &widget.events {
+                    println!("What to do with event {} in tui widget", event,);
                 }
             }
             tui_node
