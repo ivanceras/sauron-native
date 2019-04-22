@@ -8,25 +8,12 @@
     <script src='pkg/cross_widget.js'></script>
     <script type=module>
         const { initialize } = wasm_bindgen;
-        let client;
-        let update_scheduled = false;
-        window.GlobalJS = function(){}
-        window.GlobalJS.prototype.update = function(){
-            if (!update_scheduled) {
-                requestAnimationFrame(() => {
-                    client.render();
-                    update_scheduled = false;
-                })
-            }
-            update_scheduled = true;
-        }
-        window.global_js = new GlobalJS();
-
         async function run() {
             await wasm_bindgen('pkg/cross_widget_bg.wasm');
-            client = initialize();
+            initialize("Hello");
         }
         run();
+
     </script>
     <div id="web-app">
     </div>

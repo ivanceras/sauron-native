@@ -13,10 +13,35 @@ edition = "2018"
 publish = false
 
 [dependencies]
-sauron = "0.1.0"
-sauron_vdom = "0.1.0"
+sauron = "0.3.0"
+sauron_vdom = "0.3.0"
 tui = { version = "0.5.0", optional = true }
 termion = { version = "1.5", optional= true }
+wasm-bindgen = { version = "0.2.42", optional = true }
+
+[dependencies.web-sys]
+version = "0.3.19"
+optional = true
+features = [
+    "Comment",
+    "console",
+    "Document",
+    "Element",
+    "Event",
+    "HtmlElement",
+    "EventTarget",
+    "KeyboardEvent",
+    "HtmlCollection",
+    "HtmlInputElement",
+    "HtmlTextAreaElement",
+    "MouseEvent",
+    "Node",
+    "NodeList",
+    "Text",
+    "CharacterData",
+    "Performance",
+    "Window",
+]
 
 [dev-dependencies]
 stderrlog = "0.4"
@@ -27,8 +52,10 @@ wasm-bindgen-test = "0.2.33"
 cfg-if = "0.1.7"
 
 
+
 [features]
 with-tui = ["tui", "termion"]
+with-html = ["web-sys", "wasm-bindgen"]
 
 [workspace]
 members = [
@@ -40,6 +67,6 @@ exclude = [
 ]
 
 [replace]
-"sauron:0.1.0" = { path = "../sauron" }
-"sauron_vdom:0.1.0" = { path = "../sauron/crates/sauron_vdom" }
+"sauron:0.3.0" = { path = "../sauron" }
+"sauron_vdom:0.3.0" = { path = "../sauron/crates/sauron_vdom" }
 

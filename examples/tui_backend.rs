@@ -28,7 +28,6 @@ cfg_if! {
         use sauron_ui::event::*;
         use sauron_ui::widget::*;
         use sauron_ui::Node;
-        use sauron_ui::WidgetNode;
         use termion::input::TermRead;
 
         /// A small event handler that wrap termion input and tick events. Each event
@@ -236,5 +235,4 @@ cfg_if! {
 }
 
 #[cfg(not(feature = "with-tui"))]
-fn main(){
-}
+fn main() {}

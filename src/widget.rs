@@ -1,6 +1,6 @@
-use crate::WidgetNode;
+use crate::{Attribute, Node};
 use sauron_vdom::builder::element;
-use sauron_vdom::builder::Attribute;
+use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
 pub enum Widget {
@@ -10,37 +10,44 @@ pub enum Widget {
     Text(String),
 }
 
-pub fn widget<'a, A, C>(widget: Widget, attrs: A, children: C) -> WidgetNode
+pub fn widget<'a, A, C, MSG>(widget: Widget, attrs: A, children: C) -> Node<MSG>
 where
-    C: AsRef<[WidgetNode]>,
-    A: AsRef<[Attribute<'a>]>,
+    C: AsRef<[Node<MSG>]>,
+    A: AsRef<[Attribute<'a, MSG>]>,
+    MSG: Clone + Debug + 'static,
 {
     element(widget, attrs, children)
 }
 
-pub fn column<'a, A, C>(attrs: A, children: C) -> WidgetNode
+pub fn column<'a, A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
-    C: AsRef<[WidgetNode]>,
-    A: AsRef<[Attribute<'a>]>,
+    C: AsRef<[Node<MSG>]>,
+    A: AsRef<[Attribute<'a, MSG>]>,
+    MSG: Clone + Debug + 'static,
 {
     widget(Widget::Column, attrs, children)
 }
 
-pub fn row<'a, A, C>(attrs: A, children: C) -> WidgetNode
+pub fn row<'a, A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
-    C: AsRef<[WidgetNode]>,
-    A: AsRef<[Attribute<'a>]>,
+    C: AsRef<[Node<MSG>]>,
+    A: AsRef<[Attribute<'a, MSG>]>,
+    MSG: Clone + Debug + 'static,
 {
     widget(Widget::Row, attrs, children)
 }
 
-pub fn button<'a, A>(attrs: A, txt: &str) -> WidgetNode
+pub fn button<'a, A, MSG>(attrs: A, txt: &str) -> Node<MSG>
 where
-    A: AsRef<[Attribute<'a>]>,
+    A: AsRef<[Attribute<'a, MSG>]>,
+    MSG: Clone + Debug + 'static,
 {
     widget(Widget::Button(txt.to_string()), attrs, [])
 }
 
-pub fn text(txt: &str) -> WidgetNode {
+pub fn text<MSG>(txt: &str) -> Node<MSG>
+where
+    MSG: Clone + Debug + 'static,
+{
     widget(Widget::Text(txt.to_string()), [], [])
 }

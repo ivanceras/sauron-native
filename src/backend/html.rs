@@ -1,51 +1,61 @@
-use crate::widget::Widget;
-use sauron::html::attributes::*;
-use sauron::html::*;
+use crate::Widget;
+use sauron::html::{attributes::*, div, input, text};
+use std::fmt::Debug;
 
-impl Into<sauron::Node> for Widget {
-    fn into(self) -> sauron::Node {
-        match self {
-            Widget::Column => div(
-                [style(
-                    "display:flexbox;\
-                     flex-direction:column",
-                )],
-                [],
-            ),
-            Widget::Row => div(
-                [style(
-                    "display:flexbox;\
-                     flex-direction:row",
-                )],
-                [],
-            ),
-            Widget::Button(txt) => input([r#type("button"), value(txt)], []),
-            Widget::Text(txt) => text(txt),
-        }
+/// convert Widget into an equivalent html node
+fn widget_to_html<MSG>(widget: Widget) -> sauron::Node<MSG>
+where
+    MSG: Clone + Debug + 'static,
+{
+    match widget {
+        Widget::Column => div(
+            [style(
+                "display:flexbox;\
+                 flex-direction:column",
+            )],
+            [],
+        ),
+        Widget::Row => div(
+            [style(
+                "display:flexbox;\
+                 flex-direction:row",
+            )],
+            [],
+        ),
+        Widget::Button(txt) => input([r#type("button"), value(txt)], []),
+        Widget::Text(txt) => text(&txt),
     }
 }
 
-impl Into<sauron::Node> for crate::Node {
-    fn into(self) -> sauron::Node {
-        match self.0 {
-            sauron_vdom::Node::Element(velm) => {
-                let mut tag: sauron::Node = velm.tag.into();
-                if let Some(element) = tag.as_element() {
-                    for child in velm.children {
-                        let child_node = crate::Node(child);
-                        let cnode: sauron::Node = child_node.into();
-                        element.children.push(cnode);
-                    }
-                    for (att, att_value) in velm.attrs {
-                        element.attrs.insert(att, att_value);
-                    }
-                    for (evt, callback) in velm.events {
-                        element.events.insert(evt, callback);
-                    }
+#[allow(unused)]
+/// converts widget virtual node tree into an html node tree
+pub fn widget_tree_to_html_node<MSG>(widget_node: crate::Node<MSG>) -> sauron::Node<MSG>
+where
+    MSG: Clone + Debug + 'static,
+{
+    match widget_node {
+        crate::Node::Element(widget) => {
+            // convert the Widget tag to html node
+            let mut html_node: sauron::Node<MSG> = widget_to_html(widget.tag);
+            // cast the html node to element
+            if let Some(html_element) = html_node.as_element() {
+                for widget_child in widget.children {
+                    // convert all widget child to an html child node
+                    let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
+                    // attached as children to the html node, all of the widget's children
+                    html_element.children.push(html_child);
                 }
-                tag
+
+                // attach the attributes and event callbacks
+                for (name, value) in &widget.attrs {
+                    html_element.attrs.insert(name.to_string(), value.clone());
+                }
+                for (event, cb) in &widget.events {
+                    html_element.events.insert(event.to_string(), cb.clone());
+                }
             }
-            sauron_vdom::Node::Text(txt) => text(txt.text),
+            html_node
         }
+        crate::Node::Text(txt) => text(txt.text),
     }
 }
