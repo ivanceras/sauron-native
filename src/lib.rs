@@ -15,6 +15,7 @@ mod component;
 mod program;
 pub mod widget;
 
+pub use backend::Backend;
 pub use component::Component;
 pub use program::Program;
 pub use widget::Widget;

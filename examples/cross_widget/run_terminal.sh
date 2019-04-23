@@ -2,5 +2,5 @@
 #!/bin/bash
 
 set -v
-cargo run --features "termion tui"
+cargo run --features "with-html with-tui"
 

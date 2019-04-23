@@ -42,7 +42,10 @@ impl Component<Msg> for App {
                     [button([], "column2"), button([], "c2 element2")],
                 ),
                 button(
-                    [on("click", move |_| Msg::Click)],
+                    [on("click", |_| {
+                        sauron::log("Button is clicked!");
+                        Msg::Click
+                    })],
                     &format!("Hello: {}", self.click_count),
                 ),
             ],

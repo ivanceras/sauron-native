@@ -1,14 +1,13 @@
-use app::App;
+use app::{App, Msg};
 use sauron::body;
-use sauron_ui::{Component, Program};
+use sauron_ui::{backend::HtmlBackend, Component, Program};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
-mod app;
-use app::Msg;
+pub mod app;
 
 #[wasm_bindgen]
 pub fn initialize(initial_state: &str) {
     sauron::log!("Initial state: {}", initial_state);
-    Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, HtmlBackend<App, Msg>>> = Program::new(App::new(1));
 }

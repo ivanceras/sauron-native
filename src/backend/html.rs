@@ -1,6 +1,70 @@
-use crate::Widget;
-use sauron::html::{attributes::*, div, input, text};
-use std::fmt::Debug;
+use crate::{Backend, Component, Widget};
+use sauron::{
+    html::{attributes::*, div, input, text},
+    Component as SauronComponent, DomUpdater, Program,
+};
+use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+
+pub struct HtmlApp<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    app: APP,
+    _phantom_data: PhantomData<MSG>,
+}
+
+pub struct HtmlBackend<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    program: Rc<Program<HtmlApp<APP, MSG>, MSG>>,
+}
+
+impl<APP, MSG> HtmlApp<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    fn new(app: APP) -> Self {
+        HtmlApp {
+            app,
+            _phantom_data: PhantomData,
+        }
+    }
+}
+
+impl<APP, MSG> sauron::Component<MSG> for HtmlApp<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    fn update(&mut self, msg: MSG) {
+        self.app.update(msg)
+    }
+
+    fn view(&self) -> sauron::Node<MSG> {
+        let view = self.app.view();
+        let html_view = widget_tree_to_html_node(view);
+        html_view
+    }
+}
+
+impl<APP, MSG> Backend<APP, MSG> for HtmlBackend<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    fn init(app: APP) -> Rc<Self> {
+        let html_app = HtmlApp::new(app);
+        let program = sauron::Program::mount_to_body(html_app);
+        let backend = HtmlBackend { program };
+        Rc::new(backend)
+    }
+
+    fn render(self: &Rc<Self>, msg: MSG) {}
+}
 
 /// convert Widget into an equivalent html node
 fn widget_to_html<MSG>(widget: Widget) -> sauron::Node<MSG>

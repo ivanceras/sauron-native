@@ -1,22 +1,41 @@
-use crate::widget::Widget;
-use std::fmt::Debug;
+use crate::{widget::Widget, Backend, Component};
+use std::{fmt::Debug, rc::Rc};
 use tui::{
     layout::{Direction, Layout},
     widgets::Text,
+    Frame,
 };
 
-pub enum TuiWidget<'t,W> 
-    where W: tui::widgets::Widget,
+pub struct TuiBackend {}
+
+impl<APP, MSG> Backend<APP, MSG> for TuiBackend
+where
+    APP: Component<MSG> + 'static,
+    MSG: Clone + Debug + 'static,
+{
+    fn init(app: APP) -> Rc<Self> {
+        let tui_backend = TuiBackend {};
+        Rc::new(tui_backend)
+    }
+
+    fn render(self: &Rc<Self>, msg: MSG) {
+        //self.frame.render();
+    }
+}
+
+pub enum TuiWidget<'t, W>
+where
+    W: tui::widgets::Widget,
 {
     Layout(Layout),
     Widget(W),
     Text(Text<'t>),
 }
 
-impl <'t,W>TuiWidget<'t,W>
-    where W: tui::widgets::Widget,
+impl<'t, W> TuiWidget<'t, W>
+where
+    W: tui::widgets::Widget,
 {
-
     /*
     fn add_children<B>(&mut self, children: Vec<TuiWidget<'t, W>>, frame: &mut tui::Frame<B>)
         where B: tui::backend::Backend,
@@ -36,31 +55,31 @@ impl <'t,W>TuiWidget<'t,W>
     }
     */
 
-    fn as_layout(self) -> Option<tui::layout::Layout>{
-        match self{
+    fn as_layout(self) -> Option<tui::layout::Layout> {
+        match self {
             TuiWidget::Layout(layout) => Some(layout),
             _ => None,
         }
     }
 
-    fn as_tui_widget(self) -> Option<W>{
-        match self{
+    fn as_tui_widget(self) -> Option<W> {
+        match self {
             TuiWidget::Widget(tui_widget) => Some(tui_widget),
             _ => None,
         }
     }
 
     fn as_tui_text(self) -> Option<tui::widgets::Text<'t>> {
-        match self{
+        match self {
             TuiWidget::Text(text) => Some(text),
             _ => None,
         }
     }
-
 }
 
-fn widget_to_tui_widget<'t,W>(widget: crate::Widget) -> TuiWidget<'t,W> 
-    where W: tui::widgets::Widget,
+fn widget_to_tui_widget<'t, W>(widget: crate::Widget) -> TuiWidget<'t, W>
+where
+    W: tui::widgets::Widget,
 {
     match widget {
         Widget::Column => TuiWidget::Layout(Layout::default().direction(Direction::Vertical)),
@@ -71,16 +90,16 @@ fn widget_to_tui_widget<'t,W>(widget: crate::Widget) -> TuiWidget<'t,W>
 }
 
 #[allow(unused)]
-pub fn widget_node_tree_to_tui_widget<'t, W,MSG>(widget_node: crate::Node<MSG>) -> TuiWidget<'t,W>
+pub fn widget_node_tree_to_tui_widget<'t, W, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget<'t, W>
 where
     MSG: Clone + Debug + 'static,
     W: tui::widgets::Widget,
 {
     match widget_node {
         crate::Node::Element(widget) => {
-            let tui_node:TuiWidget<W> = widget_to_tui_widget(widget.tag);
+            let tui_node: TuiWidget<W> = widget_to_tui_widget(widget.tag);
             for widget_child in widget.children {
-                let mut _tui_child:TuiWidget<W> = widget_node_tree_to_tui_widget(widget_child);
+                let mut _tui_child: TuiWidget<W> = widget_node_tree_to_tui_widget(widget_child);
                 for (name, value) in &widget.attrs {
                     println!("What to do with {}={} in an tui widget", name, value);
                 }
@@ -92,11 +111,4 @@ where
         }
         crate::Node::Text(txt) => TuiWidget::Text(Text::raw(txt.text)),
     }
-}
-
-
-/// draw this widget node tree into the terminal buffer
-pub fn draw_widget_node_tree<'t, W,MSG,B>(widget_node: crate::Node<MSG>, frame: &mut tui::Frame<B>)
-        where B: tui::backend::Backend,
-{
 }
