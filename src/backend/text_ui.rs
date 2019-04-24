@@ -1,114 +1,243 @@
 use crate::{widget::Widget, Backend, Component};
-use std::{fmt::Debug, rc::Rc};
+use std::{
+    cell::RefCell,
+    fmt::Debug,
+    io::{self, Stdout},
+    rc::Rc,
+};
+use termion::{
+    input::MouseTerminal,
+    raw::{IntoRawMode, RawTerminal},
+    screen::AlternateScreen,
+};
 use tui::{
-    layout::{Direction, Layout},
-    widgets::Text,
-    Frame,
+    backend::TermionBackend,
+    layout::{Constraint, Direction, Layout, Rect},
+    widgets::{Block, Borders, Paragraph, Text, Widget as TermWidget},
+    Frame, Terminal,
 };
 
-pub struct TuiBackend {}
+use sauron_vdom::{Event, KeyEvent, MouseButton, MouseEvent};
+use std::{marker::PhantomData, sync::mpsc, thread, time::Duration};
+use termion::{
+    event::{
+        Event as TermEvent, Key as TermKey, MouseButton as TermMouseButton,
+        MouseEvent as TermMouseEvent,
+    },
+    input::TermRead,
+};
 
-impl<APP, MSG> Backend<APP, MSG> for TuiBackend
+use crate::{Attribute, Node};
+use nodes::TuiWidget;
+use sauron_vdom::builder::element;
+use tui::style::{Color, Modifier, Style};
+
+mod nodes;
+
+pub struct TuiBackend<APP, MSG> {
+    terminal:
+        Rc<RefCell<Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>>>,
+    app: APP,
+    _phantom_msg: PhantomData<MSG>,
+}
+
+/*
+#[derive(Clone)]
+pub enum TuiWidget {
+    Layout(Direction),
+    Block,
+    Paragraph(String),
+    List,
+    Table,
+    Guage,
+    Tabs,
+}
+*/
+
+pub struct Events {
+    rx: mpsc::Receiver<Event>,
+    input_handle: thread::JoinHandle<()>,
+    tick_handle: thread::JoinHandle<()>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Config {
+    pub tick_rate: Duration,
+}
+
+impl Default for Config {
+    fn default() -> Config {
+        Config {
+            tick_rate: Duration::from_millis(250),
+        }
+    }
+}
+
+impl<APP, MSG> TuiBackend<APP, MSG>
+where
+    APP: Component<MSG> + 'static,
+    MSG: Clone + Debug + 'static,
+{
+    fn start_draw_loop(&self) {
+        let events = Events::new();
+        loop {
+            self.terminal.borrow_mut().draw(|mut frame| {
+                self.draw_ui(frame);
+            });
+
+            match events.next().expect("couldn't read events") {
+                Event::KeyEvent(key) => match key.key.as_ref() {
+                    "q" => {
+                        break;
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+    }
+    fn draw_ui<B>(&self, mut frame: tui::Frame<B>)
+    where
+        B: tui::backend::Backend,
+    {
+        let view = self.app.view();
+        let frame_size = frame.size();
+        let tui_view = nodes::convert_widget_node_tree_to_tui_widget(view);
+        self.draw_widget_node_tree(tui_view, &mut frame, frame_size);
+    }
+    fn draw_widget_node_tree<B>(&self, tui_widget: TuiWidget, frame: &mut Frame<B>, area: Rect)
+    where
+        MSG: Clone + Debug + 'static,
+        B: tui::backend::Backend,
+    {
+        match tui_widget {
+            TuiWidget::Layout(layout) => {
+                let child_count = layout.children.len();
+                let alloted = 100 / child_count as u16;
+                let constraints: Vec<Constraint> = layout
+                    .children
+                    .iter()
+                    .map(|_| Constraint::Percentage(alloted))
+                    .collect();
+                let chunks = Layout::default()
+                    .direction(layout.direction)
+                    .constraints(constraints)
+                    .split(area);
+                for (i, child) in layout.children.into_iter().enumerate() {
+                    self.draw_widget_node_tree(child, frame, chunks[i]);
+                }
+            }
+            TuiWidget::Paragraph(paragraph) => {
+                let text: Vec<Text> = paragraph.text.iter().map(|txt| Text::raw(txt)).collect();
+                let mut actual_paragraph = Paragraph::new(text.iter());
+                if let Some(block) = paragraph.block {
+                    let mut tui_block = tui::widgets::Block::default()
+                        .title_style(block.title_style)
+                        .borders(block.borders)
+                        .border_style(block.border_style)
+                        .style(block.style);
+                    if let Some(title) = block.title {
+                        tui_block.title(title);
+                    }
+
+                    actual_paragraph = actual_paragraph.block(tui_block);
+                }
+                actual_paragraph.render(frame, area);
+            }
+            _ => {}
+        }
+    }
+}
+
+impl<APP, MSG> Backend<APP, MSG> for TuiBackend<APP, MSG>
 where
     APP: Component<MSG> + 'static,
     MSG: Clone + Debug + 'static,
 {
     fn init(app: APP) -> Rc<Self> {
-        let tui_backend = TuiBackend {};
-        Rc::new(tui_backend)
+        println!("Initializing terminal backend");
+        let terminal = setup_terminal().expect("unable to setup terminal");
+        let tui_backend = TuiBackend {
+            terminal: Rc::new(RefCell::new(terminal)),
+            app,
+            _phantom_msg: PhantomData,
+        };
+
+        let backend = Rc::new(tui_backend);
+        backend
     }
 
-    fn render(self: &Rc<Self>, msg: MSG) {
-        //self.frame.render();
-    }
-}
-
-pub enum TuiWidget<'t, W>
-where
-    W: tui::widgets::Widget,
-{
-    Layout(Layout),
-    Widget(W),
-    Text(Text<'t>),
-}
-
-impl<'t, W> TuiWidget<'t, W>
-where
-    W: tui::widgets::Widget,
-{
-    /*
-    fn add_children<B>(&mut self, children: Vec<TuiWidget<'t, W>>, frame: &mut tui::Frame<B>)
-        where B: tui::backend::Backend,
-    {
-        if let Some(layout) = self.as_layout(){
-            let chunks = layout.split(frame.size());
-            for (i,child) in children.into_iter().enumerate(){
-                if let Some(child_layout) = child.as_layout(){
-                    child_layout.split(chunks[i]);
-                }
-
-                if let Some(tui_widget) = self.as_tui_widget(){
-                    tui_widget.render(frame, chunks[i]);
-                }
-            }
-        }
-    }
-    */
-
-    fn as_layout(self) -> Option<tui::layout::Layout> {
-        match self {
-            TuiWidget::Layout(layout) => Some(layout),
-            _ => None,
-        }
-    }
-
-    fn as_tui_widget(self) -> Option<W> {
-        match self {
-            TuiWidget::Widget(tui_widget) => Some(tui_widget),
-            _ => None,
-        }
-    }
-
-    fn as_tui_text(self) -> Option<tui::widgets::Text<'t>> {
-        match self {
-            TuiWidget::Text(text) => Some(text),
-            _ => None,
-        }
+    fn start_render(self: &Rc<Self>) {
+        self.start_draw_loop();
     }
 }
 
-fn widget_to_tui_widget<'t, W>(widget: crate::Widget) -> TuiWidget<'t, W>
-where
-    W: tui::widgets::Widget,
-{
-    match widget {
-        Widget::Column => TuiWidget::Layout(Layout::default().direction(Direction::Vertical)),
-        Widget::Row => TuiWidget::Layout(Layout::default().direction(Direction::Horizontal)),
-        Widget::Button(txt) => TuiWidget::Text(Text::raw(txt)),
-        Widget::Text(txt) => TuiWidget::Text(Text::raw(txt)),
+impl Events {
+    pub fn new() -> Events {
+        Events::with_config(Config::default())
+    }
+
+    pub fn with_config(config: Config) -> Events {
+        let (tx, rx) = mpsc::channel();
+        let input_handle = {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                let stdin = io::stdin();
+                for evt in stdin.events() {
+                    let evt = evt.unwrap();
+                    match evt {
+                        TermEvent::Key(k) => {
+                            if let TermKey::Char(ch) = k {
+                                tx.send(Event::KeyEvent(KeyEvent::new(ch)));
+                            }
+                        }
+                        TermEvent::Mouse(me) => match me {
+                            TermMouseEvent::Press(btn, x, y) => match btn {
+                                TermMouseButton::Left => {
+                                    let event = Event::MouseEvent(MouseEvent::Press(
+                                        MouseButton::Left,
+                                        x,
+                                        y,
+                                    ));
+                                    tx.send(event);
+                                }
+                                _ => {}
+                            },
+                            _ => {}
+                        },
+                        _ => {}
+                    }
+                }
+            })
+        };
+        let tick_handle = {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                let tx = tx.clone();
+                loop {
+                    tx.send(Event::Tick).unwrap();
+                    thread::sleep(config.tick_rate);
+                }
+            })
+        };
+        Events {
+            rx,
+            input_handle,
+            tick_handle,
+        }
+    }
+
+    pub fn next(&self) -> Result<Event, mpsc::RecvError> {
+        self.rx.recv()
     }
 }
 
-#[allow(unused)]
-pub fn widget_node_tree_to_tui_widget<'t, W, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget<'t, W>
-where
-    MSG: Clone + Debug + 'static,
-    W: tui::widgets::Widget,
+fn setup_terminal(
+) -> Result<Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>, io::Error>
 {
-    match widget_node {
-        crate::Node::Element(widget) => {
-            let tui_node: TuiWidget<W> = widget_to_tui_widget(widget.tag);
-            for widget_child in widget.children {
-                let mut _tui_child: TuiWidget<W> = widget_node_tree_to_tui_widget(widget_child);
-                for (name, value) in &widget.attrs {
-                    println!("What to do with {}={} in an tui widget", name, value);
-                }
-                for (event, _cb) in &widget.events {
-                    println!("What to do with event {} in tui widget", event,);
-                }
-            }
-            tui_node
-        }
-        crate::Node::Text(txt) => TuiWidget::Text(Text::raw(txt.text)),
-    }
+    let stdout = io::stdout().into_raw_mode()?;
+    let stdout = MouseTerminal::from(stdout);
+    let stdout = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
+    Terminal::new(backend)
 }

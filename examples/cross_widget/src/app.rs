@@ -48,6 +48,8 @@ impl Component<Msg> for App {
                     })],
                     &format!("Hello: {}", self.click_count),
                 ),
+                block("I'm a block kid!"),
+                text("Hello, will this be a paragrapah"),
             ],
         )
     }

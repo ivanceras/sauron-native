@@ -6,5 +6,6 @@ use app::{App, Msg};
 
 fn main() {
     println!("tui mode");
-    let program: Rc<Program<App, Msg, TuiBackend>> = Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, TuiBackend<App, Msg>>> = Program::new(App::new(1));
+    program.dispatch(Msg::Click);
 }

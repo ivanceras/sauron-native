@@ -62,8 +62,6 @@ where
         let backend = HtmlBackend { program };
         Rc::new(backend)
     }
-
-    fn render(self: &Rc<Self>, msg: MSG) {}
 }
 
 /// convert Widget into an equivalent html node
@@ -75,19 +73,24 @@ where
         Widget::Column => div(
             [style(
                 "display:flexbox;\
-                 flex-direction:column",
+                 flex-direction:column;\
+                 border: 1px solid blue;\
+                 ",
             )],
-            [],
+            [text("This is a Column")],
         ),
         Widget::Row => div(
             [style(
                 "display:flexbox;\
-                 flex-direction:row",
+                 flex-direction:row;\
+                 border: 1px solid green;\
+                 ",
             )],
-            [],
+            [text("This is a Row")],
         ),
         Widget::Button(txt) => input([r#type("button"), value(txt)], []),
         Widget::Text(txt) => text(&txt),
+        Widget::Block => text("This is a block"),
     }
 }
 

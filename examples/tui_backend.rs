@@ -4,7 +4,7 @@ use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(feature = "with-tui")] {
-        use sauron_ui::backend::tui::widget_node_tree_to_tui_widget;
+        use sauron_ui::backend::text_ui::widget_node_tree_to_tui_widget;
         use std::io;
         use std::io::Stdout;
         use termion::event::Event as TermEvent;
@@ -26,7 +26,7 @@ cfg_if! {
         use std::time::Duration;
         use std::fmt::Debug;
 
-        use sauron_ui::backend::tui::TuiWidget;
+        use sauron_ui::backend::text_ui::TuiWidget;
         use sauron_ui::event::*;
         use sauron_ui::widget::*;
         use sauron_ui::Node;
@@ -166,7 +166,7 @@ cfg_if! {
                 .split(f.size());
 
             let widget:Node<Msg> = text("HI --> ");
-            let tuiw: TuiWidget = widget_node_tree_to_tui_widget(widget);
+            let tuiw: TuiWidget<sauron_ui::Widget> = widget_node_tree_to_tui_widget(widget);
 
             Paragraph::new([Text::raw(&app.input)].iter())
                 .style(Style::default().fg(Color::Yellow))

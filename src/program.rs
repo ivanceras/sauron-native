@@ -19,6 +19,7 @@ where
     /// Create an Rc wrapped instance of program, initializing DomUpdater with the initial view
     /// and root node, but doesn't mount it yet.
     pub fn new(app: APP) -> Rc<Self> {
+        println!("Instantiation..");
         let program = Program {
             backend: B::init(app),
             _phantom_data: PhantomData,
@@ -28,5 +29,7 @@ where
     }
 
     /// This is called when an event is triggered in the html DOM.
-    fn dispatch(self: &Rc<Self>, msg: MSG) {}
+    pub fn dispatch(self: &Rc<Self>, msg: MSG) {
+        self.backend.start_render();
+    }
 }

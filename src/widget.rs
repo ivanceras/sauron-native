@@ -8,6 +8,7 @@ pub enum Widget {
     Row,
     Button(String),
     Text(String),
+    Block,
 }
 
 pub fn widget<'a, A, C, MSG>(widget: Widget, attrs: A, children: C) -> Node<MSG>
@@ -50,4 +51,11 @@ where
     MSG: Clone + Debug + 'static,
 {
     widget(Widget::Text(txt.to_string()), [], [])
+}
+
+pub fn block<MSG>(txt: &str) -> Node<MSG>
+where
+    MSG: Clone + Debug + 'static,
+{
+    widget(Widget::Block, [], [])
 }

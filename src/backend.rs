@@ -15,6 +15,9 @@ where
 {
     fn init(app: APP) -> Rc<Self>;
 
-    /// backend will render the view
-    fn render(self: &Rc<Self>, msg: MSG);
+    fn start_render(self: &Rc<Self>) {
+        // html backend don't use render loop
+        //
+        // this is useful for tui backend
+    }
 }
