@@ -35,7 +35,14 @@ impl Component<Msg> for App {
             [
                 column(
                     [class("column1")],
-                    [button([], "column1"), button([], "c1 element2")],
+                    [
+                        button([], "column1 element1"),
+                        button([], "column1 element2"),
+                        button([], "column1 element3"),
+                        button([], "column1 element4"),
+                        button([], "column1 element5"),
+                        button([], "column1 element6"),
+                    ],
                 ),
                 column(
                     [class("column2")],
