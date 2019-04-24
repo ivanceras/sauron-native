@@ -8,58 +8,16 @@ use tui::{
 };
 
 #[derive(Clone)]
-pub enum TuiWidget<'a> {
-    Layout(Layout<'a>),
-    Paragraph(Paragraph<'a>),
-    List(List<'a>),
-    Block(Block<'a>),
+pub enum TuiWidget {
+    Layout(Layout),
+    Paragraph(Paragraph),
+    List(List),
+    Block(Block),
 }
-
-impl<'a> TuiWidget<'a> {
-    fn as_layout(&mut self) -> Option<&mut Layout<'a>> {
-        match self {
-            TuiWidget::Layout(layout) => Some(layout),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Clone)]
-pub struct Layout<'a> {
-    pub direction: Direction,
-    pub margin: u16,
-    pub constraints: Vec<Constraint>,
-    pub children: Vec<TuiWidget<'a>>,
-}
-
-impl<'a> Default for Layout<'a> {
-    fn default() -> Self {
-        Layout {
-            direction: Direction::Vertical,
-            margin: 0,
-            constraints: Vec::new(),
-            children: vec![],
-        }
-    }
-}
-
-fn layout<'a, C>(direction: Direction, constraints: Vec<Constraint>, children: C) -> TuiWidget<'a>
-where
-    C: AsRef<[TuiWidget<'a>]>,
-{
-    let mut layout = Layout::default();
-    layout.direction = direction;
-    layout.constraints = constraints;
-    for child in children.as_ref().iter() {
-        layout.children.push(child.clone());
-    }
-    TuiWidget::Layout(layout)
-}
-
-#[derive(Clone)]
-pub struct Paragraph<'a> {
+pub struct Paragraph {
     /// A block to wrap the widget in
-    pub block: Option<Block<'a>>,
+    pub block: Option<Block>,
     /// Widget style
     pub style: Style,
     /// Wrap the text or not
@@ -72,7 +30,85 @@ pub struct Paragraph<'a> {
     pub alignment: Alignment,
 }
 
-impl<'a> Default for Paragraph<'a> {
+#[derive(Clone)]
+pub struct Layout {
+    pub direction: Direction,
+    pub margin: u16,
+    pub constraints: Vec<Constraint>,
+    pub children: Vec<TuiWidget>,
+}
+
+#[derive(Clone)]
+pub struct List {
+    block: Option<Block>,
+    items: Vec<String>,
+    style: Style,
+    start_corner: Corner,
+}
+
+#[derive(Clone)]
+pub struct Block {
+    /// Optional title place on the upper left of the block
+    pub title: Option<String>,
+    /// Title style
+    pub title_style: Style,
+    /// Visible borders
+    pub borders: Borders,
+    /// Border style
+    pub border_style: Style,
+    /// Widget style
+    pub style: Style,
+    /// preferred constraint when parent is a layout
+    pub preferred_constraint: Option<Constraint>,
+}
+
+impl TuiWidget {
+    fn as_layout(&mut self) -> Option<&mut Layout> {
+        match self {
+            TuiWidget::Layout(layout) => Some(layout),
+            _ => None,
+        }
+    }
+
+    pub fn preferred_constraint(&self) -> Option<Constraint> {
+        match self {
+            TuiWidget::Block(block) => block.preferred_constraint,
+            _ => None,
+        }
+    }
+}
+
+impl Layout {
+    fn add_children(&mut self, children: Vec<TuiWidget>) {
+        for child in children {
+            self.children.push(child);
+        }
+        let child_count = self.children.len();
+        if self.constraints.is_empty() {
+            if child_count > 0 {
+                let alloted = 100 / child_count as u16;
+                let new_constraints = self
+                    .children
+                    .iter()
+                    .map(|child| Constraint::Percentage(alloted))
+                    .collect();
+                self.constraints = new_constraints;
+            }
+        }
+    }
+}
+
+impl Default for Layout {
+    fn default() -> Self {
+        Layout {
+            direction: Direction::Vertical,
+            margin: 0,
+            constraints: Vec::new(),
+            children: vec![],
+        }
+    }
+}
+impl Default for Paragraph {
     fn default() -> Self {
         Paragraph {
             block: None,
@@ -85,36 +121,7 @@ impl<'a> Default for Paragraph<'a> {
     }
 }
 
-fn paragraph<'a>(block: Option<Block<'a>>, text: Vec<String>) -> TuiWidget<'a> {
-    let mut paragraph = Paragraph::default();
-    paragraph.block = block;
-    paragraph.text = text;
-    TuiWidget::Paragraph(paragraph)
-}
-
-#[derive(Clone)]
-pub struct List<'b> {
-    block: Option<Block<'b>>,
-    items: Vec<String>,
-    style: Style,
-    start_corner: Corner,
-}
-
-#[derive(Clone)]
-pub struct Block<'a> {
-    /// Optional title place on the upper left of the block
-    pub title: Option<&'a str>,
-    /// Title style
-    pub title_style: Style,
-    /// Visible borders
-    pub borders: Borders,
-    /// Border style
-    pub border_style: Style,
-    /// Widget style
-    pub style: Style,
-}
-
-impl<'a> Default for Block<'a> {
+impl Default for Block {
     fn default() -> Self {
         Block {
             title: None,
@@ -122,36 +129,73 @@ impl<'a> Default for Block<'a> {
             borders: Borders::ALL,
             border_style: Style::default(),
             style: Style::default(),
+            preferred_constraint: None,
         }
     }
 }
 
-fn plain_block<'a>(title: &'a str) -> Block<'a> {
-    let mut block: Block<'a> = Block::default();
-    block.title = Some(title);
+fn layout<'a, C>(direction: Direction, constraints: Vec<Constraint>, children: C) -> TuiWidget
+where
+    C: AsRef<[TuiWidget]>,
+{
+    let mut layout = Layout::default();
+
+    layout.direction = direction;
+    let mut all_children: Vec<TuiWidget> = vec![];
+    for child in children.as_ref() {
+        all_children.push(child.clone());
+    }
+    layout.add_children(all_children);
+    TuiWidget::Layout(layout)
+}
+
+fn paragraph(block: Option<Block>, text: Vec<String>) -> TuiWidget {
+    let mut paragraph = Paragraph::default();
+    paragraph.block = block;
+    paragraph.text = text;
+    TuiWidget::Paragraph(paragraph)
+}
+
+fn button(text: &str) -> TuiWidget {
+    layout(
+        Direction::Horizontal,
+        vec![Constraint::Max(1), Constraint::Min(1)],
+        [paragraph(Some(plain_block()), vec![text.to_string()])],
+    )
+}
+
+fn plain_block() -> Block {
+    let mut block: Block = Block::default();
     block
 }
 
-fn widget_to_tui_node<'a>(widget: Widget) -> TuiWidget<'a> {
+fn block(title: &str) -> TuiWidget {
+    let mut block: Block = Block::default();
+    block.title = Some(title.to_string());
+    block.borders = Borders::ALL;
+    TuiWidget::Block(block)
+}
+
+fn widget_to_tui_node(widget: Widget) -> TuiWidget {
     match widget {
         Widget::Column => layout(Direction::Horizontal, vec![], []),
         Widget::Row => layout(Direction::Vertical, vec![], []),
-        Widget::Button(txt) => paragraph(Some(plain_block("button")), vec![txt]),
-        Widget::Text(txt) => paragraph(Some(plain_block("text")), vec![txt]),
-        Widget::Block => paragraph(Some(plain_block("block")), vec!["Im a block".to_string()]),
+        Widget::Button(txt) => button(&txt),
+        Widget::Text(txt) => paragraph(Some(plain_block()), vec![txt]),
+        Widget::Block(title) => block(&*title),
     }
 }
-pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(
-    widget_node: crate::Node<MSG>,
-) -> TuiWidget<'a> {
+pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget {
     match widget_node {
         crate::Node::Element(element) => {
             let mut tui_node = widget_to_tui_node(element.tag);
             if let Some(mut layout) = tui_node.as_layout() {
+                let mut children = vec![];
                 for child in element.children {
                     let tui_child = convert_widget_node_tree_to_tui_widget(child);
-                    layout.children.push(tui_child);
+                    children.push(tui_child);
                 }
+                layout.add_children(children);
             }
             tui_node
         }

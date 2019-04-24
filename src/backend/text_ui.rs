@@ -41,19 +41,6 @@ pub struct TuiBackend<APP, MSG> {
     _phantom_msg: PhantomData<MSG>,
 }
 
-/*
-#[derive(Clone)]
-pub enum TuiWidget {
-    Layout(Direction),
-    Block,
-    Paragraph(String),
-    List,
-    Table,
-    Guage,
-    Tabs,
-}
-*/
-
 pub struct Events {
     rx: mpsc::Receiver<Event>,
     input_handle: thread::JoinHandle<()>,
@@ -112,16 +99,9 @@ where
     {
         match tui_widget {
             TuiWidget::Layout(layout) => {
-                let child_count = layout.children.len();
-                let alloted = 100 / child_count as u16;
-                let constraints: Vec<Constraint> = layout
-                    .children
-                    .iter()
-                    .map(|_| Constraint::Percentage(alloted))
-                    .collect();
                 let chunks = Layout::default()
                     .direction(layout.direction)
-                    .constraints(constraints)
+                    .constraints(layout.constraints)
                     .split(area);
                 for (i, child) in layout.children.into_iter().enumerate() {
                     self.draw_widget_node_tree(child, frame, chunks[i]);
@@ -130,19 +110,30 @@ where
             TuiWidget::Paragraph(paragraph) => {
                 let text: Vec<Text> = paragraph.text.iter().map(|txt| Text::raw(txt)).collect();
                 let mut actual_paragraph = Paragraph::new(text.iter());
-                if let Some(block) = paragraph.block {
+                if let Some(block) = &paragraph.block {
                     let mut tui_block = tui::widgets::Block::default()
                         .title_style(block.title_style)
                         .borders(block.borders)
                         .border_style(block.border_style)
                         .style(block.style);
-                    if let Some(title) = block.title {
-                        tui_block.title(title);
+                    if let Some(title) = &block.title {
+                        tui_block = tui_block.title(&title);
                     }
 
                     actual_paragraph = actual_paragraph.block(tui_block);
                 }
                 actual_paragraph.render(frame, area);
+            }
+            TuiWidget::Block(block) => {
+                let mut actual_block = tui::widgets::Block::default()
+                    .title_style(block.title_style)
+                    .borders(block.borders)
+                    .border_style(block.border_style)
+                    .style(block.style);
+                if let Some(title) = &block.title {
+                    actual_block = actual_block.title(&title)
+                }
+                actual_block.render(frame, area);
             }
             _ => {}
         }

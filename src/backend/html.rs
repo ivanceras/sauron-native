@@ -90,7 +90,7 @@ where
         ),
         Widget::Button(txt) => input([r#type("button"), value(txt)], []),
         Widget::Text(txt) => text(&txt),
-        Widget::Block => text("This is a block"),
+        Widget::Block(title) => div([], [text(title)]),
     }
 }
 
