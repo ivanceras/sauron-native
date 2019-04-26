@@ -115,10 +115,10 @@ where
 
                 // attach the attributes and event callbacks
                 for (name, value) in &widget.attrs {
-                    html_element.attrs.insert(name.to_string(), value.clone());
+                    html_element.attrs.insert(name, value.clone());
                 }
                 for (event, cb) in &widget.events {
-                    html_element.events.insert(event.to_string(), cb.clone());
+                    html_element.events.insert(event, cb.clone());
                 }
             }
             html_node

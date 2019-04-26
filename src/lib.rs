@@ -20,7 +20,7 @@ pub use component::Component;
 pub use program::Program;
 pub use widget::Widget;
 
-pub type Node<MSG> = sauron_vdom::Node<Widget, Callback<Event, MSG>>;
-pub type Element<MSG> = sauron_vdom::Element<Widget, Callback<Event, MSG>>;
-pub type Patch<'a, MSG> = sauron_vdom::Patch<'a, Widget, Callback<Event, MSG>>;
-pub type Attribute<'a, MSG> = sauron_vdom::builder::Attribute<'a, Callback<Event, MSG>>;
+pub type Node<MSG> = sauron_vdom::Node<Widget, MSG>;
+pub type Element<MSG> = sauron_vdom::Element<Widget, MSG>;
+pub type Patch<'a, MSG> = sauron_vdom::Patch<'a, Widget, MSG>;
+pub type Attribute<MSG> = sauron_vdom::builder::Attribute<MSG>;

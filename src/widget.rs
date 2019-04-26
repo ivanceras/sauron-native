@@ -11,36 +11,36 @@ pub enum Widget {
     Block(String),
 }
 
-pub fn widget<'a, A, C, MSG>(widget: Widget, attrs: A, children: C) -> Node<MSG>
+pub fn widget<A, C, MSG>(widget: Widget, attrs: A, children: C) -> Node<MSG>
 where
     C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<'a, MSG>]>,
+    A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
     element(widget, attrs, children)
 }
 
-pub fn column<'a, A, C, MSG>(attrs: A, children: C) -> Node<MSG>
+pub fn column<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
     C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<'a, MSG>]>,
+    A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
     widget(Widget::Column, attrs, children)
 }
 
-pub fn row<'a, A, C, MSG>(attrs: A, children: C) -> Node<MSG>
+pub fn row<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
     C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<'a, MSG>]>,
+    A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
     widget(Widget::Row, attrs, children)
 }
 
-pub fn button<'a, A, MSG>(attrs: A, txt: &str) -> Node<MSG>
+pub fn button<A, MSG>(attrs: A, txt: &str) -> Node<MSG>
 where
-    A: AsRef<[Attribute<'a, MSG>]>,
+    A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
     widget(Widget::Button(txt.to_string()), attrs, [])
