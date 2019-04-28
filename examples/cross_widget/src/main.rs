@@ -1,4 +1,4 @@
-use sauron_ui::{backend::text_ui::TuiBackend, Program};
+use sauron_native::{backend::text_ui::TuiBackend, Program};
 use std::rc::Rc;
 
 pub mod app;

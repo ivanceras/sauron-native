@@ -1,5 +1,5 @@
 use sauron::html::attributes::*;
-use sauron_ui::{
+use sauron_native::{
     backend::html::widget_tree_to_html_node, event::on, widget::*, Component, Node, Program,
 };
 use std::{
@@ -56,11 +56,13 @@ impl Component<Msg> for App {
                     &format!("Hello: {}", self.click_count),
                 ),
                 block("I'm a block kid!"),
-                text("Hello, will this be a paragrapah\n
+                text(
+                    "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
                     dog. Lorem ipsun\n
                     The shadows of mordor\n
-                     "),
+                     ",
+                ),
             ],
         )
     }

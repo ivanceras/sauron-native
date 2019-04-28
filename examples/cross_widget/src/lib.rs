@@ -1,6 +1,6 @@
 use app::{App, Msg};
 use sauron::body;
-use sauron_ui::{backend::HtmlBackend, Component, Program};
+use sauron_native::{backend::HtmlBackend, Component, Program};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 

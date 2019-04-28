@@ -17,7 +17,7 @@ use tui::{
     Frame, Terminal,
 };
 
-use sauron_vdom::{Event, KeyEvent, MouseButton, MouseEvent};
+use sauron_vdom::{Event, KeyEvent, MouseEvent};
 use std::{marker::PhantomData, sync::mpsc, thread, time::Duration};
 use termion::{
     event::{
@@ -179,23 +179,10 @@ impl Events {
                     match evt {
                         TermEvent::Key(k) => {
                             if let TermKey::Char(ch) = k {
-                                tx.send(Event::KeyEvent(KeyEvent::new(ch)));
+                                tx.send(Event::KeyEvent(KeyEvent::new(ch.to_string())));
                             }
                         }
-                        TermEvent::Mouse(me) => match me {
-                            TermMouseEvent::Press(btn, x, y) => match btn {
-                                TermMouseButton::Left => {
-                                    let event = Event::MouseEvent(MouseEvent::Press(
-                                        MouseButton::Left,
-                                        x,
-                                        y,
-                                    ));
-                                    tx.send(event);
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        },
+                        TermEvent::Mouse(me) => {}
                         _ => {}
                     }
                 }
@@ -206,7 +193,7 @@ impl Events {
             thread::spawn(move || {
                 let tx = tx.clone();
                 loop {
-                    tx.send(Event::Tick).unwrap();
+                    //tx.send(Event::Tick).unwrap();
                     thread::sleep(config.tick_rate);
                 }
             })
