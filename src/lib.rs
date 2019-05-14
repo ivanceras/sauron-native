@@ -3,8 +3,6 @@
 #![feature(type_alias_enum_variants)]
 #![feature(arbitrary_self_types)]
 
-use sauron_vdom::Event;
-use sauron_vdom::Callback;
 
 pub mod event {
     pub use sauron_vdom::{builder::on, Event};
@@ -19,8 +17,13 @@ pub use backend::Backend;
 pub use component::Component;
 pub use program::Program;
 pub use widget::Widget;
+pub use sauron_vdom::Callback;
+pub use sauron_vdom::Event;
+pub use sauron_vdom::Value;
+pub use sauron_vdom::builder;
 
 pub type Node<MSG> = sauron_vdom::Node<Widget, Event, MSG>;
 pub type Element<MSG> = sauron_vdom::Element<Widget, Event, MSG>;
 pub type Patch<'a, MSG> = sauron_vdom::Patch<'a, Widget, Event, MSG>;
-pub type Attribute<MSG> = sauron_vdom::builder::Attribute<Event, MSG>;
+pub type Attribute<MSG> = sauron_vdom::Attribute<Event, MSG>;
+

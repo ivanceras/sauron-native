@@ -115,7 +115,8 @@ where
 
                 // attach the attributes and event callbacks
                 for (name, value) in &widget.attrs {
-                    //html_element.attrs.insert(name, value.clone());
+                    sauron::log!("attr: {}={}", name, value);
+                    html_element.attrs.insert(name, value.clone());
                 }
                 for (event, cb) in &widget.events {
                     html_element.events.insert(event, cb.clone().reform(map_to_event));
