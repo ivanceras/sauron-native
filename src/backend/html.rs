@@ -3,8 +3,8 @@ use sauron::{
     html::{attributes::*, div, input, text},
     Component as SauronComponent, DomUpdater, Program,
 };
-use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 use sauron_vdom::Callback;
+use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 pub struct HtmlApp<APP, MSG>
 where
@@ -71,23 +71,21 @@ where
     MSG: Clone + Debug + 'static,
 {
     match widget {
-        Widget::Column => div(
-            [style(
-                "display:flexbox;\
-                 flex-direction:column;\
-                 border: 1px solid blue;\
-                 ",
-            )],
-            [text("This is a Column")],
+        Widget::Vbox => div(
+            [styles([
+                ("display", "flex"),
+                ("flex-direction", "column"),
+                ("border", "1px solid blue"),
+            ])],
+            [text("This is a Vbox")],
         ),
-        Widget::Row => div(
-            [style(
-                "display:flexbox;\
-                 flex-direction:row;\
-                 border: 1px solid green;\
-                 ",
-            )],
-            [text("This is a Row")],
+        Widget::Hbox => div(
+            [styles([
+                ("display", "flex"),
+                ("flex-direction", "row"),
+                ("border", "1px solid green"),
+            ])],
+            [text("This is a Hbox")],
         ),
         Widget::Button(txt) => input([r#type("button"), value(txt)], []),
         Widget::Text(txt) => text(&txt),
@@ -115,11 +113,12 @@ where
 
                 // attach the attributes and event callbacks
                 for (name, value) in &widget.attrs {
-                    sauron::log!("attr: {}={}", name, value);
                     html_element.attrs.insert(name, value.clone());
                 }
                 for (event, cb) in &widget.events {
-                    html_element.events.insert(event, cb.clone().reform(map_to_event));
+                    html_element
+                        .events
+                        .insert(event, cb.clone().reform(map_to_event));
                 }
             }
             html_node
@@ -127,7 +126,6 @@ where
         crate::Node::Text(txt) => text(txt.text),
     }
 }
-
 
 fn map_event(event: sauron_vdom::Event) -> sauron::Event {
     let web_event = web_sys::Event::new("click").expect("fail to create an event");

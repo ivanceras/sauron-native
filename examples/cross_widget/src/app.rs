@@ -7,19 +7,20 @@ use std::{
     rc::Rc,
 };
 
-use sauron_native::Attribute;
-use sauron_native::{Callback, Event, Value};
+use sauron_native::{Attribute, Callback, Event, Value};
 
 pub fn connect<C, MSG>(event: &'static str, c: C) -> Attribute<MSG>
-    where C: Into<Callback<Event, MSG>>,
-          MSG: Clone
+where
+    C: Into<Callback<Event, MSG>>,
+    MSG: Clone,
 {
     on(event, c)
 }
 
 pub fn attr<V, MSG>(name: &'static str, v: V) -> Attribute<MSG>
-    where V: Into<Value>,
-          MSG: Clone
+where
+    V: Into<Value>,
+    MSG: Clone,
 {
     sauron_native::builder::attr(name, v)
 }
@@ -47,13 +48,14 @@ impl Component<Msg> for App {
     }
 
     fn view(&self) -> Node<Msg> {
-        row(
+        vbox(
             [],
             [
-                column(
-                    [attr("class", "column1"),
-                     on("click", |_| Msg::Click),
-                     connect("click", |_|Msg::Click),
+                hbox(
+                    [
+                        attr("class", "column1"),
+                        on("click", |_| Msg::Click),
+                        connect("click", |_| Msg::Click),
                     ],
                     [
                         button([], "column1 element1"),
@@ -64,8 +66,8 @@ impl Component<Msg> for App {
                         button([], "column1 element6"),
                     ],
                 ),
-                column(
-                    [attr("class","column2")],
+                hbox(
+                    [attr("class", "column2")],
                     [button([], "column2"), button([], "c2 element2")],
                 ),
                 button(

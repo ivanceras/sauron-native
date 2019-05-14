@@ -178,8 +178,8 @@ fn block(title: &str) -> TuiWidget {
 
 fn widget_to_tui_node(widget: Widget) -> TuiWidget {
     match widget {
-        Widget::Column => layout(Direction::Horizontal, vec![], []),
-        Widget::Row => layout(Direction::Vertical, vec![], []),
+        Widget::Vbox => layout(Direction::Vertical, vec![], []),
+        Widget::Hbox => layout(Direction::Horizontal, vec![], []),
         Widget::Button(txt) => button(&txt),
         Widget::Text(txt) => paragraph(Some(plain_block()), vec![txt]),
         Widget::Block(title) => block(&*title),

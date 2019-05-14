@@ -17,8 +17,7 @@ use tui::{
     Frame, Terminal,
 };
 
-use sauron_vdom::{Event};
-use sauron_vdom::event::KeyEvent;
+use sauron_vdom::{event::KeyEvent, Event};
 use std::{marker::PhantomData, sync::mpsc, thread, time::Duration};
 use termion::{
     event::{

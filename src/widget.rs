@@ -4,8 +4,8 @@ use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
 pub enum Widget {
-    Column,
-    Row,
+    Vbox,
+    Hbox,
     Button(String),
     Text(String),
     Block(String),
@@ -20,22 +20,22 @@ where
     element(widget, attrs, children)
 }
 
-pub fn column<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
+pub fn vbox<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
     C: AsRef<[Node<MSG>]>,
     A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
-    widget(Widget::Column, attrs, children)
+    widget(Widget::Vbox, attrs, children)
 }
 
-pub fn row<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
+pub fn hbox<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
 where
     C: AsRef<[Node<MSG>]>,
     A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
-    widget(Widget::Row, attrs, children)
+    widget(Widget::Hbox, attrs, children)
 }
 
 pub fn button<A, MSG>(attrs: A, txt: &str) -> Node<MSG>
