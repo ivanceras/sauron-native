@@ -13,6 +13,6 @@ rust-nightly:
       - tar xf geckodriver-v0.24.0-linux64.tar.gz
       - cargo install wasm-pack
   script:
-    - cargo build --all
+    - cargo build --all --all-features
     - cargo test --all  --all-features
     - GECKODRIVER=$(pwd)/geckodriver ./test.sh
