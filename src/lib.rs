@@ -3,11 +3,11 @@
 #![feature(type_alias_enum_variants)]
 #![feature(arbitrary_self_types)]
 
-use sauron::Event;
+use sauron_vdom::Event;
 use sauron_vdom::Callback;
 
 pub mod event {
-    pub use sauron_vdom::{builder::on, Event, InputEvent, KeyEvent, MouseEvent};
+    pub use sauron_vdom::{builder::on, Event};
 }
 
 pub mod backend;

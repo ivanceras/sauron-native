@@ -4,6 +4,7 @@ use sauron::{
     Component as SauronComponent, DomUpdater, Program,
 };
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+use sauron_vdom::Callback;
 
 pub struct HtmlApp<APP, MSG>
 where
@@ -109,20 +110,30 @@ where
                 for widget_child in widget.children {
                     // convert all widget child to an html child node
                     let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
-                    // attached as children to the html node, all of the widget's children
                     html_element.children.push(html_child);
                 }
 
                 // attach the attributes and event callbacks
                 for (name, value) in &widget.attrs {
-                    html_element.attrs.insert(name, value.clone());
+                    //html_element.attrs.insert(name, value.clone());
                 }
                 for (event, cb) in &widget.events {
-                    html_element.events.insert(event, cb.clone());
+                    html_element.events.insert(event, cb.clone().reform(map_to_event));
                 }
             }
             html_node
         }
         crate::Node::Text(txt) => text(txt.text),
     }
+}
+
+
+fn map_event(event: sauron_vdom::Event) -> sauron::Event {
+    let web_event = web_sys::Event::new("click").expect("fail to create an event");
+    sauron::Event(web_event)
+}
+
+/// convert html event into sauron_vdom event
+fn map_to_event(event: sauron::Event) -> sauron_vdom::Event {
+    sauron_vdom::Event::KeyEvent(sauron_vdom::event::KeyEvent::new("k".to_string()))
 }

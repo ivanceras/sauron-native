@@ -34,7 +34,9 @@ impl Component<Msg> for App {
             [],
             [
                 column(
-                    [class("column1")],
+                    [/*class("column1"),*/
+                     //on("click", |_| Msg::Click),
+                    ],
                     [
                         button([], "column1 element1"),
                         button([], "column1 element2"),
@@ -45,7 +47,7 @@ impl Component<Msg> for App {
                     ],
                 ),
                 column(
-                    [class("column2")],
+                    [/*class("column2"),*/],
                     [button([], "column2"), button([], "c2 element2")],
                 ),
                 button(
