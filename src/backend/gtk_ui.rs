@@ -2,11 +2,12 @@ use crate::{Backend, Component, Widget};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CssProvider, Entry, Orientation,
-    StyleContext, TextBufferExt, WidgetExt, Window, WindowPosition, WindowType,
+    StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt, Window,
+    WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
-use gtk::{IsA, Paned};
+use gtk::{IsA, Label, Paned};
 
 pub struct GtkBackend<APP, MSG> {
     app: APP,
@@ -37,19 +38,25 @@ where
 }
 
 enum GtkWidget {
-    Paned(Paned),
+    GBox(gtk::Box),
     Button(Button),
+    Text(TextView),
 }
 impl GtkWidget {
     fn add_children(&self, children: Vec<GtkWidget>) {
         match self {
-            GtkWidget::Paned(paned) => {
+            GtkWidget::GBox(gbox) => {
                 for child in children {
                     match child {
                         GtkWidget::Button(btn) => {
-                            paned.add(&btn);
+                            gbox.add(&btn);
                         }
-                        _ => {}
+                        GtkWidget::GBox(cbox) => {
+                            gbox.add(&cbox);
+                        }
+                        GtkWidget::Text(text_view) => {
+                            gbox.add(&text_view);
+                        }
                     }
                 }
             }
@@ -63,18 +70,26 @@ impl From<Button> for GtkWidget {
     }
 }
 
-impl From<Paned> for GtkWidget {
-    fn from(paned: Paned) -> Self {
-        GtkWidget::Paned(paned)
+impl From<gtk::Box> for GtkWidget {
+    fn from(gbox: gtk::Box) -> Self {
+        GtkWidget::GBox(gbox)
     }
+}
+
+fn textview(txt: &str) -> GtkWidget {
+    let buffer = TextBuffer::new(None::<&TextTagTable>);
+    let text_view = TextView::new_with_buffer(&buffer);
+    buffer.set_text(txt);
+    GtkWidget::Text(text_view)
 }
 
 fn widget_to_gtk_widget(widget: Widget) -> GtkWidget {
     match widget {
-        Widget::Vbox => Paned::new(Orientation::Vertical).into(),
-        Widget::Hbox => Paned::new(Orientation::Horizontal).into(),
+        Widget::Vbox => gtk::Box::new(Orientation::Vertical, 0).into(),
+        Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
         Widget::Button(txt) => Button::new_with_label(&txt).into(),
-        _ => Button::new_with_label("not yet").into(),
+        Widget::Text(txt) => textview(&txt),
+        Widget::Block(txt) => textview(&txt),
     }
 }
 fn convert_widget_node_tree_to_gtk_widget<MSG>(widget_node: crate::Node<MSG>) -> GtkWidget {
@@ -95,11 +110,14 @@ fn convert_widget_node_tree_to_gtk_widget<MSG>(widget_node: crate::Node<MSG>) ->
 
 fn draw_gtk_widget(rc_win: &Rc<ApplicationWindow>, gtk_widget: &GtkWidget) {
     match gtk_widget {
-        GtkWidget::Paned(paned) => {
-            rc_win.add(paned);
+        GtkWidget::GBox(gbox) => {
+            rc_win.add(gbox);
         }
         GtkWidget::Button(btn) => {
             rc_win.add(btn);
+        }
+        GtkWidget::Text(text_view) => {
+            rc_win.add(text_view);
         }
     }
 }
