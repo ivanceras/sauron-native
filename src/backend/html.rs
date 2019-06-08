@@ -41,8 +41,9 @@ where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn update(&mut self, msg: MSG) {
-        self.app.update(msg)
+    fn update(&mut self, msg: MSG) -> sauron_vdom::Cmd<sauron::Program<Self, MSG>, MSG> {
+        self.app.update(msg);
+        sauron_vdom::Cmd::none()
     }
 
     fn view(&self) -> sauron::Node<MSG> {

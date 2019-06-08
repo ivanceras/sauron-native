@@ -1,7 +1,8 @@
+#[cfg(feature = "with-html")]
 use sauron::html::attributes::*;
-use sauron_native::{
-    backend::html::widget_tree_to_html_node, event::on, widget::*, Component, Node, Program,
-};
+#[cfg(feature = "with-html")]
+use sauron_native::backend::html::widget_tree_to_html_node;
+use sauron_native::{event::on, widget::*, Component, Node, Program};
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,

@@ -2,5 +2,5 @@
 #!/bin/bash
 
 set -v
-cargo run --features "with-html with-tui"
+cargo run --features "with-tui"
 
