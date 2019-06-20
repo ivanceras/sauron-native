@@ -11,3 +11,23 @@ One UI to rule them all
 - libui-rs
 - html
 - tui-rs (termion, crossterm)
+
+## Text base button with hover/click effect
+
+
+  ╭──────╮    ▄▄▄▄▄▄▄▄
+  │ btn  │    █ btn ██
+  ╰──────╯    ▀▀▀▀▀▀▀▀
+
+  ┌──────┐    ▄▄▄▄▄▄▄▄
+  │ btn01│    █btn01██
+  └──────┘    ▀▀▀▀▀▀▀▀
+
+### Tabs:
+
+
+```
+  ╭──────╮______________
+  │ tab1 │ tab2 │ tab2 │
+  └──────┴──────┘──────┘
+```
