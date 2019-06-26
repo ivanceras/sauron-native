@@ -73,24 +73,24 @@ where
 {
     match widget {
         Widget::Vbox => div(
-            [styles([
+            vec![styles(vec![
                 ("display", "flex"),
                 ("flex-direction", "column"),
                 ("border", "1px solid blue"),
             ])],
-            [text("This is a Vbox")],
+            vec![text("This is a Vbox")],
         ),
         Widget::Hbox => div(
-            [styles([
+            vec![styles(vec![
                 ("display", "flex"),
                 ("flex-direction", "row"),
                 ("border", "1px solid green"),
             ])],
-            [text("This is a Hbox")],
+            vec![text("This is a Hbox")],
         ),
-        Widget::Button(txt) => input([r#type("button"), value(txt)], []),
+        Widget::Button(txt) => input(vec![r#type("button"), value(txt)], vec![]),
         Widget::Text(txt) => text(&txt),
-        Widget::Block(title) => div([], [text(title)]),
+        Widget::Block(title) => div(vec![], vec![text(title)]),
     }
 }
 
@@ -112,14 +112,8 @@ where
                     html_element.children.push(html_child);
                 }
 
-                // attach the attributes and event callbacks
-                for (name, value) in &widget.attrs {
-                    html_element.attrs.insert(name, value.clone());
-                }
-                for (event, cb) in &widget.events {
-                    html_element
-                        .events
-                        .insert(event, cb.clone().reform(map_to_event));
+                for attr in widget.attrs {
+                    html_element.attrs.push(attr.reform(map_to_event));
                 }
             }
             html_node

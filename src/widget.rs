@@ -17,7 +17,7 @@ where
     A: AsRef<[Attribute<MSG>]>,
     MSG: Clone + Debug + 'static,
 {
-    element(widget, attrs, children)
+    element(widget, attrs.as_ref().to_vec(), children.as_ref().to_vec())
 }
 
 pub fn vbox<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
