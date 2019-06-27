@@ -9,6 +9,10 @@ use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
 use gtk::{IsA, Label, Paned};
 
+/// removing a child widget by using
+/// https://docs.rs/gtk/0.7.0/gtk/trait.ContainerExt.html#tymethod.remove
+///
+
 pub struct GtkBackend<APP, MSG> {
     app: APP,
     _phantom_msg: PhantomData<MSG>,
