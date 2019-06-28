@@ -1,7 +1,7 @@
 use crate::{Attribute, Node};
+pub use sauron_vdom::builder::attr;
 use sauron_vdom::builder::element;
 use std::fmt::Debug;
-pub use sauron_vdom::builder::attr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widget {

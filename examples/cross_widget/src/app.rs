@@ -43,6 +43,7 @@ impl App {
 
 impl Component<Msg> for App {
     fn update(&mut self, msg: Msg) {
+        println!("updating in App");
         match msg {
             Msg::Click => self.click_count += 1,
         }

@@ -1,15 +1,12 @@
-use sauron_native::widget::*;
-use sauron_native::Node;
+use sauron_native::{widget::*, Node};
 use sauron_vdom::diff;
 
 fn main() {
-    let old:Node<()> = vbox(
+    let old: Node<()> = vbox(
         vec![],
         vec![
             hbox(
-                vec![
-                    attr("class", "column1"),
-                ],
+                vec![attr("class", "column1")],
                 vec![
                     button(vec![], "column1 element1"),
                     button(vec![], "column1 element2"),
@@ -23,10 +20,7 @@ fn main() {
                 vec![attr("class", "column2")],
                 vec![button(vec![], "column2"), button(vec![], "c2 element2")],
             ),
-            button(
-                vec![],
-                &format!("Hello"),
-            ),
+            button(vec![], &format!("Hello")),
             block("I'm a block kid!"),
             text(
                 "Hello, will this be a paragrapah\n
@@ -38,13 +32,11 @@ fn main() {
         ],
     );
 
-    let new:Node<()> = vbox(
+    let new: Node<()> = vbox(
         vec![],
         vec![
             hbox(
-                vec![
-                    attr("class", "column1"),
-                ],
+                vec![attr("class", "column1")],
                 vec![
                     button(vec![], "Changed column1 element1"),
                     button(vec![], "column1 element2"),
@@ -56,12 +48,12 @@ fn main() {
             ),
             hbox(
                 vec![attr("class", "column2-changed")],
-                vec![button(vec![], "column2-changed"), button(vec![], "c2 element2")],
+                vec![
+                    button(vec![], "column2-changed"),
+                    button(vec![], "c2 element2"),
+                ],
             ),
-            button(
-                vec![],
-                &format!("Hello"),
-            ),
+            button(vec![], &format!("Hello")),
             block("I'm a block kid!"),
             text(
                 "Hello, will this be a paragrapah\n
