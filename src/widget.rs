@@ -1,8 +1,9 @@
 use crate::{Attribute, Node};
 use sauron_vdom::builder::element;
 use std::fmt::Debug;
+pub use sauron_vdom::builder::attr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Widget {
     Vbox,
     Hbox,
@@ -11,51 +12,30 @@ pub enum Widget {
     Block(String),
 }
 
-pub fn widget<A, C, MSG>(widget: Widget, attrs: A, children: C) -> Node<MSG>
-where
-    C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<MSG>]>,
-    MSG: Clone + Debug + 'static,
-{
-    element(widget, attrs.as_ref().to_vec(), children.as_ref().to_vec())
+pub fn widget<MSG>(
+    widget: Widget,
+    attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG> {
+    element(widget, attrs, children)
 }
 
-pub fn vbox<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
-where
-    C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<MSG>]>,
-    MSG: Clone + Debug + 'static,
-{
+pub fn vbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Vbox, attrs, children)
 }
 
-pub fn hbox<A, C, MSG>(attrs: A, children: C) -> Node<MSG>
-where
-    C: AsRef<[Node<MSG>]>,
-    A: AsRef<[Attribute<MSG>]>,
-    MSG: Clone + Debug + 'static,
-{
+pub fn hbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Hbox, attrs, children)
 }
 
-pub fn button<A, MSG>(attrs: A, txt: &str) -> Node<MSG>
-where
-    A: AsRef<[Attribute<MSG>]>,
-    MSG: Clone + Debug + 'static,
-{
-    widget(Widget::Button(txt.to_string()), attrs, [])
+pub fn button<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
+    widget(Widget::Button(txt.to_string()), attrs, vec![])
 }
 
-pub fn text<MSG>(txt: &str) -> Node<MSG>
-where
-    MSG: Clone + Debug + 'static,
-{
-    widget(Widget::Text(txt.to_string()), [], [])
+pub fn text<MSG>(txt: &str) -> Node<MSG> {
+    widget(Widget::Text(txt.to_string()), vec![], vec![])
 }
 
-pub fn block<MSG>(title: &str) -> Node<MSG>
-where
-    MSG: Clone + Debug + 'static,
-{
-    widget(Widget::Block(title.to_string()), [], [])
+pub fn block<MSG>(title: &str) -> Node<MSG> {
+    widget(Widget::Block(title.to_string()), vec![], vec![])
 }

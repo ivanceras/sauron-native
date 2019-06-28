@@ -50,29 +50,29 @@ impl Component<Msg> for App {
 
     fn view(&self) -> Node<Msg> {
         vbox(
-            [],
-            [
+            vec![],
+            vec![
                 hbox(
-                    [
+                    vec![
                         attr("class", "column1"),
                         on("click", |_| Msg::Click),
                         connect("click", |_| Msg::Click),
                     ],
-                    [
-                        button([], "column1 element1"),
-                        button([], "column1 element2"),
-                        button([], "column1 element3"),
-                        button([], "column1 element4"),
-                        button([], "column1 element5"),
-                        button([], "column1 element6"),
+                    vec![
+                        button(vec![], "column1 element1"),
+                        button(vec![], "column1 element2"),
+                        button(vec![], "column1 element3"),
+                        button(vec![], "column1 element4"),
+                        button(vec![], "column1 element5"),
+                        button(vec![], "column1 element6"),
                     ],
                 ),
                 hbox(
-                    [attr("class", "column2")],
-                    [button([], "column2"), button([], "c2 element2")],
+                    vec![attr("class", "column2")],
+                    vec![button(vec![], "column2"), button(vec![], "c2 element2")],
                 ),
                 button(
-                    [on("click", |_| {
+                    vec![on("click", |_| {
                         sauron::log("Button is clicked!");
                         Msg::Click
                     })],
