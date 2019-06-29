@@ -4,6 +4,7 @@ use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CssProvider, Entry, Orientation,
     StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt, Window,
     WindowPosition, WindowType,
+    Container,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -80,6 +81,8 @@ where
         match gtk_widget {
             GtkWidget::GBox(gbox) => {
                 rc_win.add(gbox);
+                let children = gbox.get_children();
+                println!("There are {} children", children.len());
             }
             GtkWidget::Button(btn) => {
                 rc_win.add(btn);
@@ -88,6 +91,8 @@ where
                 rc_win.add(text_view);
             }
         }
+        let children = rc_win.get_children();
+        println!("There are {} children", children.len());
     }
 
     fn convert_widget_node_tree_to_gtk_widget(
