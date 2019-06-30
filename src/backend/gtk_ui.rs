@@ -93,6 +93,12 @@ where
         }
         let children = rc_win.get_children();
         println!("There are {} children", children.len());
+        let container: Option<&Container> = children[0].downcast_ref();
+        println!("now a container: {:#?}", container);
+        if let Some(container) = container{
+            let grandchildren = container.get_children();
+            println!("There are {} grandchildren", grandchildren.len());
+        }
     }
 
     fn convert_widget_node_tree_to_gtk_widget(
