@@ -12,6 +12,7 @@ use crate::{Attribute, Node};
 use gtk::{IsA, Label, Paned};
 use sauron_vdom::{event::MouseEvent, AttribValue, Dispatch};
 use std::cell::RefCell;
+use crate::Patch;
 
 /// removing a child widget by using
 /// https://docs.rs/gtk/0.7.0/gtk/trait.ContainerExt.html#tymethod.remove
@@ -23,6 +24,7 @@ where
 {
     app: Rc<RefCell<APP>>,
     current_vdom: Node<MSG>,
+    root_node: Option<ApplicationWindow>,
     //TODO: need a reference to the gkt window
     //for updating its child widgets
     _phantom_msg: PhantomData<MSG>,
@@ -37,6 +39,7 @@ where
         GtkBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom,
+            root_node: None,
             _phantom_msg: PhantomData,
         }
     }
@@ -52,9 +55,21 @@ where
         let diff = sauron_vdom::diff(&self.current_vdom, &new_view);
         println!("diff: {:#?}", diff);
         // TODO do the widget update here
+        self.apply_patches(&diff)
     }
 
-    fn create_app(self: &Rc<Self>)
+    fn apply_patches(self: &Rc<Self>, patches: &Vec<Patch<MSG>>)
+        where MSG: Debug
+    {
+        println!("Applying patches: {:#?}", patches)
+    }
+
+    fn init_app(&mut self) {
+        //self.root_node = Some(win);
+    }
+
+
+    fn create_app(mut self: &Rc<Self>)
     where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
@@ -73,6 +88,7 @@ where
             rc_win.set_title("Gtk backend");
             self_clone.draw_gtk_widget(&rc_win, &gtk_widget);
             rc_win.show_all();
+            //self.root_node = Some(rc_win);
         });
         uiapp.run(&[]);
     }
@@ -134,7 +150,16 @@ where
         match widget {
             Widget::Vbox => gtk::Box::new(Orientation::Vertical, 0).into(),
             Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
-            Widget::Button(txt) => {
+            Widget::Button => {
+                let txt: String = if let Some(attr) = attrs.iter().find(|attr|attr.name == "value"){
+                    if let Some(value) = attr.get_value(){
+                        value.to_string()
+                    }else{
+                        "".to_string()
+                    }
+                }else{
+                    "".to_string()
+                };
                 let btn = Button::new_with_label(&txt);
                 for attr in attrs {
                     match attr.value {
@@ -147,8 +172,6 @@ where
                                         let mouse_event = MouseEvent::default();
                                         let msg = cb.emit(mouse_event);
                                         println!("got msg: {:?}", msg);
-                                        //TODO: dispatch the program here
-                                        // program.dispatch(msg);
                                         self_clone.dispatch(msg);
                                     });
                                 }
@@ -171,13 +194,11 @@ where
     MSG: Clone + Debug + 'static,
 {
     fn init(app: APP) -> Rc<Self> {
-        Rc::new(GtkBackend::new(app))
+        let mut rc_app = Rc::new(GtkBackend::new(app));
+        rc_app.create_app();
+        rc_app
     }
 
-    fn start_render(self: &Rc<Self>) {
-        println!("start render is called!");
-        self.create_app();
-    }
 }
 
 enum GtkWidget {

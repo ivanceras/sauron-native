@@ -1,5 +1,4 @@
 use crate::{Attribute, Node};
-pub use sauron_vdom::builder::attr;
 use sauron_vdom::builder::element;
 use std::fmt::Debug;
 
@@ -7,7 +6,7 @@ use std::fmt::Debug;
 pub enum Widget {
     Vbox,
     Hbox,
-    Button(String),
+    Button,
     Text(String),
     Block(String),
 }
@@ -28,8 +27,8 @@ pub fn hbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<M
     widget(Widget::Hbox, attrs, children)
 }
 
-pub fn button<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
-    widget(Widget::Button(txt.to_string()), attrs, vec![])
+pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Button, attrs, vec![])
 }
 
 pub fn text<MSG>(txt: &str) -> Node<MSG> {
