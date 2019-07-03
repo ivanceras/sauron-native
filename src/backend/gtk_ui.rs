@@ -97,12 +97,12 @@ where
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
     where
-        MSG: Debug,
+        MSG: Debug + 'static,
     {
         match widget_node {
             crate::Node::Element(element) => {
                 let mut gtk_widget =
-                    self.widget_to_gtk_widget(root_node, element.tag, element.attrs);
+                    self.widget_to_gtk_widget(root_node, element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
                     let gtk_child = self.convert_widget_node_tree_to_gtk_widget(root_node, child);
@@ -140,15 +140,16 @@ where
                 };
                 let btn = Button::new_with_label(&txt);
                 for attr in attrs {
-                    match attr.value {
+                    match &attr.value {
                         AttribValue::Value(_) => {}
                         AttribValue::Callback(cb) => match attr.name {
                             "click" => {
                                 let self_clone = Rc::clone(self);
                                 let root_node = Rc::clone(&root_node);
+                                let cb_clone = cb.clone();
                                 btn.connect_clicked(move |_| {
                                     let mouse_event = MouseEvent::default();
-                                    let msg = cb.emit(mouse_event);
+                                    let msg = cb_clone.emit(mouse_event);
                                     println!("got msg: {:?}", msg);
                                     self_clone.dispatch(&root_node, msg);
                                 });
