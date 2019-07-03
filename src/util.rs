@@ -1,4 +1,3 @@
-
 use crate::{event::on, Attribute, Callback, Event, Value};
 
 pub fn value<V, MSG>(v: V) -> Attribute<MSG>

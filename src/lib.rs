@@ -10,8 +10,8 @@ pub mod event {
 pub mod backend;
 mod component;
 mod program;
-pub mod widget;
 pub mod util;
+pub mod widget;
 
 pub use backend::Backend;
 pub use component::Component;

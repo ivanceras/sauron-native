@@ -1,6 +1,4 @@
 #[cfg(feature = "with-html")]
-use sauron::html::attributes::*;
-#[cfg(feature = "with-html")]
 use sauron_native::backend::html::widget_tree_to_html_node;
 use sauron_native::{event::on, widget::*, Component, Node, Program};
 use std::{

@@ -1,4 +1,4 @@
-use crate::Widget;
+use crate::{Attribute, Widget};
 use sauron_vdom::{self, Callback, Event};
 use std::rc::Rc;
 use tui::{
@@ -176,11 +176,25 @@ fn block(title: &str) -> TuiWidget {
     TuiWidget::Block(block)
 }
 
-fn widget_to_tui_node(widget: Widget) -> TuiWidget {
+fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWidget
+where
+    MSG: 'static,
+{
     match widget {
         Widget::Vbox => layout(Direction::Vertical, vec![], []),
         Widget::Hbox => layout(Direction::Horizontal, vec![], []),
-        Widget::Button(txt) => button(&txt),
+        Widget::Button => {
+            let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
+                if let Some(value) = attr.get_value() {
+                    value.to_string()
+                } else {
+                    "".to_string()
+                }
+            } else {
+                "".to_string()
+            };
+            button(&txt)
+        }
         Widget::Text(txt) => paragraph(Some(plain_block()), vec![txt]),
         Widget::Block(title) => block(&*title),
     }
@@ -188,7 +202,7 @@ fn widget_to_tui_node(widget: Widget) -> TuiWidget {
 pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget {
     match widget_node {
         crate::Node::Element(element) => {
-            let mut tui_node = widget_to_tui_node(element.tag);
+            let mut tui_node = widget_to_tui_node(element.tag, element.attrs);
             if let Some(mut layout) = tui_node.as_layout() {
                 let mut children = vec![];
                 for child in element.children {

@@ -1,4 +1,4 @@
-use crate::{Backend, Component, Widget};
+use crate::{Attribute, Backend, Component, Widget};
 use sauron::{
     html::{attributes::*, div, input, text},
     Component as SauronComponent, DomUpdater, Program,
@@ -67,7 +67,7 @@ where
 }
 
 /// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(widget: Widget) -> sauron::Node<MSG>
+fn widget_to_html<MSG>(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
@@ -88,7 +88,18 @@ where
             ])],
             vec![text("This is a Hbox")],
         ),
-        Widget::Button(txt) => input(vec![r#type("button"), value(txt)], vec![]),
+        Widget::Button => {
+            let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
+                if let Some(value) = attr.get_value() {
+                    value.to_string()
+                } else {
+                    "".to_string()
+                }
+            } else {
+                "".to_string()
+            };
+            input(vec![r#type("button"), value(txt)], vec![])
+        }
         Widget::Text(txt) => text(&txt),
         Widget::Block(title) => div(vec![], vec![text(title)]),
     }
@@ -103,7 +114,7 @@ where
     match widget_node {
         crate::Node::Element(widget) => {
             // convert the Widget tag to html node
-            let mut html_node: sauron::Node<MSG> = widget_to_html(widget.tag);
+            let mut html_node: sauron::Node<MSG> = widget_to_html(widget.tag, &widget.attrs);
             // cast the html node to element
             if let Some(html_element) = html_node.as_element() {
                 for widget_child in widget.children {

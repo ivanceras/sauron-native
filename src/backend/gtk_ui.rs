@@ -1,22 +1,18 @@
 use crate::{Backend, Component, Widget};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
-    prelude::*, Application, ApplicationWindow, Button, CssProvider, Entry, Orientation,
+    prelude::*, Application, ApplicationWindow, Button, Container, CssProvider, Entry, Orientation,
     StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt, Window,
     WindowPosition, WindowType,
-    Container,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
-use crate::{Attribute, Node};
+use crate::{Attribute, Node, Patch};
 use gtk::{IsA, Label, Paned};
 use sauron_vdom::{event::MouseEvent, AttribValue, Dispatch};
 use std::cell::RefCell;
-use crate::Patch;
 
-/// removing a child widget by using
-/// https://docs.rs/gtk/0.7.0/gtk/trait.ContainerExt.html#tymethod.remove
-///
+mod apply_patches;
 
 pub struct GtkBackend<APP, MSG>
 where
@@ -24,7 +20,6 @@ where
 {
     app: Rc<RefCell<APP>>,
     current_vdom: Node<MSG>,
-    root_node: Option<ApplicationWindow>,
     //TODO: need a reference to the gkt window
     //for updating its child widgets
     _phantom_msg: PhantomData<MSG>,
@@ -39,35 +34,21 @@ where
         GtkBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom,
-            root_node: None,
             _phantom_msg: PhantomData,
         }
     }
 
-    fn dispatch(self: &Rc<Self>, msg: MSG)
+    fn dispatch(self: &Rc<Self>, root_node: &Rc<ApplicationWindow>, msg: MSG)
     where
         MSG: Debug,
     {
-        //self.app.dispatch(msg);
         println!("dispatching : {:?}", msg);
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
         let diff = sauron_vdom::diff(&self.current_vdom, &new_view);
         println!("diff: {:#?}", diff);
-        // TODO do the widget update here
-        self.apply_patches(&diff)
+        apply_patches::apply_patches(root_node, &diff);
     }
-
-    fn apply_patches(self: &Rc<Self>, patches: &Vec<Patch<MSG>>)
-        where MSG: Debug
-    {
-        println!("Applying patches: {:#?}", patches)
-    }
-
-    fn init_app(&mut self) {
-        //self.root_node = Some(win);
-    }
-
 
     fn create_app(mut self: &Rc<Self>)
     where
@@ -77,8 +58,6 @@ where
         let uiapp = Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE)
             .expect("Failed to start app");
 
-        let view: crate::Node<MSG> = self.app.borrow().view();
-        let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(view);
         let self_clone = Rc::clone(&self);
         uiapp.connect_activate(move |uiapp| {
             let win = ApplicationWindow::new(uiapp);
@@ -86,39 +65,35 @@ where
             rc_win.set_default_size(800, 1000);
             rc_win.set_icon_name(Some("applications-graphics"));
             rc_win.set_title("Gtk backend");
-            self_clone.draw_gtk_widget(&rc_win, &gtk_widget);
+            self_clone.draw_widgets(&rc_win);
             rc_win.show_all();
-            //self.root_node = Some(rc_win);
         });
         uiapp.run(&[]);
     }
 
-    fn draw_gtk_widget(self: &Rc<Self>, rc_win: &Rc<ApplicationWindow>, gtk_widget: &GtkWidget) {
-        match gtk_widget {
+    fn draw_widgets(self: &Rc<Self>, root_node: &Rc<ApplicationWindow>)
+    where
+        APP: Component<MSG> + 'static,
+        MSG: Clone + Debug + 'static,
+    {
+        let view = self.app.borrow().view();
+        let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(&root_node, view);
+        match &gtk_widget {
             GtkWidget::GBox(gbox) => {
-                rc_win.add(gbox);
-                let children = gbox.get_children();
-                println!("There are {} children", children.len());
+                root_node.add(gbox);
             }
             GtkWidget::Button(btn) => {
-                rc_win.add(btn);
+                root_node.add(btn);
             }
             GtkWidget::Text(text_view) => {
-                rc_win.add(text_view);
+                root_node.add(text_view);
             }
-        }
-        let children = rc_win.get_children();
-        println!("There are {} children", children.len());
-        let container: Option<&Container> = children[0].downcast_ref();
-        println!("now a container: {:#?}", container);
-        if let Some(container) = container{
-            let grandchildren = container.get_children();
-            println!("There are {} grandchildren", grandchildren.len());
         }
     }
 
     fn convert_widget_node_tree_to_gtk_widget(
         self: &Rc<Self>,
+        root_node: &Rc<ApplicationWindow>,
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
     where
@@ -126,10 +101,11 @@ where
     {
         match widget_node {
             crate::Node::Element(element) => {
-                let mut gtk_widget = self.widget_to_gtk_widget(element.tag, element.attrs);
+                let mut gtk_widget =
+                    self.widget_to_gtk_widget(root_node, element.tag, element.attrs);
                 let mut children = vec![];
                 for child in element.children {
-                    let gtk_child = self.convert_widget_node_tree_to_gtk_widget(child);
+                    let gtk_child = self.convert_widget_node_tree_to_gtk_widget(root_node, child);
                     children.push(gtk_child);
                 }
                 gtk_widget.add_children(children);
@@ -141,8 +117,9 @@ where
 
     fn widget_to_gtk_widget(
         self: &Rc<Self>,
+        root_node: &Rc<ApplicationWindow>,
         widget: Widget,
-        attrs: Vec<Attribute<MSG>>,
+        attrs: &Vec<Attribute<MSG>>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
@@ -151,33 +128,33 @@ where
             Widget::Vbox => gtk::Box::new(Orientation::Vertical, 0).into(),
             Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
             Widget::Button => {
-                let txt: String = if let Some(attr) = attrs.iter().find(|attr|attr.name == "value"){
-                    if let Some(value) = attr.get_value(){
+                let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value")
+                {
+                    if let Some(value) = attr.get_value() {
                         value.to_string()
-                    }else{
+                    } else {
                         "".to_string()
                     }
-                }else{
+                } else {
                     "".to_string()
                 };
                 let btn = Button::new_with_label(&txt);
                 for attr in attrs {
                     match attr.value {
                         AttribValue::Value(_) => {}
-                        AttribValue::Callback(cb) => {
-                            match attr.name {
-                                "click" => {
-                                    let self_clone = Rc::clone(self);
-                                    btn.connect_clicked(move |_| {
-                                        let mouse_event = MouseEvent::default();
-                                        let msg = cb.emit(mouse_event);
-                                        println!("got msg: {:?}", msg);
-                                        self_clone.dispatch(msg);
-                                    });
-                                }
-                                _ => {}
+                        AttribValue::Callback(cb) => match attr.name {
+                            "click" => {
+                                let self_clone = Rc::clone(self);
+                                let root_node = Rc::clone(&root_node);
+                                btn.connect_clicked(move |_| {
+                                    let mouse_event = MouseEvent::default();
+                                    let msg = cb.emit(mouse_event);
+                                    println!("got msg: {:?}", msg);
+                                    self_clone.dispatch(&root_node, msg);
+                                });
                             }
-                        }
+                            _ => {}
+                        },
                     }
                 }
                 btn.into()
@@ -198,7 +175,6 @@ where
         rc_app.create_app();
         rc_app
     }
-
 }
 
 enum GtkWidget {
