@@ -12,7 +12,7 @@ rust-nightly:
       - cd .. && git clone https://github.com/ivanceras/sauron.git
       - cd -
       - apt update
-      - apt install -y firefox-esr
+      - apt install -y firefox-esr libgtk-3-0 libgtk-3-bin libgtk-3-common libgtk-3-dev
       - curl --retry 5 -LO https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
       - tar xf geckodriver-v0.24.0-linux64.tar.gz
       - cargo install wasm-pack
