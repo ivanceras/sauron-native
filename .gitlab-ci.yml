@@ -1,6 +1,10 @@
 stages:
   - build
 
+variables:
+    DEPS: libgtk-3-0 libgtk-3-bin libgtk-3-common libgtk-3-dev
+        firefox-esr
+
 rust-nightly:
   stage: build
   image: rustlang/rust:nightly
