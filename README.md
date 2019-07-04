@@ -15,10 +15,12 @@ One UI to rule them all
 ## Text base button with hover/click effect
 
 
+## Rounded button
   ╭──────╮    ▄▄▄▄▄▄▄▄
   │ btn  │    █ btn ██
   ╰──────╯    ▀▀▀▀▀▀▀▀
 
+## Flat buttons
   ┌──────┐    ▄▄▄▄▄▄▄▄
   │ btn01│    █btn01██
   └──────┘    ▀▀▀▀▀▀▀▀
