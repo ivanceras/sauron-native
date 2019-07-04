@@ -65,6 +65,7 @@ impl Component<Msg> for App {
                     value(format!("Hello: {}", self.click_count)),
                 ]),
                 block("I'm a block kid!"),
+                textbox("a textbox"),
                 text(
                     "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n

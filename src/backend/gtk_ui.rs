@@ -4,6 +4,7 @@ use gtk::{
     prelude::*, Application, ApplicationWindow, Button, Container, CssProvider, Entry, Orientation,
     StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt, Window,
     WindowPosition, WindowType,
+    EntryBuffer,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -88,6 +89,9 @@ where
             GtkWidget::Text(text_view) => {
                 root_node.add(text_view);
             }
+            GtkWidget::TextBox(textbox) => {
+                root_node.add(textbox);
+            }
         }
     }
 
@@ -161,6 +165,11 @@ where
                 btn.into()
             }
             Widget::Text(txt) => textview(&txt),
+            Widget::TextBox(txt) => {
+                let buffer = EntryBuffer::new(Some(&*txt));
+                let entry = Entry::new_with_buffer(&buffer);
+                GtkWidget::TextBox(entry)
+            }
             Widget::Block(txt) => textview(&txt),
         }
     }
@@ -182,6 +191,7 @@ enum GtkWidget {
     GBox(gtk::Box),
     Button(Button),
     Text(TextView),
+    TextBox(Entry),
 }
 impl GtkWidget {
     fn add_children(&self, children: Vec<GtkWidget>) {
@@ -197,6 +207,9 @@ impl GtkWidget {
                         }
                         GtkWidget::Text(text_view) => {
                             gbox.add(&text_view);
+                        }
+                        GtkWidget::TextBox(textbox) => {
+                            gbox.add(&textbox);
                         }
                     }
                 }

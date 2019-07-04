@@ -9,6 +9,7 @@ pub enum Widget {
     Button,
     Text(String),
     Block(String),
+    TextBox(String),
 }
 
 pub fn widget<MSG>(
@@ -33,6 +34,10 @@ pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 
 pub fn text<MSG>(txt: &str) -> Node<MSG> {
     widget(Widget::Text(txt.to_string()), vec![], vec![])
+}
+
+pub fn textbox<MSG>(txt: &str) -> Node<MSG> {
+    widget(Widget::TextBox(txt.to_string()), vec![], vec![])
 }
 
 pub fn block<MSG>(title: &str) -> Node<MSG> {
