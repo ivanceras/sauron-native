@@ -8,12 +8,20 @@ where
     attr("value", v)
 }
 
-pub fn connect<C, MSG>(event: &'static str, c: C) -> Attribute<MSG>
+pub fn oninput<C, MSG>(c: C) -> Attribute<MSG>
 where
     C: Into<Callback<Event, MSG>>,
     MSG: Clone,
 {
-    on(event, c)
+    on("input", c)
+}
+
+pub fn onclick<C, MSG>(c: C) -> Attribute<MSG>
+where
+    C: Into<Callback<Event, MSG>>,
+    MSG: Clone,
+{
+    on("click", c)
 }
 
 pub fn attr<V, MSG>(name: &'static str, v: V) -> Attribute<MSG>

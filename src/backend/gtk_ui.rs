@@ -1,16 +1,18 @@
 use crate::{Backend, Component, Widget};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
-    prelude::*, Application, ApplicationWindow, Button, Container, CssProvider, Entry, Orientation,
-    StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt, Window,
-    WindowPosition, WindowType,
-    EntryBuffer,
+    prelude::*, Application, ApplicationWindow, Button, Container, CssProvider, Entry, EntryBuffer,
+    Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt,
+    Window, WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
 use crate::{Attribute, Node, Patch};
 use gtk::{IsA, Label, Paned};
-use sauron_vdom::{event::MouseEvent, AttribValue, Dispatch};
+use sauron_vdom::{
+    event::{InputEvent, MouseEvent},
+    AttribValue, Dispatch,
+};
 use std::cell::RefCell;
 
 mod apply_patches;
@@ -21,8 +23,6 @@ where
 {
     app: Rc<RefCell<APP>>,
     current_vdom: Node<MSG>,
-    //TODO: need a reference to the gkt window
-    //for updating its child widgets
     _phantom_msg: PhantomData<MSG>,
 }
 impl<APP, MSG> GtkBackend<APP, MSG>
@@ -145,7 +145,6 @@ where
                 let btn = Button::new_with_label(&txt);
                 for attr in attrs {
                     match &attr.value {
-                        AttribValue::Value(_) => {}
                         AttribValue::Callback(cb) => match attr.name {
                             "click" => {
                                 let self_clone = Rc::clone(self);
@@ -160,6 +159,7 @@ where
                             }
                             _ => {}
                         },
+                        _ => (),
                     }
                 }
                 btn.into()
@@ -168,6 +168,27 @@ where
             Widget::TextBox(txt) => {
                 let buffer = EntryBuffer::new(Some(&*txt));
                 let entry = Entry::new_with_buffer(&buffer);
+
+                for attr in attrs {
+                    match &attr.value {
+                        AttribValue::Callback(cb) => match attr.name {
+                            "input" => {
+                                let self_clone = Rc::clone(self);
+                                let root_node = Rc::clone(&root_node);
+                                let cb_clone = cb.clone();
+                                entry.connect_property_text_notify(move |entry| {
+                                    let input_event =
+                                        InputEvent::new(entry.get_buffer().get_text());
+                                    let msg = cb_clone.emit(input_event);
+                                    println!("got msg: {:?}", msg);
+                                    self_clone.dispatch(&root_node, msg);
+                                });
+                            }
+                            _ => {}
+                        },
+                        _ => (),
+                    }
+                }
                 GtkWidget::TextBox(entry)
             }
             Widget::Block(txt) => textview(&txt),

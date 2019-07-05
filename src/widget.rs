@@ -36,8 +36,8 @@ pub fn text<MSG>(txt: &str) -> Node<MSG> {
     widget(Widget::Text(txt.to_string()), vec![], vec![])
 }
 
-pub fn textbox<MSG>(txt: &str) -> Node<MSG> {
-    widget(Widget::TextBox(txt.to_string()), vec![], vec![])
+pub fn textbox<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
+    widget(Widget::TextBox(txt.to_string()), attrs, vec![])
 }
 
 pub fn block<MSG>(title: &str) -> Node<MSG> {

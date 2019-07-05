@@ -4,6 +4,16 @@ An attempt to create a true native, true cross platform UI for your rust applica
 
 One UI to rule them all
 
+## Rename to
+ - mordor
+ - saruman
+ - sauronan
+ - isengard
+ - Rascal
+ - ruscal
+ - kalawang
+ - taya
+
 
 ## Backend
 - gtk-rs

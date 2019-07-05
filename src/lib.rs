@@ -4,7 +4,7 @@
 #![feature(arbitrary_self_types)]
 
 pub mod event {
-    pub use sauron_vdom::{builder::on, Event};
+    pub use sauron_vdom::{builder::on, event::InputEvent, Event};
 }
 
 pub mod backend;
