@@ -14,6 +14,7 @@ where
     let contents = container.get_children();
     //TODO: this doesn't really need the application window,
     //just the gtk::Box will do just fine
+    // TODO add special case of TextView
     let gbox: &Container = contents[0]
         .downcast_ref()
         .expect("must have the first component");
