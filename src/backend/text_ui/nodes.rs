@@ -196,6 +196,7 @@ where
             button(&txt)
         }
         Widget::Text(txt) => paragraph(Some(plain_block()), vec![txt]),
+        Widget::TextBox(txt) => paragraph(Some(plain_block()), vec![txt]),
         Widget::Block(title) => block(&*title),
     }
 }

@@ -74,7 +74,10 @@ impl Component<Msg> for App {
                 textbox(
                     vec![oninput(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
-                        _ => panic!(),
+                        _ => {
+                            sauron::log!("This is unexpected: {:#?}", event);
+                            panic!();
+                        }
                     })],
                     "a textbox",
                 ),

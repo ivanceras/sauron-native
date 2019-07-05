@@ -67,7 +67,7 @@ where
 }
 
 /// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> sauron::Node<MSG>
+fn widget_to_html<MSG>(widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
@@ -98,9 +98,22 @@ where
             } else {
                 "".to_string()
             };
-            input(vec![r#type("button"), value(txt)], vec![])
+            let ce = if let Some(ce) = attrs.iter().find(|att|att.name == "click"){
+                vec![ce.clone().reform(map_to_event)]
+            }else{
+                vec![]
+            };
+            input(vec![r#type("button"), value(txt)], vec![]).attributes(ce)
         }
         Widget::Text(txt) => text(&txt),
+        Widget::TextBox(txt) => {
+            let ie = if let Some(ie) = attrs.iter().find(|att|att.name == "input"){
+                vec![ie.clone().reform(map_to_input_event)]
+            }else{
+                vec![]
+            };
+            input(vec![r#type("text"), value(txt)], vec![]).attributes(ie)
+        }
         Widget::Block(title) => div(vec![], vec![text(title)]),
     }
 }
@@ -114,18 +127,18 @@ where
     match widget_node {
         crate::Node::Element(widget) => {
             // convert the Widget tag to html node
-            let mut html_node: sauron::Node<MSG> = widget_to_html(widget.tag, &widget.attrs);
+            let mut html_node: sauron::Node<MSG> = widget_to_html(&widget.tag, &widget.attrs);
             // cast the html node to element
             if let Some(html_element) = html_node.as_element() {
+                for attr in widget.attributes() {
+                    html_element.attrs.push(attr.reform(map_to_event));
+                }
                 for widget_child in widget.children {
                     // convert all widget child to an html child node
                     let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
                     html_element.children.push(html_child);
                 }
 
-                for attr in widget.attrs {
-                    html_element.attrs.push(attr.reform(map_to_event));
-                }
             }
             html_node
         }
@@ -133,6 +146,7 @@ where
     }
 }
 
+/// TODO propertly map sauron_vdom primitive event to html Event
 fn map_event(event: sauron_vdom::Event) -> sauron::Event {
     let web_event = web_sys::Event::new("click").expect("fail to create an event");
     sauron::Event(web_event)
@@ -141,4 +155,8 @@ fn map_event(event: sauron_vdom::Event) -> sauron::Event {
 /// convert html event into sauron_vdom event
 fn map_to_event(event: sauron::Event) -> sauron_vdom::Event {
     sauron_vdom::Event::KeyEvent(sauron_vdom::event::KeyEvent::new("k".to_string()))
+}
+
+fn map_to_input_event(event: sauron::Event) -> sauron_vdom::Event {
+    sauron_vdom::Event::InputEvent(sauron_vdom::event::InputEvent::new("k".to_string()))
 }
