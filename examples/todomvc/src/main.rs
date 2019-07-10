@@ -6,13 +6,12 @@ use sauron_native::Program;
 use std::rc::Rc;
 
 pub mod app;
-use app::{App, Msg};
+use app::{Model, Msg};
 
 fn main() {
     #[cfg(feature = "with-tui")]
-    let program: Rc<Program<App, Msg, TuiBackend<App, Msg>>> = Program::new(App::new(1));
+    let program: Rc<Program<Model, Msg, TuiBackend<Model, Msg>>> = Program::new(Model::new());
 
     #[cfg(feature = "with-gtk")]
-    let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new(1));
-    program.dispatch(Msg::Click);
+    let program: Rc<Program<Model, Msg, GtkBackend<Model, Msg>>> = Program::new(Model::new());
 }

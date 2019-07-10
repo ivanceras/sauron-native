@@ -1,12 +1,13 @@
-#[cfg(feature = "with-html")]
-use sauron_native::backend::html::widget_tree_to_html_node;
-use sauron_native::{event::on, widget::*, Component, Node, Program};
+use sauron_native::{
+    event::{on, InputEvent},
+    util::*,
+    widget::*,
+    Attribute, Callback, Component, Event, Node, Program, Value,
+};
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
 };
-
-use sauron_native::{event::InputEvent, util::*, Attribute, Callback, Event, Value};
 
 pub struct App {
     click_count: u32,
@@ -70,7 +71,6 @@ impl Component<Msg> for App {
                     }),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
-                block("I'm a block kid!"),
                 textbox(
                     vec![oninput(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
@@ -85,7 +85,6 @@ impl Component<Msg> for App {
                     "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
                     dog. Lorem ipsun\n
-                    The shadows of mordor\n
                      ",
                 ),
             ],

@@ -1,10 +1,11 @@
 use crate::{Attribute, Backend, Component, Widget};
 use sauron::{
-    html::{attributes::*, div, input, text},
+    html::{attributes::*, div, events::mapper, input, text},
     Component as SauronComponent, DomUpdater, Program,
 };
 use sauron_vdom::Callback;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+use wasm_bindgen::JsCast;
 
 pub struct HtmlApp<APP, MSG>
 where
@@ -78,7 +79,7 @@ where
                 ("flex-direction", "column"),
                 ("border", "1px solid blue"),
             ])],
-            vec![text("This is a Vbox")],
+            vec![],
         ),
         Widget::Hbox => div(
             vec![styles(vec![
@@ -86,9 +87,10 @@ where
                 ("flex-direction", "row"),
                 ("border", "1px solid green"),
             ])],
-            vec![text("This is a Hbox")],
+            vec![],
         ),
         Widget::Button => {
+            /*
             let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
                 if let Some(value) = attr.get_value() {
                     value.to_string()
@@ -98,18 +100,19 @@ where
             } else {
                 "".to_string()
             };
-            let ce = if let Some(ce) = attrs.iter().find(|att|att.name == "click"){
+            */
+            let ce = if let Some(ce) = attrs.iter().find(|att| att.name == "click") {
                 vec![ce.clone().reform(map_to_event)]
-            }else{
+            } else {
                 vec![]
             };
-            input(vec![r#type("button"), value(txt)], vec![]).attributes(ce)
+            input(vec![r#type("button")], vec![]).attributes(ce)
         }
         Widget::Text(txt) => text(&txt),
         Widget::TextBox(txt) => {
-            let ie = if let Some(ie) = attrs.iter().find(|att|att.name == "input"){
-                vec![ie.clone().reform(map_to_input_event)]
-            }else{
+            let ie = if let Some(ie) = attrs.iter().find(|att| att.name == "input") {
+                vec![ie.clone().reform(map_to_event)]
+            } else {
                 vec![]
             };
             input(vec![r#type("text"), value(txt)], vec![]).attributes(ie)
@@ -138,7 +141,6 @@ where
                     let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
                     html_element.children.push(html_child);
                 }
-
             }
             html_node
         }
@@ -146,17 +148,19 @@ where
     }
 }
 
-/// TODO propertly map sauron_vdom primitive event to html Event
-fn map_event(event: sauron_vdom::Event) -> sauron::Event {
-    let web_event = web_sys::Event::new("click").expect("fail to create an event");
-    sauron::Event(web_event)
-}
-
 /// convert html event into sauron_vdom event
 fn map_to_event(event: sauron::Event) -> sauron_vdom::Event {
-    sauron_vdom::Event::KeyEvent(sauron_vdom::event::KeyEvent::new("k".to_string()))
-}
-
-fn map_to_input_event(event: sauron::Event) -> sauron_vdom::Event {
-    sauron_vdom::Event::InputEvent(sauron_vdom::event::InputEvent::new("k".to_string()))
+    //sauron_vdom::Event::KeyEvent(sauron_vdom::event::KeyEvent::new("k".to_string()))
+    if let Some(_mouse_event) = event.dyn_ref::<web_sys::MouseEvent>() {
+        let me = mapper::mouse_event_mapper(event);
+        sauron_vdom::Event::MouseEvent(me)
+    } else if let Some(_input_event) = event.dyn_ref::<web_sys::InputEvent>() {
+        let input_event = mapper::input_event_mapper(event);
+        sauron_vdom::Event::InputEvent(input_event)
+    } else if let Some(_key_event) = event.dyn_ref::<web_sys::KeyboardEvent>() {
+        let key_event = mapper::keyboard_event_mapper(event);
+        sauron_vdom::Event::KeyEvent(key_event)
+    } else {
+        panic!("unsupported event!")
+    }
 }

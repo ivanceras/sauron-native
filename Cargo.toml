@@ -33,6 +33,7 @@ features = [
     "HtmlElement",
     "EventTarget",
     "KeyboardEvent",
+    "InputEvent",
     "HtmlCollection",
     "HtmlInputElement",
     "HtmlTextAreaElement",
@@ -63,6 +64,7 @@ with-gtk = ["gtk", "gio"]
 [workspace]
 members = [
     "examples/cross_widget",
+    "examples/todomvc",
 ]
 
 exclude = [
