@@ -43,3 +43,6 @@ One UI to rule them all
   │ tab1 │ tab2 │ tab2 │
   └──────┴──────┘──────┘
 ```
+
+### Please support this project:
+ [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)

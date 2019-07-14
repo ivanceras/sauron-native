@@ -12,6 +12,8 @@ use std::{
 pub struct App {
     click_count: u32,
     text: String,
+    events: Vec<String>,
+    debug: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -25,6 +27,8 @@ impl App {
         App {
             click_count: count,
             text: String::new(),
+            events: vec![],
+            debug: vec![],
         }
     }
 }
@@ -41,26 +45,22 @@ impl Component<Msg> for App {
         }
     }
 
+    fn on_event(&mut self, event: Event) {
+        self.events.push(format!("{:?}", event));
+    }
+
+    fn debug(&mut self, s: String) {
+        self.debug.push(s);
+    }
+
     fn view(&self) -> Node<Msg> {
         vbox(
             vec![],
             vec![
-                hbox(
-                    vec![attr("class", "column1"), onclick(|_| Msg::Click)],
-                    vec![
-                        button(vec![value("column1 element1")]),
-                        button(vec![value("column1 element2")]),
-                        button(vec![value("column1 element3")]),
-                        button(vec![value("column1 element4")]),
-                        button(vec![value("column1 element5")]),
-                        button(vec![value("column1 element6")]),
-                    ],
-                ),
-                hbox(
+                vbox(
                     vec![attr("class", "column2")],
                     vec![
-                        button(vec![value("column2")]),
-                        button(vec![value("c2 element2")]),
+                        text(&self.debug.join("\n")),
                         button(vec![value(&self.text)]),
                     ],
                 ),
@@ -79,7 +79,7 @@ impl Component<Msg> for App {
                             panic!();
                         }
                     })],
-                    "a textbox",
+                    &self.events.join("\n"),
                 ),
                 text(
                     "Hello, will this be a paragrapah\n

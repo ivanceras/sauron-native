@@ -121,7 +121,6 @@ where
     }
 }
 
-#[allow(unused)]
 /// converts widget virtual node tree into an html node tree
 pub fn widget_tree_to_html_node<MSG>(widget_node: crate::Node<MSG>) -> sauron::Node<MSG>
 where

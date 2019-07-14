@@ -1,11 +1,11 @@
 use crate::{Attribute, Widget};
-use sauron_vdom::{self, Callback, Event};
-use std::rc::Rc;
-use tui::{
+use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,
     widgets::Borders,
 };
+use sauron_vdom::{self, Callback, Event};
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub enum TuiWidget {

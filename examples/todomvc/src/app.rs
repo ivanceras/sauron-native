@@ -13,7 +13,7 @@ struct Entry {
     editing: bool,
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum Msg {
     Add,
     Edit(usize),
@@ -95,10 +95,7 @@ impl Component<Msg> for Model {
             vec![vbox(
                 vec![],
                 vec![
-                    hbox(
-                        vec![],
-                        vec![text("todos"), self.view_input()],
-                    ),
+                    hbox(vec![], vec![text("todos"), self.view_input()]),
                     vbox(
                         vec![],
                         vec![
@@ -131,13 +128,10 @@ impl Component<Msg> for Model {
                                     self.view_filter(Filter::Completed),
                                 ],
                             ),
-                            button(
-                                vec![onclick(|_| Msg::ClearCompleted),
-                                value(&format!(
-                                    "Clear completed ({})",
-                                    self.total_completed()
-                                ))],
-                            ),
+                            button(vec![
+                                onclick(|_| Msg::ClearCompleted),
+                                value(&format!("Clear completed ({})", self.total_completed())),
+                            ]),
                         ],
                     ),
                 ],
@@ -149,10 +143,7 @@ impl Component<Msg> for Model {
 impl Model {
     fn view_filter(&self, filter: Filter) -> Node<Msg> {
         let flt = filter.clone();
-        hbox(
-            vec![],
-            vec![],
-        )
+        hbox(vec![], vec![])
     }
 
     fn view_input(&self) -> Node<Msg> {
@@ -219,7 +210,7 @@ fn view_entry_edit_input((idx, entry): (usize, &Entry)) -> Node<Msg> {
         textbox(
             vec![
                 value(&entry.description),
-                oninput(|e: Event| match e{
+                oninput(|e: Event| match e {
                     Event::InputEvent(input) => Msg::UpdateEdit(input.value),
                     _ => panic!("expecting an input event"),
                 }),

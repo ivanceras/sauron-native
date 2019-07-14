@@ -1,4 +1,3 @@
-
 use app::{Model, Msg};
 #[cfg(feature = "with-html")]
 use sauron::body;
