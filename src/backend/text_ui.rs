@@ -81,7 +81,7 @@ where
     }
     fn draw_widget_node_tree<B>(
         &self,
-        tui_widget: TuiWidget,
+        tui_widget: TuiWidget<MSG>,
         frame: &mut Frame<B>,
         area: Rect,
         event: &Option<Event>,
@@ -101,7 +101,9 @@ where
             }
             TuiWidget::Paragraph(paragraph) => {
                 let text: Vec<Text> = paragraph.text.iter().map(|txt| Text::raw(txt)).collect();
-                let mut actual_paragraph = Paragraph::new(text.iter()).area(area);
+                let mut actual_paragraph: Paragraph<_, MSG> =
+                    Paragraph::new(text.iter()).area(area);
+                actual_paragraph.events = paragraph.events;
                 if let Some(block) = &paragraph.block {
                     let mut tui_block = itui::widgets::Block::default()
                         .title_style(block.title_style)
@@ -114,25 +116,42 @@ where
                     }
 
                     if let Some(event) = event {
-                        let y = tui_block.triggers_event(event);
-                        self.app
-                            .borrow_mut()
-                            .debug(format!("triggered an event: {}", y));
+                        let cb = tui_block.triggers_event(event);
+                        if let Some(cb) = cb {
+                            let msg = cb.emit(event.clone());
+                            self.app.borrow_mut().update(msg);
+                        }
                     }
 
                     actual_paragraph = actual_paragraph.block(tui_block);
                 }
+                if let Some(event) = event {
+                    let cb = actual_paragraph.triggers_event(event);
+                    if let Some(cb) = cb {
+                        let msg = cb.emit(event.clone());
+                        self.app.borrow_mut().update(msg);
+                    }
+                }
                 actual_paragraph.render(frame);
             }
             TuiWidget::Block(block) => {
-                let mut actual_block = itui::widgets::Block::default()
+                let mut actual_block: Block<MSG> = itui::widgets::Block::default()
                     .title_style(block.title_style)
                     .borders(block.borders)
                     .border_style(block.border_style)
                     .area(area)
                     .style(block.style);
+                actual_block.events = block.events;
                 if let Some(title) = &block.title {
                     actual_block = actual_block.title(&title)
+                }
+
+                if let Some(event) = event {
+                    let cb = actual_block.triggers_event(event);
+                    if let Some(cb) = cb {
+                        let msg = cb.emit(event.clone());
+                        self.app.borrow_mut().update(msg);
+                    }
                 }
                 actual_block.render(frame);
             }

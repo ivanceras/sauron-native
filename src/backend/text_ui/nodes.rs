@@ -8,16 +8,16 @@ use sauron_vdom::{self, Callback, Event};
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub enum TuiWidget {
-    Layout(Layout),
-    Paragraph(Paragraph),
-    List(List),
-    Block(Block),
+pub enum TuiWidget<MSG> {
+    Layout(Layout<MSG>),
+    Paragraph(Paragraph<MSG>),
+    List(List<MSG>),
+    Block(Block<MSG>),
 }
 #[derive(Clone)]
-pub struct Paragraph {
+pub struct Paragraph<MSG> {
     /// A block to wrap the widget in
-    pub block: Option<Block>,
+    pub block: Option<Block<MSG>>,
     /// Widget style
     pub style: Style,
     /// Wrap the text or not
@@ -28,26 +28,30 @@ pub struct Paragraph {
     pub scroll: u16,
     /// Aligenment of the text
     pub alignment: Alignment,
+    /// events attached to this block
+    pub events: Vec<Attribute<MSG>>,
 }
 
 #[derive(Clone)]
-pub struct Layout {
+pub struct Layout<MSG> {
     pub direction: Direction,
     pub margin: u16,
     pub constraints: Vec<Constraint>,
-    pub children: Vec<TuiWidget>,
+    pub children: Vec<TuiWidget<MSG>>,
 }
 
 #[derive(Clone)]
-pub struct List {
-    block: Option<Block>,
+pub struct List<MSG> {
+    block: Option<Block<MSG>>,
     items: Vec<String>,
     style: Style,
     start_corner: Corner,
+    /// events attached to this block
+    pub events: Vec<Attribute<MSG>>,
 }
 
 #[derive(Clone)]
-pub struct Block {
+pub struct Block<MSG> {
     /// Optional title place on the upper left of the block
     pub title: Option<String>,
     /// Title style
@@ -60,10 +64,12 @@ pub struct Block {
     pub style: Style,
     /// preferred constraint when parent is a layout
     pub preferred_constraint: Option<Constraint>,
+    /// events attached to this block
+    pub events: Vec<Attribute<MSG>>,
 }
 
-impl TuiWidget {
-    fn as_layout(&mut self) -> Option<&mut Layout> {
+impl<MSG> TuiWidget<MSG> {
+    fn as_layout(&mut self) -> Option<&mut Layout<MSG>> {
         match self {
             TuiWidget::Layout(layout) => Some(layout),
             _ => None,
@@ -78,8 +84,8 @@ impl TuiWidget {
     }
 }
 
-impl Layout {
-    fn add_children(&mut self, children: Vec<TuiWidget>) {
+impl<MSG> Layout<MSG> {
+    fn add_children(&mut self, children: Vec<TuiWidget<MSG>>) {
         for child in children {
             self.children.push(child);
         }
@@ -98,7 +104,7 @@ impl Layout {
     }
 }
 
-impl Default for Layout {
+impl<MSG> Default for Layout<MSG> {
     fn default() -> Self {
         Layout {
             direction: Direction::Vertical,
@@ -108,7 +114,7 @@ impl Default for Layout {
         }
     }
 }
-impl Default for Paragraph {
+impl<MSG> Default for Paragraph<MSG> {
     fn default() -> Self {
         Paragraph {
             block: None,
@@ -117,11 +123,12 @@ impl Default for Paragraph {
             text: vec![],
             scroll: 0,
             alignment: Alignment::Left,
+            events: vec![],
         }
     }
 }
 
-impl Default for Block {
+impl<MSG> Default for Block<MSG> {
     fn default() -> Self {
         Block {
             title: None,
@@ -130,77 +137,79 @@ impl Default for Block {
             border_style: Style::default(),
             style: Style::default(),
             preferred_constraint: None,
+            events: vec![],
         }
     }
 }
 
-fn layout<'a, C>(direction: Direction, constraints: Vec<Constraint>, children: C) -> TuiWidget
-where
-    C: AsRef<[TuiWidget]>,
-{
+fn layout<MSG>(
+    direction: Direction,
+    constraints: Vec<Constraint>,
+    children: Vec<TuiWidget<MSG>>,
+) -> TuiWidget<MSG> {
     let mut layout = Layout::default();
 
     layout.direction = direction;
-    let mut all_children: Vec<TuiWidget> = vec![];
-    for child in children.as_ref() {
-        all_children.push(child.clone());
-    }
-    layout.add_children(all_children);
+    layout.add_children(children);
     TuiWidget::Layout(layout)
 }
 
-fn paragraph(block: Option<Block>, text: Vec<String>) -> TuiWidget {
+fn paragraph<MSG>(
+    events: Vec<Attribute<MSG>>,
+    block: Option<Block<MSG>>,
+    text: Vec<String>,
+) -> TuiWidget<MSG> {
     let mut paragraph = Paragraph::default();
     paragraph.block = block;
     paragraph.text = text;
+    paragraph.events = events;
     TuiWidget::Paragraph(paragraph)
 }
 
-fn button(text: &str) -> TuiWidget {
-    layout(
-        Direction::Horizontal,
-        vec![Constraint::Max(1), Constraint::Min(1)],
-        [paragraph(Some(plain_block()), vec![text.to_string()])],
-    )
+fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG> {
+    paragraph(events, Some(plain_block(vec![])), vec![text.to_string()])
 }
 
-fn plain_block() -> Block {
-    let mut block: Block = Block::default();
+fn plain_block<MSG>(events: Vec<Attribute<MSG>>) -> Block<MSG> {
+    let mut block: Block<MSG> = Block::default();
+    block.events = events;
     block
 }
 
-fn block(title: &str) -> TuiWidget {
-    let mut block: Block = Block::default();
+fn block<MSG>(events: Vec<Attribute<MSG>>, title: &str) -> TuiWidget<MSG> {
+    let mut block: Block<MSG> = Block::default();
     block.title = Some(title.to_string());
     block.borders = Borders::ALL;
+    block.events = events;
     TuiWidget::Block(block)
 }
 
-fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWidget
+fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWidget<MSG>
 where
     MSG: 'static,
 {
-    match widget {
-        Widget::Vbox => layout(Direction::Vertical, vec![], []),
-        Widget::Hbox => layout(Direction::Horizontal, vec![], []),
-        Widget::Button => {
-            let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
-                if let Some(value) = attr.get_value() {
-                    value.to_string()
-                } else {
-                    "".to_string()
-                }
-            } else {
-                "".to_string()
-            };
-            button(&txt)
+    let value_txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
+        if let Some(value) = attr.get_value() {
+            value.to_string()
+        } else {
+            "".to_string()
         }
-        Widget::Text(txt) => paragraph(Some(plain_block()), vec![txt]),
-        Widget::TextBox(txt) => paragraph(Some(plain_block()), vec![txt]),
-        Widget::Block(title) => block(&*title),
+    } else {
+        "".to_string()
+    };
+
+    match widget {
+        Widget::Vbox => layout(Direction::Vertical, vec![], vec![]),
+        Widget::Hbox => layout(Direction::Horizontal, vec![], vec![]),
+        Widget::Button => button(attrs, &value_txt),
+        Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
+        Widget::TextBox(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
+        Widget::Block(title) => block(attrs, &*title),
     }
 }
-pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(widget_node: crate::Node<MSG>) -> TuiWidget {
+pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(
+    widget_node: crate::Node<MSG>,
+) -> TuiWidget<MSG> {
     match widget_node {
         crate::Node::Element(element) => {
             let mut tui_node = widget_to_tui_node(element.tag, element.attrs);
@@ -214,6 +223,6 @@ pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(widget_node: crate::Node<
             }
             tui_node
         }
-        crate::Node::Text(txt) => paragraph(None, vec![txt.text]),
+        crate::Node::Text(txt) => paragraph(vec![], None, vec![txt.text]),
     }
 }

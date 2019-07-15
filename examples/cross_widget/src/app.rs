@@ -35,22 +35,20 @@ impl App {
 
 impl Component<Msg> for App {
     fn update(&mut self, msg: Msg) {
-        println!("updating in App");
         match msg {
             Msg::Click => self.click_count += 1,
             Msg::ChangeText(txt) => {
-                println!("text changed to {}", txt);
                 self.text = txt;
             }
         }
     }
 
     fn on_event(&mut self, event: Event) {
-        self.events.push(format!("{:?}", event));
+        //self.events.push(format!("{:?}", event));
     }
 
     fn debug(&mut self, s: String) {
-        self.debug.push(s);
+        //self.debug.push(s);
     }
 
     fn view(&self) -> Node<Msg> {
@@ -65,10 +63,7 @@ impl Component<Msg> for App {
                     ],
                 ),
                 button(vec![
-                    onclick(|_| {
-                        sauron::log("Button is clicked!");
-                        Msg::Click
-                    }),
+                    onclick(|_| Msg::Click),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
                 textbox(
