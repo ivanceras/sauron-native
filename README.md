@@ -22,27 +22,9 @@ One UI to rule them all
 - html
 - tui-rs (termion, crossterm)
 
-## Text base button with hover/click effect
 
+## Support this project
+- Too little time
+- Too little money
 
-## Rounded button
-  ╭──────╮    ▄▄▄▄▄▄▄▄
-  │ btn  │    █ btn ██
-  ╰──────╯    ▀▀▀▀▀▀▀▀
-
-## Flat buttons
-  ┌──────┐    ▄▄▄▄▄▄▄▄
-  │ btn01│    █btn01██
-  └──────┘    ▀▀▀▀▀▀▀▀
-
-### Tabs:
-
-
-```
-  ╭──────╮______________
-  │ tab1 │ tab2 │ tab2 │
-  └──────┴──────┘──────┘
-```
-
-### Please support this project:
  [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)
