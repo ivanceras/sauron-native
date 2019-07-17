@@ -43,3 +43,4 @@ pub fn textbox<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
 pub fn block<MSG>(title: &str) -> Node<MSG> {
     widget(Widget::Block(title.to_string()), vec![], vec![])
 }
+

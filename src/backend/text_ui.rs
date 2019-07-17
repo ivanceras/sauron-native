@@ -155,7 +155,39 @@ where
                 }
                 actual_block.render(frame);
             }
-            _ => {}
+            TuiWidget::Button(button) => {
+                let mut button = button.clone();
+                /*
+                let mut actual_block: Block<MSG> = itui::widgets::Block::default()
+                    .title_style(block.title_style)
+                    .borders(block.borders)
+                    .border_style(block.border_style)
+                    .area(area)
+                    .style(block.style);
+                actual_block.events = block.events;
+                if let Some(title) = &block.title {
+                    actual_block = actual_block.title(&title)
+                }
+                */
+                let mut area1 = area.clone();
+                area1.height = 3;
+                let label_len = button.text.len();
+                area1.width = if label_len > 0 {
+                    (label_len + 4) as u16
+                }else{
+                    10
+                };
+                button = button.area(area1);
+
+                if let Some(event) = event {
+                    let cb = button.triggers_event(event);
+                    if let Some(cb) = cb {
+                        let msg = cb.emit(event.clone());
+                        self.app.borrow_mut().update(msg);
+                    }
+                }
+                button.render(frame);
+            }
         }
     }
 }

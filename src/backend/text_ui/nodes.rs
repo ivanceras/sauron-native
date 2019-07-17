@@ -3,6 +3,7 @@ use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,
     widgets::Borders,
+    widgets::Button,
 };
 use sauron_vdom::{self, Callback, Event};
 use std::rc::Rc;
@@ -11,8 +12,8 @@ use std::rc::Rc;
 pub enum TuiWidget<MSG> {
     Layout(Layout<MSG>),
     Paragraph(Paragraph<MSG>),
-    List(List<MSG>),
     Block(Block<MSG>),
+    Button(Button<MSG>),
 }
 #[derive(Clone)]
 pub struct Paragraph<MSG> {
@@ -166,8 +167,11 @@ fn paragraph<MSG>(
     TuiWidget::Paragraph(paragraph)
 }
 
-fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG> {
-    paragraph(events, Some(plain_block(vec![])), vec![text.to_string()])
+fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG>
+where MSG: 'static,
+{
+    let button = Button::new(events, text);
+    TuiWidget::Button(button)
 }
 
 fn plain_block<MSG>(events: Vec<Attribute<MSG>>) -> Block<MSG> {
