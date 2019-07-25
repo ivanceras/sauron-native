@@ -2,7 +2,7 @@
 name = "sauron-native"
 version = "0.1.1-alpha.0"
 authors = [ "Jovansonlee Cesar <ivanceras@gmail.com>" ]
-license = "Commercial"
+license = "MIT"
 description = "An html library for building client side webapps"
 repository = "https://github.com/ivanceras/sauron-native"
 documentation = "https://docs.rs/sauron"
