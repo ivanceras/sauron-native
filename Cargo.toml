@@ -10,8 +10,6 @@ readme = "README.md"
 keywords = ["html", "dom", "web"]
 edition = "2018"
 
-publish = false
-
 [dependencies]
 sauron = { version = "0.10.0", optional = true }
 sauron_vdom = "0.10.0"
