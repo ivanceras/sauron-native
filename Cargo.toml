@@ -1,6 +1,6 @@
 [package]
 name = "sauron-native"
-version = "0.1.0-alpha.0"
+version = "0.1.0"
 authors = [ "Jovansonlee Cesar <ivanceras@gmail.com>" ]
 license = "Commercial"
 description = "An html library for building client side webapps"
