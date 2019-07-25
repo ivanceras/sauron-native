@@ -1,6 +1,6 @@
 [package]
 name = "sauron-native"
-version = "0.1.0"
+version = "0.1.0-alpha.0"
 authors = [ "Jovansonlee Cesar <ivanceras@gmail.com>" ]
 license = "Commercial"
 description = "An html library for building client side webapps"
@@ -13,8 +13,8 @@ edition = "2018"
 publish = false
 
 [dependencies]
-sauron = { version = "0.7.1", optional = true }
-sauron_vdom = "0.7.1"
+sauron = { version = "0.10.0", optional = true }
+sauron_vdom = "0.10.0"
 itui = { path = "crates/itui", optional = true }
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2.42", optional = true }
@@ -73,6 +73,6 @@ exclude = [
 ]
 
 [replace]
-"sauron:0.7.1" = { path = "../sauron" }
-"sauron_vdom:0.7.1" = { path = "../sauron/crates/sauron_vdom" }
+#"sauron:0.10.0" = { path = "../sauron" }
+#"sauron_vdom:0.10.0" = { path = "../sauron/crates/sauron_vdom" }
 
