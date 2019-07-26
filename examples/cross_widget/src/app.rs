@@ -77,10 +77,9 @@ impl Component<Msg> for App {
                     &self.events.join("\n"),
                 ),
                 text(
-                    "Hello, will this be a paragrapah\n
-                    The quick brown fox jumps over the lazy\n
-                    dog. Lorem ipsun\n
-                     ",
+                    "Hello, will this be a paragraph
+The quick brown fox jumps over the lazy
+dog. Lorem ipsum",
                 ),
             ],
         )
