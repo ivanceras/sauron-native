@@ -1,10 +1,10 @@
-## Sauron-native
+## WIP: Sauron-native
 a rust UI library that conquers all platforms ranging from desktop to mobile devices.
 An attempt to create a truly native, truly cross platform UI for your rust applications.
 
 One UI to rule them all
 
-Suaron native extends the [sauron](https://github.com/ivanceras/sauron) web framework
+Sauron native extends the [sauron](https://github.com/ivanceras/sauron) web framework
 which is heavily inspired by [The Elm Architecture](https://guide.elm-lang.org/architecture/).
 Sauron native can target multiple GUI backends.
 
