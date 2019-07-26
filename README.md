@@ -12,8 +12,14 @@ One UI to rule them all
 ## Screenshot
 
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-gtk.png)
+
+
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-html.png)
+
+
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-tui.png)
+
+
 
 ## Probable Rename to
  - mordor
