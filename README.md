@@ -24,10 +24,16 @@ Sauron native can target multiple GUI backends.
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-tui.png)
 
 ## Running the example
-- install the rust nightly compiler
-- install wasm-pack
-- run the scripts: `./run_gtk`, `./run_terminal`, `./start_web.sh` in examples/cross_widget
 
+```bash
+git submodule init
+git submodule update
+cd examples/cross_widget
+./run_gtk.sh
+./run_terminal.sh
+# if you have wasm-pack installed
+./start_web.sh
+```
 
 ## Probable Rename to
  - mordor
