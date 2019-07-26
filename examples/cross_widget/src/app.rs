@@ -26,7 +26,7 @@ impl App {
     pub fn new(count: u32) -> App {
         App {
             click_count: count,
-            text: String::new(),
+            text: String::from("CTRL-C to exit"),
             events: vec![],
             debug: vec![],
         }
