@@ -28,14 +28,14 @@ where
             .get(&patch_node_idx)
             .expect("must have a node to patch");
         println!("patching this widget: {:?}", widget);
-        if let Some(button) = widget.downcast_ref::<Button>() {
-            println!("this is a button");
-            println!("with a label of: {:?}", button.get_label());
-            match patch {
-                Patch::AddAttributes(_node_idx, attrs) => {
-                    for att in attrs {
-                        println!("att: {:?}", att);
-                        if att.name == "value" {
+        match patch {
+            Patch::AddAttributes(_node_idx, attrs) => {
+                for att in attrs {
+                    println!("att: {:?}", att);
+                    if att.name == "value" {
+                        if let Some(button) = widget.downcast_ref::<Button>() {
+                            println!("this is a button");
+                            println!("with a label of: {:?}", button.get_label());
                             if let Some(value) = att.get_value() {
                                 println!("value: {:?}", value);
                                 button.set_label(&value.to_string());
@@ -43,8 +43,20 @@ where
                         }
                     }
                 }
-                _ => {}
             }
+            Patch::AppendChildren(_node_idx, nodes) => {
+                println!("appending children..{}", nodes.len());
+                println!("widget is a: {:?}", widget);
+                if let Some(container) = widget.downcast_ref::<gtk::Box>() {
+                    println!("container is a: {:?}", container);
+                    let btn = Button::new_with_label("btn here..");
+                    container.add(&btn);
+                    btn.show();
+                } else {
+                    println!("not a box..");
+                }
+            }
+            _ => {}
         }
     }
 }

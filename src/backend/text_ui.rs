@@ -174,7 +174,7 @@ where
                 let label_len = button.text.len();
                 area1.width = if label_len > 0 {
                     (label_len + 4) as u16
-                }else{
+                } else {
                     10
                 };
                 button = button.area(area1);

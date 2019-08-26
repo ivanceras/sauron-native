@@ -2,8 +2,7 @@ use crate::{Attribute, Widget};
 use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,
-    widgets::Borders,
-    widgets::Button,
+    widgets::{Borders, Button},
 };
 use sauron_vdom::{self, Callback, Event};
 use std::rc::Rc;
@@ -168,7 +167,8 @@ fn paragraph<MSG>(
 }
 
 fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG>
-where MSG: 'static,
+where
+    MSG: 'static,
 {
     let button = Button::new(events, text);
     TuiWidget::Button(button)

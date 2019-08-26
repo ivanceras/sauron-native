@@ -81,6 +81,10 @@ where
         let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(&root_node, view);
         match &gtk_widget {
             GtkWidget::GBox(gbox) => {
+                let btn = Button::new_with_label("button from root..");
+                gbox.add(&btn);
+                let btn2 = Button::new_with_label("button from root2..");
+                gbox.add(&btn2);
                 root_node.add(gbox);
             }
             GtkWidget::Button(btn) => {
@@ -129,7 +133,10 @@ where
         MSG: Debug + 'static,
     {
         match widget {
-            Widget::Vbox => gtk::Box::new(Orientation::Vertical, 0).into(),
+            Widget::Vbox => {
+                let vbox = gtk::Box::new(Orientation::Vertical, 0);
+                vbox.into()
+            }
             Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
             Widget::Button => {
                 let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value")

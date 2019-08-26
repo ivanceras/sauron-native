@@ -66,6 +66,11 @@ impl Component<Msg> for App {
                     onclick(|_| Msg::Click),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
+                vbox(vec![], {
+                    (0..self.click_count)
+                        .map(|x| button(vec![value("Hello".to_string())]))
+                        .collect()
+                }),
                 textbox(
                     vec![oninput(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
