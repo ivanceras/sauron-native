@@ -81,10 +81,6 @@ where
         let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(&root_node, view);
         match &gtk_widget {
             GtkWidget::GBox(gbox) => {
-                let btn = Button::new_with_label("button from root..");
-                gbox.add(&btn);
-                let btn2 = Button::new_with_label("button from root2..");
-                gbox.add(&btn2);
                 root_node.add(gbox);
             }
             GtkWidget::Button(btn) => {
