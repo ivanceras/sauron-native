@@ -20,6 +20,7 @@ pub struct App {
 pub enum Msg {
     Click,
     ChangeText(String),
+    Decrement,
 }
 
 impl App {
@@ -37,6 +38,7 @@ impl Component<Msg> for App {
     fn update(&mut self, msg: Msg) {
         match msg {
             Msg::Click => self.click_count += 1,
+            Msg::Decrement => self.click_count -= 1,
             Msg::ChangeText(txt) => {
                 self.text = txt;
             }
@@ -59,7 +61,7 @@ impl Component<Msg> for App {
                     vec![attr("class", "column2")],
                     vec![
                         text(&self.debug.join("\n")),
-                        button(vec![value(&self.text)]),
+                        button(vec![onclick(|_|Msg::Decrement),value(&self.text)]),
                     ],
                 ),
                 button(vec![

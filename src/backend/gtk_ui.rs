@@ -22,7 +22,7 @@ where
     MSG: 'static,
 {
     app: Rc<RefCell<APP>>,
-    current_vdom: Node<MSG>,
+    current_vdom: Rc<RefCell<Node<MSG>>>,
     _phantom_msg: PhantomData<MSG>,
 }
 impl<APP, MSG> GtkBackend<APP, MSG>
@@ -34,7 +34,7 @@ where
         let current_vdom = app.view();
         GtkBackend {
             app: Rc::new(RefCell::new(app)),
-            current_vdom,
+            current_vdom: Rc::new(RefCell::new(current_vdom)),
             _phantom_msg: PhantomData,
         }
     }
@@ -46,9 +46,13 @@ where
         println!("dispatching : {:?}", msg);
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
-        let diff = sauron_vdom::diff(&self.current_vdom, &new_view);
+        {
+        let current_vdom = self.current_vdom.borrow();
+        let diff = sauron_vdom::diff(&current_vdom, &new_view);
         println!("diff: {:#?}", diff);
         apply_patches::apply_patches(root_node, &diff);
+        }
+        *self.current_vdom.borrow_mut() = new_view;
     }
 
     fn create_app(mut self: &Rc<Self>)
@@ -161,6 +165,7 @@ where
                                     let mouse_event = MouseEvent::default();
                                     let msg = cb_clone.emit(mouse_event);
                                     println!("got msg: {:?}", msg);
+                                    //TODO: set the current_vdom after dispatching the callback
                                     self_clone.dispatch(&root_node, msg);
                                 });
                             }

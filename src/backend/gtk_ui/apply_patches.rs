@@ -47,13 +47,24 @@ where
             Patch::AppendChildren(_node_idx, nodes) => {
                 println!("appending children..{}", nodes.len());
                 println!("widget is a: {:?}", widget);
-                if let Some(container) = widget.downcast_ref::<gtk::Box>() {
+                if let Some(container) = widget.downcast_ref::<Container>() {
                     println!("container is a: {:?}", container);
-                    let btn = Button::new_with_label("btn here..");
-                    container.add(&btn);
-                    btn.show();
+                    for node in nodes{
+                        let btn = Button::new_with_label("btn here..");
+                        container.add(&btn);
+                        btn.show();
+                    }
                 } else {
                     println!("not a box..");
+                }
+            }
+            Patch::TruncateChildren(_node_idx, num_children_remaining) => {
+                println!("Truncating children {}", num_children_remaining);
+                if let Some(container) = widget.downcast_ref::<Container>() {
+                    let children = container.get_children();
+                    for i in *num_children_remaining..children.len(){
+                        container.remove(&children[i]);
+                    }
                 }
             }
             _ => {}
