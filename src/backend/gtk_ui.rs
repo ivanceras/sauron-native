@@ -49,7 +49,7 @@ where
             _phantom_msg: PhantomData,
         };
         let rc_backend = Rc::new(backend);
-        let root_widget = rc_backend.convert_widget_node_tree_to_gtk_widget(root_vdom);
+        let root_widget = rc_backend.node_tree_to_gtk(root_vdom);
         *rc_backend.root_node.borrow_mut() = Some(root_widget);
         rc_backend
     }
@@ -128,7 +128,7 @@ where
 
 
 
-    fn convert_widget_node_tree_to_gtk_widget(
+    fn node_tree_to_gtk(
         self: &Rc<Self>,
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
@@ -138,10 +138,10 @@ where
         match widget_node {
             crate::Node::Element(element) => {
                 let mut gtk_widget =
-                    self.widget_to_gtk_widget(element.tag, &element.attrs);
+                    self.node_to_gtk(element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
-                    let gtk_child = self.convert_widget_node_tree_to_gtk_widget(child);
+                    let gtk_child = self.node_tree_to_gtk(child);
                     children.push(gtk_child);
                 }
                 gtk_widget.add_children(children);
@@ -151,7 +151,7 @@ where
         }
     }
 
-    fn widget_to_gtk_widget(
+    fn node_to_gtk(
         self: &Rc<Self>,
         widget: Widget,
         attrs: &Vec<Attribute<MSG>>,
@@ -290,3 +290,4 @@ fn textview(txt: &str) -> GtkWidget {
     buffer.set_text(txt);
     GtkWidget::Text(text_view)
 }
+
