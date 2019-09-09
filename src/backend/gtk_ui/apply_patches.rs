@@ -1,14 +1,15 @@
 use crate::Patch;
-use gtk::{prelude::*, ApplicationWindow, Button, Container, ContainerExt, Widget};
+use gtk::{prelude::*, Button, Container, ContainerExt, Widget};
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     rc::Rc,
 };
 
-pub fn apply_patches<MSG>(root_node: &Rc<ApplicationWindow>, patches: &Vec<Patch<MSG>>)
+pub fn apply_patches<MSG, C>(root_node: &Rc<C>, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
+    C: IsA<Container>,
 {
     let container: &Container = root_node.upcast_ref();
     let contents = container.get_children();
@@ -49,7 +50,7 @@ where
                 println!("widget is a: {:?}", widget);
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     println!("container is a: {:?}", container);
-                    for node in nodes{
+                    for node in nodes {
                         let btn = Button::new_with_label("btn here..");
                         container.add(&btn);
                         btn.show();
@@ -62,7 +63,7 @@ where
                 println!("Truncating children {}", num_children_remaining);
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
-                    for i in *num_children_remaining..children.len(){
+                    for i in *num_children_remaining..children.len() {
                         container.remove(&children[i]);
                     }
                 }

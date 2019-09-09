@@ -39,18 +39,19 @@ where
         }
     }
 
-    fn dispatch(self: &Rc<Self>, root_node: &Rc<ApplicationWindow>, msg: MSG)
+    fn dispatch<C>(self: &Rc<Self>, root_node: &Rc<C>, msg: MSG)
     where
         MSG: Debug,
+        C: IsA<Container>,
     {
         println!("dispatching : {:?}", msg);
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
         {
-        let current_vdom = self.current_vdom.borrow();
-        let diff = sauron_vdom::diff(&current_vdom, &new_view);
-        println!("diff: {:#?}", diff);
-        apply_patches::apply_patches(root_node, &diff);
+            let current_vdom = self.current_vdom.borrow();
+            let diff = sauron_vdom::diff(&current_vdom, &new_view);
+            println!("diff: {:#?}", diff);
+            apply_patches::apply_patches(root_node, &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
     }
@@ -76,10 +77,11 @@ where
         uiapp.run(&[]);
     }
 
-    fn draw_widgets(self: &Rc<Self>, root_node: &Rc<ApplicationWindow>)
+    fn draw_widgets<C>(self: &Rc<Self>, root_node: &Rc<C>)
     where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
+        C: IsA<Container>,
     {
         let view = self.app.borrow().view();
         let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(&root_node, view);
@@ -99,13 +101,14 @@ where
         }
     }
 
-    fn convert_widget_node_tree_to_gtk_widget(
+    fn convert_widget_node_tree_to_gtk_widget<C>(
         self: &Rc<Self>,
-        root_node: &Rc<ApplicationWindow>,
+        root_node: &Rc<C>,
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
+        C: IsA<Container>,
     {
         match widget_node {
             crate::Node::Element(element) => {
@@ -123,14 +126,15 @@ where
         }
     }
 
-    fn widget_to_gtk_widget(
+    fn widget_to_gtk_widget<C>(
         self: &Rc<Self>,
-        root_node: &Rc<ApplicationWindow>,
+        root_node: &Rc<C>,
         widget: Widget,
         attrs: &Vec<Attribute<MSG>>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
+        C: IsA<Container>,
     {
         match widget {
             Widget::Vbox => {

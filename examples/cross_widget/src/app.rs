@@ -61,7 +61,7 @@ impl Component<Msg> for App {
                     vec![attr("class", "column2")],
                     vec![
                         text(&self.debug.join("\n")),
-                        button(vec![onclick(|_|Msg::Decrement),value(&self.text)]),
+                        button(vec![onclick(|_| Msg::Decrement), value(&self.text)]),
                     ],
                 ),
                 button(vec![
