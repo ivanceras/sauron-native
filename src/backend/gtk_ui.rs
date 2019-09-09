@@ -23,26 +23,55 @@ where
 {
     app: Rc<RefCell<APP>>,
     current_vdom: Rc<RefCell<Node<MSG>>>,
+    root_node: Rc<RefCell<Option<GtkWidget>>>,
+    application: Application,
     _phantom_msg: PhantomData<MSG>,
 }
 impl<APP, MSG> GtkBackend<APP, MSG>
 where
-    MSG: 'static,
+    MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn new(app: APP) -> Self {
+    fn new(app: APP) -> Rc<Self>
+    {
         let current_vdom = app.view();
-        GtkBackend {
+        let root_vdom = app.view();
+
+        if gtk::init().is_err() {
+            println!("failed to initialize GTK Application");
+        }
+        let root_widget: Option<GtkWidget> = None;
+        let mut backend = GtkBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
+            root_node: Rc::new(RefCell::new(root_widget)),
+            application: Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE).expect("Failed to start app"),
             _phantom_msg: PhantomData,
+        };
+        let rc_backend = Rc::new(backend);
+        let root_widget = rc_backend.convert_widget_node_tree_to_gtk_widget(root_vdom);
+        *rc_backend.root_node.borrow_mut() = Some(root_widget);
+        rc_backend
+    }
+
+    fn root_container(self: &Rc<Self>) -> Rc<Container>{
+        let root_widget = self.root_node.borrow();
+        if let Some(root_widget) = &*root_widget {
+            match &root_widget{
+                GtkWidget::GBox(gbox) => {
+                    let container: &Container = gbox.upcast_ref();
+                    Rc::new(container.clone())
+                }
+                _ => panic!("expecting it to be a container")
+            }
+        }else{
+            panic!("must have a root widget");
         }
     }
 
-    fn dispatch<C>(self: &Rc<Self>, root_node: &Rc<C>, msg: MSG)
+    fn dispatch(self: &Rc<Self>, msg: MSG)
     where
         MSG: Debug,
-        C: IsA<Container>,
     {
         println!("dispatching : {:?}", msg);
         self.app.borrow_mut().update(msg);
@@ -51,7 +80,7 @@ where
             let current_vdom = self.current_vdom.borrow();
             let diff = sauron_vdom::diff(&current_vdom, &new_view);
             println!("diff: {:#?}", diff);
-            apply_patches::apply_patches(root_node, &diff);
+            apply_patches::apply_patches(&self.root_container(), &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
     }
@@ -61,62 +90,58 @@ where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
     {
-        let uiapp = Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE)
-            .expect("Failed to start app");
-
         let self_clone = Rc::clone(&self);
-        uiapp.connect_activate(move |uiapp| {
+        self.application.connect_activate(move |uiapp| {
             let win = ApplicationWindow::new(uiapp);
             let rc_win = Rc::new(win);
             rc_win.set_default_size(800, 1000);
             rc_win.set_icon_name(Some("applications-graphics"));
             rc_win.set_title("Gtk backend");
-            self_clone.draw_widgets(&rc_win);
+            self_clone.attach_root_widget(&rc_win);
             rc_win.show_all();
         });
-        uiapp.run(&[]);
+        self.application.run(&[]);
     }
 
-    fn draw_widgets<C>(self: &Rc<Self>, root_node: &Rc<C>)
+    fn attach_root_widget(self: &Rc<Self>, window: &Rc<ApplicationWindow>)
     where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
-        C: IsA<Container>,
     {
-        let view = self.app.borrow().view();
-        let gtk_widget: GtkWidget = self.convert_widget_node_tree_to_gtk_widget(&root_node, view);
-        match &gtk_widget {
-            GtkWidget::GBox(gbox) => {
-                root_node.add(gbox);
-            }
-            GtkWidget::Button(btn) => {
-                root_node.add(btn);
-            }
-            GtkWidget::Text(text_view) => {
-                root_node.add(text_view);
-            }
-            GtkWidget::TextBox(textbox) => {
-                root_node.add(textbox);
+        if let Some(root_widget) = self.root_node.borrow().as_ref(){
+            match root_widget {
+                GtkWidget::GBox(gbox) => {
+                    window.add(gbox);
+                }
+                GtkWidget::Button(btn) => {
+                    window.add(btn);
+                }
+                GtkWidget::Text(text_view) => {
+                    window.add(text_view);
+                }
+                GtkWidget::TextBox(textbox) => {
+                    window.add(textbox);
+                }
             }
         }
     }
 
-    fn convert_widget_node_tree_to_gtk_widget<C>(
+
+
+    fn convert_widget_node_tree_to_gtk_widget(
         self: &Rc<Self>,
-        root_node: &Rc<C>,
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
-        C: IsA<Container>,
     {
         match widget_node {
             crate::Node::Element(element) => {
                 let mut gtk_widget =
-                    self.widget_to_gtk_widget(root_node, element.tag, &element.attrs);
+                    self.widget_to_gtk_widget(element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
-                    let gtk_child = self.convert_widget_node_tree_to_gtk_widget(root_node, child);
+                    let gtk_child = self.convert_widget_node_tree_to_gtk_widget(child);
                     children.push(gtk_child);
                 }
                 gtk_widget.add_children(children);
@@ -126,15 +151,13 @@ where
         }
     }
 
-    fn widget_to_gtk_widget<C>(
+    fn widget_to_gtk_widget(
         self: &Rc<Self>,
-        root_node: &Rc<C>,
         widget: Widget,
         attrs: &Vec<Attribute<MSG>>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
-        C: IsA<Container>,
     {
         match widget {
             Widget::Vbox => {
@@ -159,14 +182,13 @@ where
                         AttribValue::Callback(cb) => match attr.name {
                             "click" => {
                                 let self_clone = Rc::clone(self);
-                                let root_node = Rc::clone(&root_node);
                                 let cb_clone = cb.clone();
                                 btn.connect_clicked(move |_| {
                                     let mouse_event = MouseEvent::default();
                                     let msg = cb_clone.emit(mouse_event);
                                     println!("got msg: {:?}", msg);
                                     //TODO: set the current_vdom after dispatching the callback
-                                    self_clone.dispatch(&root_node, msg);
+                                    self_clone.dispatch(msg);
                                 });
                             }
                             _ => {}
@@ -186,14 +208,13 @@ where
                         AttribValue::Callback(cb) => match attr.name {
                             "input" => {
                                 let self_clone = Rc::clone(self);
-                                let root_node = Rc::clone(&root_node);
                                 let cb_clone = cb.clone();
                                 entry.connect_property_text_notify(move |entry| {
                                     let input_event =
                                         InputEvent::new(entry.get_buffer().get_text());
                                     let msg = cb_clone.emit(input_event);
                                     println!("got msg: {:?}", msg);
-                                    self_clone.dispatch(&root_node, msg);
+                                    self_clone.dispatch(msg);
                                 });
                             }
                             _ => {}
@@ -214,7 +235,7 @@ where
     MSG: Clone + Debug + 'static,
 {
     fn init(app: APP) -> Rc<Self> {
-        let mut rc_app = Rc::new(GtkBackend::new(app));
+        let mut rc_app = GtkBackend::new(app);
         rc_app.create_app();
         rc_app
     }

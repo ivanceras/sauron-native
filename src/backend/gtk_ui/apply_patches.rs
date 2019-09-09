@@ -6,20 +6,12 @@ use std::{
     rc::Rc,
 };
 
-pub fn apply_patches<MSG, C>(root_node: &Rc<C>, patches: &Vec<Patch<MSG>>)
+
+pub fn apply_patches<MSG>(container: &Rc<Container>, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
-    C: IsA<Container>,
 {
-    let container: &Container = root_node.upcast_ref();
-    let contents = container.get_children();
-    //TODO: this doesn't really need the application window,
-    //just the gtk::Box will do just fine
-    // TODO add special case of TextView
-    let gbox: &Container = contents[0]
-        .downcast_ref()
-        .expect("must have the first component");
-    let nodes_to_patch = find_nodes(gbox, patches);
+    let nodes_to_patch = find_nodes(container, patches);
     println!("nodes to patch: {:#?}", nodes_to_patch);
 
     for patch in patches {
