@@ -49,7 +49,7 @@ where
             _phantom_msg: PhantomData,
         };
         let rc_backend = Rc::new(backend);
-        let root_widget = rc_backend.node_tree_to_gtk(root_vdom);
+        let root_widget = Self::node_tree_to_gtk(&rc_backend,root_vdom);
         *rc_backend.root_node.borrow_mut() = Some(root_widget);
         rc_backend
     }
@@ -69,7 +69,7 @@ where
         }
     }
 
-    fn dispatch(self: &Rc<Self>, msg: MSG)
+    fn dispatch_inner(self: &Rc<Self>, msg: MSG)
     where
         MSG: Debug,
     {
@@ -128,20 +128,21 @@ where
 
 
 
-    fn node_tree_to_gtk(
-        self: &Rc<Self>,
+    fn node_tree_to_gtk<DSP>(
+        program: &Rc<DSP>,
         widget_node: crate::Node<MSG>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
+        DSP: Dispatch<MSG> + 'static,
     {
         match widget_node {
             crate::Node::Element(element) => {
                 let mut gtk_widget =
-                    self.node_to_gtk(element.tag, &element.attrs);
+                    Self::node_to_gtk(program, element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
-                    let gtk_child = self.node_tree_to_gtk(child);
+                    let gtk_child = Self::node_tree_to_gtk(program, child);
                     children.push(gtk_child);
                 }
                 gtk_widget.add_children(children);
@@ -151,13 +152,14 @@ where
         }
     }
 
-    fn node_to_gtk(
-        self: &Rc<Self>,
+    fn node_to_gtk<DSP>(
+        program: &Rc<DSP>,
         widget: Widget,
         attrs: &Vec<Attribute<MSG>>,
     ) -> GtkWidget
     where
         MSG: Debug + 'static,
+        DSP: Dispatch<MSG> + 'static,
     {
         match widget {
             Widget::Vbox => {
@@ -181,14 +183,14 @@ where
                     match &attr.value {
                         AttribValue::Callback(cb) => match attr.name {
                             "click" => {
-                                let self_clone = Rc::clone(self);
+                                let program = Rc::clone(program);
                                 let cb_clone = cb.clone();
                                 btn.connect_clicked(move |_| {
                                     let mouse_event = MouseEvent::default();
                                     let msg = cb_clone.emit(mouse_event);
                                     println!("got msg: {:?}", msg);
                                     //TODO: set the current_vdom after dispatching the callback
-                                    self_clone.dispatch(msg);
+                                    program.dispatch(msg);
                                 });
                             }
                             _ => {}
@@ -207,14 +209,14 @@ where
                     match &attr.value {
                         AttribValue::Callback(cb) => match attr.name {
                             "input" => {
-                                let self_clone = Rc::clone(self);
+                                let program = Rc::clone(program);
                                 let cb_clone = cb.clone();
                                 entry.connect_property_text_notify(move |entry| {
                                     let input_event =
                                         InputEvent::new(entry.get_buffer().get_text());
                                     let msg = cb_clone.emit(input_event);
                                     println!("got msg: {:?}", msg);
-                                    self_clone.dispatch(msg);
+                                    program.dispatch(msg);
                                 });
                             }
                             _ => {}
@@ -240,6 +242,17 @@ where
         rc_app
     }
 }
+
+impl<APP, MSG> Dispatch<MSG> for GtkBackend<APP, MSG>
+where
+    MSG: Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    fn dispatch(self: &Rc<Self>, msg: MSG) {
+        self.dispatch_inner(msg);
+    }
+}
+
 
 enum GtkWidget {
     GBox(gtk::Box),
