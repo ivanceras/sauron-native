@@ -36,9 +36,11 @@ use termion::{
 mod events;
 mod nodes;
 
+type TermionTerminal =
+    Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>;
+
 pub struct TuiBackend<APP, MSG> {
-    terminal:
-        Rc<RefCell<Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>>>,
+    terminal: Rc<RefCell<TermionTerminal>>,
     app: Rc<RefCell<APP>>,
     _phantom_msg: PhantomData<MSG>,
 }
@@ -215,9 +217,7 @@ where
     }
 }
 
-fn setup_terminal(
-) -> Result<Terminal<TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>>, io::Error>
-{
+fn setup_terminal() -> Result<TermionTerminal, io::Error> {
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = MouseTerminal::from(stdout);
     let stdout = AlternateScreen::from(stdout);
