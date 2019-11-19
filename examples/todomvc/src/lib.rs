@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::*;
 mod app;
 
 #[cfg(feature = "with-html")]
-#[wasm_bindgen]
+#[wasm_bindgen(start)]
 pub fn main() {
     let program: Rc<Program<Model, Msg, HtmlBackend<Model, Msg>>> = Program::new(Model::new());
 }
