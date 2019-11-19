@@ -1,4 +1,5 @@
 use app::{App, Msg};
+use log::*;
 #[cfg(feature = "with-html")]
 use sauron::body;
 #[cfg(feature = "with-html")]
@@ -11,6 +12,7 @@ pub mod app;
 #[cfg(feature = "with-html")]
 #[wasm_bindgen]
 pub fn initialize(initial_state: &str) {
-    sauron::log!("Initial state: {}", initial_state);
+    console_log::init_with_level(Level::Debug);
+    trace!("Initial state: {}", initial_state);
     let program: Rc<Program<App, Msg, HtmlBackend<App, Msg>>> = Program::new(App::new(1));
 }

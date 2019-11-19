@@ -9,14 +9,17 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-sauron = "0.10.0"
+sauron = "0.20.1"
 sauron-native = { path = "../../"}
 wasm-bindgen = "0.2.40"
 itui = { path = "../../crates/itui", optional = true }
+log = "0.4"
+console_log = { version = "0.1.2", optional = true }
+pretty_env_logger = "0.3.1"
 
 
 [features]
-with-html = ["sauron-native/with-html"]
+with-html = ["sauron-native/with-html", "console_log"]
 with-tui = ["sauron-native/with-tui"]
 with-gtk = ["sauron-native/with-gtk"]
 

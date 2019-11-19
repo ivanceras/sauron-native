@@ -1,7 +1,0 @@
-[package]
-name = "ui-orbtk"
-version = "0.1.0"
-edition = "2018"
-
-[dependencies]
-orbtk = { git = "https://gitlab.redox-os.org/redox-os/orbtk.git", rev = "1474ea1c" }

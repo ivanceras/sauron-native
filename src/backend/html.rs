@@ -106,7 +106,7 @@ where
             } else {
                 vec![]
             };
-            input(vec![r#type("button")], vec![]).attributes(ce)
+            input(vec![r#type("button")], vec![]).add_attributes(ce)
         }
         Widget::Text(txt) => text(&txt),
         Widget::TextBox(txt) => {
@@ -115,7 +115,7 @@ where
             } else {
                 vec![]
             };
-            input(vec![r#type("text"), value(txt)], vec![]).attributes(ie)
+            input(vec![r#type("text"), value(txt)], vec![]).add_attributes(ie)
         }
         Widget::Block(title) => div(vec![], vec![text(title)]),
     }
@@ -131,7 +131,7 @@ where
             // convert the Widget tag to html node
             let mut html_node: sauron::Node<MSG> = widget_to_html(&widget.tag, &widget.attrs);
             // cast the html node to element
-            if let Some(html_element) = html_node.as_element() {
+            if let Some(html_element) = html_node.as_element_mut() {
                 for attr in widget.attributes() {
                     html_element.attrs.push(attr.reform(map_to_event));
                 }

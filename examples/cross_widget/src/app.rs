@@ -1,3 +1,4 @@
+use log::*;
 use sauron_native::{
     event::{on, InputEvent},
     util::*,
@@ -77,7 +78,7 @@ impl Component<Msg> for App {
                     vec![oninput(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
                         _ => {
-                            sauron::log!("This is unexpected: {:#?}", event);
+                            trace!("This is unexpected: {:#?}", event);
                             panic!();
                         }
                     })],

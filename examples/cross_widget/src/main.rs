@@ -9,6 +9,7 @@ pub mod app;
 use app::{App, Msg};
 
 fn main() {
+    pretty_env_logger::init();
     #[cfg(feature = "with-tui")]
     let program: Rc<Program<App, Msg, TuiBackend<App, Msg>>> = Program::new(App::new(1));
 
