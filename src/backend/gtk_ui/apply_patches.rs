@@ -6,8 +6,7 @@ use std::{
     rc::Rc,
 };
 
-
-pub fn apply_patches<MSG>(container: &Rc<Container>, patches: &Vec<Patch<MSG>>)
+pub fn apply_patches<MSG>(container: &Container, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
 {
