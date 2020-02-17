@@ -32,8 +32,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn new(app: APP) -> Rc<Self>
-    {
+    fn new(app: APP) -> Rc<Self> {
         let current_vdom = app.view();
         let root_vdom = app.view();
 
@@ -45,26 +44,27 @@ where
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
-            application: Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE).expect("Failed to start app"),
+            application: Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE)
+                .expect("Failed to start app"),
             _phantom_msg: PhantomData,
         };
         let rc_backend = Rc::new(backend);
-        let root_widget = Self::node_tree_to_gtk(&rc_backend,root_vdom);
+        let root_widget = Self::node_tree_to_gtk(&rc_backend, root_vdom);
         *rc_backend.root_node.borrow_mut() = Some(root_widget);
         rc_backend
     }
 
-    fn root_container(self: &Rc<Self>) -> Rc<Container>{
+    fn root_container(self: &Rc<Self>) -> Rc<Container> {
         let root_widget = self.root_node.borrow();
         if let Some(root_widget) = &*root_widget {
-            match &root_widget{
+            match &root_widget {
                 GtkWidget::GBox(gbox) => {
                     let container: &Container = gbox.upcast_ref();
                     Rc::new(container.clone())
                 }
-                _ => panic!("expecting it to be a container")
+                _ => panic!("expecting it to be a container"),
             }
-        }else{
+        } else {
             panic!("must have a root widget");
         }
     }
@@ -108,38 +108,21 @@ where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
     {
-        if let Some(root_widget) = self.root_node.borrow().as_ref(){
-            match root_widget {
-                GtkWidget::GBox(gbox) => {
-                    window.add(gbox);
-                }
-                GtkWidget::Button(btn) => {
-                    window.add(btn);
-                }
-                GtkWidget::Text(text_view) => {
-                    window.add(text_view);
-                }
-                GtkWidget::TextBox(textbox) => {
-                    window.add(textbox);
-                }
+        if let Some(root_widget) = self.root_node.borrow().as_ref() {
+            if let Some(root_widget) = root_widget.as_widget() {
+                window.add(root_widget);
             }
         }
     }
 
-
-
-    fn node_tree_to_gtk<DSP>(
-        program: &Rc<DSP>,
-        widget_node: crate::Node<MSG>,
-    ) -> GtkWidget
+    fn node_tree_to_gtk<DSP>(program: &Rc<DSP>, widget_node: crate::Node<MSG>) -> GtkWidget
     where
         MSG: Debug + 'static,
         DSP: Dispatch<MSG> + 'static,
     {
         match widget_node {
             crate::Node::Element(element) => {
-                let mut gtk_widget =
-                    Self::node_to_gtk(program, element.tag, &element.attrs);
+                let mut gtk_widget = Self::node_to_gtk(program, element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
                     let gtk_child = Self::node_tree_to_gtk(program, child);
@@ -152,11 +135,7 @@ where
         }
     }
 
-    fn node_to_gtk<DSP>(
-        program: &Rc<DSP>,
-        widget: Widget,
-        attrs: &Vec<Attribute<MSG>>,
-    ) -> GtkWidget
+    fn node_to_gtk<DSP>(program: &Rc<DSP>, widget: Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
     where
         MSG: Debug + 'static,
         DSP: Dispatch<MSG> + 'static,
@@ -253,7 +232,6 @@ where
     }
 }
 
-
 enum GtkWidget {
     GBox(gtk::Box),
     Button(Button),
@@ -261,27 +239,44 @@ enum GtkWidget {
     TextBox(Entry),
 }
 impl GtkWidget {
-    fn add_children(&self, children: Vec<GtkWidget>) {
+    fn as_container(&self) -> Option<&Container> {
         match self {
             GtkWidget::GBox(gbox) => {
-                for child in children {
-                    match child {
-                        GtkWidget::Button(btn) => {
-                            gbox.add(&btn);
-                        }
-                        GtkWidget::GBox(cbox) => {
-                            gbox.add(&cbox);
-                        }
-                        GtkWidget::Text(text_view) => {
-                            gbox.add(&text_view);
-                        }
-                        GtkWidget::TextBox(textbox) => {
-                            gbox.add(&textbox);
-                        }
-                    }
+                let container: &Container = gbox.upcast_ref();
+                Some(container)
+            }
+            _ => None,
+        }
+    }
+
+    fn as_widget(&self) -> Option<&gtk::Widget> {
+        match self {
+            GtkWidget::Button(btn) => {
+                let widget: &gtk::Widget = btn.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::GBox(cbox) => {
+                let cbox: &gtk::Widget = cbox.upcast_ref();
+                Some(cbox)
+            }
+            GtkWidget::Text(text_view) => {
+                let text_view: &gtk::Widget = text_view.upcast_ref();
+                Some(text_view)
+            }
+            GtkWidget::TextBox(textbox) => {
+                let textbox: &gtk::Widget = textbox.upcast_ref();
+                Some(textbox)
+            }
+        }
+    }
+
+    fn add_children(&self, children: Vec<GtkWidget>) {
+        if let Some(container) = self.as_container() {
+            for child in children {
+                if let Some(child_widget) = child.as_widget() {
+                    container.add(child_widget);
                 }
             }
-            _ => {}
         }
     }
 }
@@ -303,4 +298,3 @@ fn textview(txt: &str) -> GtkWidget {
     buffer.set_text(txt);
     GtkWidget::Text(text_view)
 }
-
