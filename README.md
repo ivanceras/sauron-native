@@ -35,20 +35,19 @@ cd examples/cross_widget
 ./start_web.sh
 ```
 
-## Probable Rename to
- - mordor
- - saruman
- - sauronan
- - isengard
- - Rascal
- - ruscal
- - kalawang
- - taya
-
-
-
-## Support this project
-- Too little time
-- Too little money
+## TODO widgets
+- [X] button
+- [ ] checkbox
+- [X] column ( vbox )
+- [x] row ( hbox )
+- [ ] container
+- [ ] image
+- [ ] progress_bar
+- [ ] radio
+- [ ] scrollable
+- [ ] slider
+- [ ] space
+- [ ] text
+- [X] text_input (textbox)
 
  [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)
