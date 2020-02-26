@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-sauron = "0.20.1"
+sauron = "0.21.1"
 sauron-native = { path = "../../"}
 wasm-bindgen = "0.2.40"
 itui = { path = "../../crates/itui", optional = true }
