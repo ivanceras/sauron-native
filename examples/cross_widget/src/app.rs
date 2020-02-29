@@ -58,10 +58,10 @@ impl Component<Msg> for App {
     }
 
     fn view(&self) -> Node<Msg> {
-        vbox(
+        column(
             vec![],
             vec![
-                vbox(
+                column(
                     vec![attr("class", "column2")],
                     vec![
                         text(&self.debug.join("\n")),
@@ -72,12 +72,12 @@ impl Component<Msg> for App {
                     onclick(|_| Msg::Click),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
-                vbox(vec![], {
+                column(vec![], {
                     (0..self.click_count)
                         .map(|x| button(vec![value("Hello".to_string())]))
                         .collect()
                 }),
-                textbox(
+                text_input(
                     vec![oninput(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
                         _ => {

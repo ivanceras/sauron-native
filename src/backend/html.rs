@@ -109,7 +109,7 @@ where
             input(vec![r#type("button")], vec![]).add_attributes(ce)
         }
         Widget::Text(txt) => text(&txt),
-        Widget::TextBox(txt) => {
+        Widget::TextInput(txt) => {
             let ie = if let Some(ie) = attrs.iter().find(|att| att.name == "input") {
                 vec![ie.clone().reform(map_to_event)]
             } else {

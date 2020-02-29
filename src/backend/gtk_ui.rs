@@ -180,7 +180,7 @@ where
                 btn.into()
             }
             Widget::Text(txt) => textview(&txt),
-            Widget::TextBox(txt) => {
+            Widget::TextInput(txt) => {
                 let buffer = EntryBuffer::new(Some(&*txt));
                 let entry = Entry::new_with_buffer(&buffer);
 
@@ -203,7 +203,7 @@ where
                         _ => (),
                     }
                 }
-                GtkWidget::TextBox(entry)
+                GtkWidget::TextInput(entry)
             }
             Widget::Block(txt) => textview(&txt),
         }
@@ -236,7 +236,7 @@ enum GtkWidget {
     GBox(gtk::Box),
     Button(Button),
     Text(TextView),
-    TextBox(Entry),
+    TextInput(Entry),
 }
 impl GtkWidget {
     fn as_container(&self) -> Option<&Container> {
@@ -263,7 +263,7 @@ impl GtkWidget {
                 let text_view: &gtk::Widget = text_view.upcast_ref();
                 Some(text_view)
             }
-            GtkWidget::TextBox(textbox) => {
+            GtkWidget::TextInput(textbox) => {
                 let textbox: &gtk::Widget = textbox.upcast_ref();
                 Some(textbox)
             }

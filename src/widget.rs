@@ -9,7 +9,7 @@ pub enum Widget {
     Button,
     Text(String),
     Block(String),
-    TextBox(String),
+    TextInput(String),
 }
 
 pub fn widget<MSG>(
@@ -20,11 +20,11 @@ pub fn widget<MSG>(
     element(widget, attrs, children)
 }
 
-pub fn vbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+pub fn column<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Vbox, attrs, children)
 }
 
-pub fn hbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+pub fn row<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Hbox, attrs, children)
 }
 
@@ -36,8 +36,8 @@ pub fn text<MSG>(txt: &str) -> Node<MSG> {
     widget(Widget::Text(txt.to_string()), vec![], vec![])
 }
 
-pub fn textbox<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
-    widget(Widget::TextBox(txt.to_string()), attrs, vec![])
+pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
+    widget(Widget::TextInput(txt.to_string()), attrs, vec![])
 }
 
 pub fn block<MSG>(title: &str) -> Node<MSG> {

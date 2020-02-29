@@ -207,7 +207,7 @@ where
         Widget::Hbox => layout(Direction::Horizontal, vec![], vec![]),
         Widget::Button => button(attrs, &value_txt),
         Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
-        Widget::TextBox(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
+        Widget::TextInput(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::Block(title) => block(attrs, &*title),
     }
 }
