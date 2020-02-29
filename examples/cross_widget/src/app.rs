@@ -88,6 +88,7 @@ impl Component<Msg> for App {
                     })],
                     &self.events.join("\n"),
                 ),
+                image(include_bytes!("../horse.jpg").to_vec()),
                 text(
                     "Hello, will this be a paragraph
 The quick brown fox jumps over the lazy

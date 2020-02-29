@@ -1,10 +1,11 @@
 use crate::{Backend, Component, Widget};
+use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
-    EntryBuffer, Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView,
-    WidgetExt, Window, WindowPosition, WindowType,
+    EntryBuffer, Image, Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable,
+    TextView, WidgetExt, Window, WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -208,11 +209,26 @@ where
             }
             Widget::Block(txt) => textview(&txt),
             Widget::Checkbox(value) => {
-                let cb = CheckButton::new();
+                let cb = CheckButton::new_with_label("checkbox");
                 if value {
                     cb.set_property("active", &value);
                 }
                 GtkWidget::Checkbox(cb)
+            }
+            Widget::Image(bytes) => {
+                let image = Image::new();
+                let pixbuf_loader =
+                    PixbufLoader::new_with_mime_type("image/jpeg").expect("error loader");
+                pixbuf_loader
+                    .write(&bytes)
+                    .expect("Unable to write svg data into pixbuf_loader");
+
+                pixbuf_loader.close().expect("error creating pixbuf");
+
+                let pixbuf = pixbuf_loader.get_pixbuf();
+
+                image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+                GtkWidget::Image(image)
             }
         }
     }
@@ -246,6 +262,7 @@ enum GtkWidget {
     Text(TextView),
     TextInput(Entry),
     Checkbox(CheckButton),
+    Image(Image),
 }
 impl GtkWidget {
     fn as_container(&self) -> Option<&Container> {
@@ -265,19 +282,23 @@ impl GtkWidget {
                 Some(widget)
             }
             GtkWidget::GBox(cbox) => {
-                let cbox: &gtk::Widget = cbox.upcast_ref();
-                Some(cbox)
+                let widget: &gtk::Widget = cbox.upcast_ref();
+                Some(widget)
             }
             GtkWidget::Text(text_view) => {
-                let text_view: &gtk::Widget = text_view.upcast_ref();
-                Some(text_view)
+                let widget: &gtk::Widget = text_view.upcast_ref();
+                Some(widget)
             }
             GtkWidget::TextInput(textbox) => {
-                let textbox: &gtk::Widget = textbox.upcast_ref();
-                Some(textbox)
+                let widget: &gtk::Widget = textbox.upcast_ref();
+                Some(widget)
             }
             GtkWidget::Checkbox(checkbox) => {
                 let widget: &gtk::Widget = checkbox.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::Image(image) => {
+                let widget: &gtk::Widget = image.upcast_ref();
                 Some(widget)
             }
         }

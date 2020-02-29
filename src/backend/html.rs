@@ -1,6 +1,7 @@
 use crate::{Attribute, Backend, Component, Widget};
 use sauron::{
-    html::{attributes::*, div, events::mapper, input, text},
+    html::{attributes::*, div, events::mapper, img, input, text},
+    prelude::*,
     Component as SauronComponent, DomUpdater, Program,
 };
 use sauron_vdom::Callback;
@@ -60,6 +61,8 @@ where
     APP: Component<MSG> + 'static,
 {
     fn init(app: APP) -> Rc<Self> {
+        console_log::init_with_level(log::Level::Trace);
+        log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
         let program = sauron::Program::mount_to_body(html_app);
         let backend = HtmlBackend { program };
@@ -77,16 +80,11 @@ where
             vec![styles(vec![
                 ("display", "flex"),
                 ("flex-direction", "column"),
-                ("border", "1px solid blue"),
             ])],
             vec![],
         ),
         Widget::Hbox => div(
-            vec![styles(vec![
-                ("display", "flex"),
-                ("flex-direction", "row"),
-                ("border", "1px solid green"),
-            ])],
+            vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
             vec![],
         ),
         Widget::Button => {
@@ -121,6 +119,34 @@ where
         Widget::Checkbox(value) => {
             let checked = attrs_flag([("checked", "checked", *value)]);
             input(vec![type_("checkbox")], vec![]).add_attributes(checked)
+        }
+        Widget::Image(image) => {
+            use image::GenericImageView;
+            let mime_type = "image/jpeg";
+            let format = image::guess_format(&image).ok();
+            let image_mime = if let Some(format) = format {
+                format!("{:?}", format)
+            } else {
+                "cant_guess".to_string()
+            };
+            //let dyn_image = image::load_from_memory(&image);
+            //let width = dyn_image.ok().map(|im| im.width());
+            img(
+                vec![
+                    styles([
+                        ("width", "100%"),
+                        ("height", "auto"),
+                        ("max-width", "800px"),
+                    ]),
+                    src(format!(
+                        "data:{};base64,{}",
+                        mime_type,
+                        base64::encode(image)
+                    )),
+                    attr("format", image_mime),
+                ],
+                vec![],
+            )
         }
     }
 }

@@ -210,6 +210,7 @@ where
         Widget::TextInput(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::Block(title) => block(attrs, &*title),
         Widget::Checkbox(value) => button(vec![], "X"),
+        Widget::Image(bytes) => button(vec![], "Image here soon..."),
     }
 }
 pub fn convert_widget_node_tree_to_tui_widget<'a, MSG>(

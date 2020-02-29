@@ -11,6 +11,7 @@ pub enum Widget {
     Block(String),
     TextInput(String),
     Checkbox(bool),
+    Image(Vec<u8>),
 }
 
 pub fn widget<MSG>(
@@ -47,4 +48,8 @@ pub fn block<MSG>(title: &str) -> Node<MSG> {
 
 pub fn checkbox<MSG>(checked: bool) -> Node<MSG> {
     widget(Widget::Checkbox(checked), vec![], vec![])
+}
+
+pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
+    widget(Widget::Image(image), vec![], vec![])
 }

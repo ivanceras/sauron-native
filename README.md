@@ -41,13 +41,13 @@ cd examples/cross_widget
 - [X] column ( vbox )
 - [x] row ( hbox )
 - [ ] container
-- [ ] image
+- [x] image
 - [ ] progress_bar
 - [ ] radio
 - [ ] scrollable
 - [ ] slider
 - [ ] space
-- [ ] text
+- [x] text
 - [X] text_input (textbox)
 
  [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)
