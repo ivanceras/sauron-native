@@ -10,6 +10,7 @@ pub enum Widget {
     Text(String),
     Block(String),
     TextInput(String),
+    Checkbox(bool),
 }
 
 pub fn widget<MSG>(
@@ -42,4 +43,8 @@ pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
 
 pub fn block<MSG>(title: &str) -> Node<MSG> {
     widget(Widget::Block(title.to_string()), vec![], vec![])
+}
+
+pub fn checkbox<MSG>(checked: bool) -> Node<MSG> {
+    widget(Widget::Checkbox(checked), vec![], vec![])
 }

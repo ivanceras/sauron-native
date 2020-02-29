@@ -37,7 +37,7 @@ cd examples/cross_widget
 
 ## TODO widgets
 - [X] button
-- [ ] checkbox
+- [x] checkbox
 - [X] column ( vbox )
 - [x] row ( hbox )
 - [ ] container

@@ -1,9 +1,10 @@
 use crate::{Backend, Component, Widget};
 use gio::{prelude::*, ApplicationFlags};
+use glib::Value;
 use gtk::{
-    prelude::*, Application, ApplicationWindow, Button, Container, CssProvider, Entry, EntryBuffer,
-    Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, WidgetExt,
-    Window, WindowPosition, WindowType,
+    prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
+    EntryBuffer, Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView,
+    WidgetExt, Window, WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -206,6 +207,13 @@ where
                 GtkWidget::TextInput(entry)
             }
             Widget::Block(txt) => textview(&txt),
+            Widget::Checkbox(value) => {
+                let cb = CheckButton::new();
+                if value {
+                    cb.set_property("active", &value);
+                }
+                GtkWidget::Checkbox(cb)
+            }
         }
     }
 }
@@ -237,6 +245,7 @@ enum GtkWidget {
     Button(Button),
     Text(TextView),
     TextInput(Entry),
+    Checkbox(CheckButton),
 }
 impl GtkWidget {
     fn as_container(&self) -> Option<&Container> {
@@ -266,6 +275,10 @@ impl GtkWidget {
             GtkWidget::TextInput(textbox) => {
                 let textbox: &gtk::Widget = textbox.upcast_ref();
                 Some(textbox)
+            }
+            GtkWidget::Checkbox(checkbox) => {
+                let widget: &gtk::Widget = checkbox.upcast_ref();
+                Some(widget)
             }
         }
     }
