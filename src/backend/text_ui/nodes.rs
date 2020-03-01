@@ -209,7 +209,8 @@ where
         Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::TextInput(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::Block(title) => block(attrs, &*title),
-        Widget::Checkbox(value) => button(vec![], "X"),
+        Widget::Checkbox(label, value) => button(vec![], "X"),
+        Widget::Radio(label, value) => button(vec![], "O"),
         Widget::Image(bytes) => button(vec![], "Image here soon..."),
     }
 }

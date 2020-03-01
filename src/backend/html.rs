@@ -1,4 +1,5 @@
 use crate::{Attribute, Backend, Component, Widget};
+use image::ImageFormat;
 use sauron::{
     html::{attributes::*, div, events::mapper, img, input, text},
     prelude::*,
@@ -116,21 +117,32 @@ where
             input(vec![r#type("text"), value(txt)], vec![]).add_attributes(ie)
         }
         Widget::Block(title) => div(vec![], vec![text(title)]),
-        Widget::Checkbox(value) => {
+        Widget::Checkbox(cb_label, value) => {
             let checked = attrs_flag([("checked", "checked", *value)]);
-            input(vec![type_("checkbox")], vec![]).add_attributes(checked)
+            div(
+                vec![],
+                vec![
+                    input(vec![type_("checkbox")], vec![]).add_attributes(checked),
+                    label(vec![], vec![text(cb_label)]),
+                ],
+            )
+        }
+        Widget::Radio(cb_label, value) => {
+            let checked = attrs_flag([("checked", "checked", *value)]);
+            div(
+                vec![],
+                vec![
+                    input(vec![type_("radio")], vec![]).add_attributes(checked),
+                    label(vec![], vec![text(cb_label)]),
+                ],
+            )
         }
         Widget::Image(image) => {
-            use image::GenericImageView;
-            let mime_type = "image/jpeg";
-            let format = image::guess_format(&image).ok();
-            let image_mime = if let Some(format) = format {
-                format!("{:?}", format)
+            let mime_type = if let Some(mime) = image_mime(&image) {
+                mime
             } else {
-                "cant_guess".to_string()
+                "image/jpeg".to_string()
             };
-            //let dyn_image = image::load_from_memory(&image);
-            //let width = dyn_image.ok().map(|im| im.width());
             img(
                 vec![
                     styles([
@@ -143,11 +155,22 @@ where
                         mime_type,
                         base64::encode(image)
                     )),
-                    attr("format", image_mime),
                 ],
                 vec![],
             )
         }
+    }
+}
+
+fn image_mime(bytes: &[u8]) -> Option<String> {
+    if let Some(format) = image::guess_format(&bytes).ok() {
+        match format {
+            ImageFormat::Png => Some("image/png".to_string()),
+            ImageFormat::Jpeg => Some("image/jpeg".to_string()),
+            _ => None,
+        }
+    } else {
+        None
     }
 }
 

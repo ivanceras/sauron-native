@@ -4,8 +4,8 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
-    EntryBuffer, Image, Orientation, StyleContext, TextBuffer, TextBufferExt, TextTagTable,
-    TextView, WidgetExt, Window, WindowPosition, WindowType,
+    EntryBuffer, Image, Orientation, RadioButton, StyleContext, TextBuffer, TextBufferExt,
+    TextTagTable, TextView, WidgetExt, Window, WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -208,12 +208,15 @@ where
                 GtkWidget::TextInput(entry)
             }
             Widget::Block(txt) => textview(&txt),
-            Widget::Checkbox(value) => {
-                let cb = CheckButton::new_with_label("checkbox");
-                if value {
-                    cb.set_property("active", &value);
-                }
+            Widget::Checkbox(label, value) => {
+                let cb = CheckButton::new_with_label(&label);
+                cb.set_property("active", &value);
                 GtkWidget::Checkbox(cb)
+            }
+            Widget::Radio(label, value) => {
+                let rb = RadioButton::new_with_label(&label);
+                rb.set_property("active", &value);
+                GtkWidget::Radio(rb)
             }
             Widget::Image(bytes) => {
                 let image = Image::new();
@@ -262,6 +265,7 @@ enum GtkWidget {
     Text(TextView),
     TextInput(Entry),
     Checkbox(CheckButton),
+    Radio(RadioButton),
     Image(Image),
 }
 impl GtkWidget {
@@ -295,6 +299,10 @@ impl GtkWidget {
             }
             GtkWidget::Checkbox(checkbox) => {
                 let widget: &gtk::Widget = checkbox.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::Radio(radio) => {
+                let widget: &gtk::Widget = radio.upcast_ref();
                 Some(widget)
             }
             GtkWidget::Image(image) => {

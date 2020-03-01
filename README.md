@@ -43,7 +43,7 @@ cd examples/cross_widget
 - [ ] container
 - [x] image
 - [ ] progress_bar
-- [ ] radio
+- [x] radio
 - [ ] scrollable
 - [ ] slider
 - [ ] space

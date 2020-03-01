@@ -72,7 +72,11 @@ impl Component<Msg> for App {
                     onclick(|_| Msg::Click),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
-                checkbox(true),
+                checkbox("Checkbox1", true),
+                checkbox("Checkbox2", true),
+                checkbox("Checkbox3", true),
+                radio("Radio1", true),
+                radio("Radio2", false),
                 column(vec![], {
                     (0..self.click_count)
                         .map(|x| button(vec![value("Hello".to_string())]))

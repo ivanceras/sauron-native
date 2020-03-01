@@ -2,6 +2,13 @@ use crate::{Attribute, Node};
 use sauron_vdom::builder::element;
 use std::fmt::Debug;
 
+/// TODO: Each widget variant will need to have more details
+///  such as attributes, that will be converted to their
+///  corresponding target widget of each platform
+///
+/// Widget definitions
+/// This will have a counterparts for each of the supported
+/// different platforms
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widget {
     Vbox,
@@ -10,7 +17,8 @@ pub enum Widget {
     Text(String),
     Block(String),
     TextInput(String),
-    Checkbox(bool),
+    Checkbox(String, bool),
+    Radio(String, bool),
     Image(Vec<u8>),
 }
 
@@ -46,8 +54,12 @@ pub fn block<MSG>(title: &str) -> Node<MSG> {
     widget(Widget::Block(title.to_string()), vec![], vec![])
 }
 
-pub fn checkbox<MSG>(checked: bool) -> Node<MSG> {
-    widget(Widget::Checkbox(checked), vec![], vec![])
+pub fn checkbox<MSG>(label: &str, checked: bool) -> Node<MSG> {
+    widget(Widget::Checkbox(label.to_string(), checked), vec![], vec![])
+}
+
+pub fn radio<MSG>(label: &str, checked: bool) -> Node<MSG> {
+    widget(Widget::Radio(label.to_string(), checked), vec![], vec![])
 }
 
 pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
