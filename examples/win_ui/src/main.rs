@@ -8,16 +8,19 @@
 */
 use std::rc::Rc;
 use native_windows_gui as nwg;
+use nwg::Window;
+use nwg::TextInput;
+use nwg::Button;
 
 
 fn main() {
     nwg::init().expect("Failed to init Native Windows GUI");
 
-    let mut window = Default::default();
-    let mut name_edit = Default::default();
-    let mut hello_button = Default::default();
+    let mut window: Window = Window::default();
+    let mut name_edit: TextInput = TextInput::default();
+    let mut hello_button: Button = Button::default();
 
-    nwg::Window::builder()
+    Window::builder()
         .flags(nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE)
         .size((300, 115))
         .position((300, 300))
@@ -25,7 +28,7 @@ fn main() {
         .build(&mut window)
         .unwrap();
 
-    nwg::TextInput::builder()
+    TextInput::builder()
         .size((280, 25))
         .position((10, 10))
         .text("Heisenberg")
@@ -33,7 +36,7 @@ fn main() {
         .build(&mut name_edit)
         .unwrap();
 
-    nwg::Button::builder()
+    Button::builder()
         .size((280, 60))
         .position((10, 40))
         .text("Say my name")
@@ -45,17 +48,17 @@ fn main() {
     let events_window = window.clone();
 
     let handler = nwg::full_bind_event_handler(&window.handle, move |evt, _evt_data, handle| {
-        use nwg::Event as E;
+        use nwg::Event;
 
         match evt {
-            E::OnWindowClose => 
+            Event::OnWindowClose => 
                 if &handle == &events_window as &nwg::Window {
-                    nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
+                    //nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
                     nwg::stop_thread_dispatch();
                 },
-            E::OnButtonClick => 
+            Event::OnButtonClick => 
                 if &handle == &hello_button {
-                    nwg::simple_message("Hello", &format!("Hello {}", name_edit.text()));
+                    //nwg::simple_message("Hello", &format!("Hello {}", name_edit.text()));
                 },
             _ => {}
         }
