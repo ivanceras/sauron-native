@@ -8,6 +8,7 @@ use native_windows_gui as nwg;
 use nwg::Window;
 use nwg::TextInput;
 use nwg::Button;
+use nwg::BoxLayout;
 
 pub struct NwgBackend<APP,MSG>
 where MSG:'static,
@@ -21,11 +22,10 @@ impl<APP,MSG> NwgBackend<APP,MSG>{
     fn create_app(&self){
         let mut name_edit: TextInput = TextInput::default();
         let mut hello_button: Button = Button::default();
-    
+        let mut vbox: BoxLayout = BoxLayout::default();
     
         TextInput::builder()
             .size((280, 25))
-            .position((10, 10))
             .text("Heisenberg")
             .parent(&*self.window)
             .build(&mut name_edit)
@@ -33,11 +33,19 @@ impl<APP,MSG> NwgBackend<APP,MSG>{
     
         Button::builder()
             .size((280, 60))
-            .position((10, 40))
             .text("Say my name")
             .parent(&*self.window)
             .build(&mut hello_button)
             .unwrap();
+
+            
+        BoxLayout::builder()
+            .parent(&*self.window)
+            .layout_type(nwg::BoxLayoutType::Horizontal)
+            .cell_count(Some(2))
+            .child(0, &hello_button)
+            .child(1, &name_edit)
+            .build(&mut vbox);
     
         let events_window = self.window.clone();
     
@@ -47,7 +55,7 @@ impl<APP,MSG> NwgBackend<APP,MSG>{
             match evt {
                 Event::OnWindowClose => 
                     if &handle == &events_window as &nwg::Window {
-                        nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
+                        //nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
                         nwg::stop_thread_dispatch();
                     },
                 Event::OnButtonClick => 
