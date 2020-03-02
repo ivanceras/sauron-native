@@ -50,4 +50,11 @@ cd examples/cross_widget
 - [x] text
 - [X] text_input (textbox)
 
+## TODO platforms
+- [X] Linux (gtk)
+- [ ] Windows (native-windows-gui)
+- [ ] Mac (cocoa, foundation framework)
+- [X] Browser(html)
+- [X] TUI
+
  [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)

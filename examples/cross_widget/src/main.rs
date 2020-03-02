@@ -2,6 +2,8 @@
 use sauron_native::backend::gtk_ui::GtkBackend;
 #[cfg(feature = "with-tui")]
 use sauron_native::backend::text_ui::TuiBackend;
+#[cfg(feature = "with-nwg")]
+use sauron_native::backend::nwg_ui::NwgBackend;
 use sauron_native::Program;
 use std::rc::Rc;
 
@@ -15,5 +17,9 @@ fn main() {
 
     #[cfg(feature = "with-gtk")]
     let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new(1));
+    program.dispatch(Msg::Click);
+
+    #[cfg(feature = "with-nwg")]
+    let program: Rc<Program<App, Msg, NwgBackend<App, Msg>>> = Program::new(App::new(1));
     program.dispatch(Msg::Click);
 }

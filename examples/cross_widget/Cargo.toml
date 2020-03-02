@@ -22,4 +22,5 @@ pretty_env_logger = "0.3.1"
 with-html = ["sauron-native/with-html", "console_log"]
 with-tui = ["sauron-native/with-tui"]
 with-gtk = ["sauron-native/with-gtk"]
+with-nwg = ["sauron-native/with-nwg"]
 
