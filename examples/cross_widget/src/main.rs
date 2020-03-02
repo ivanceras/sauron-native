@@ -16,10 +16,15 @@ fn main() {
     let program: Rc<Program<App, Msg, TuiBackend<App, Msg>>> = Program::new(App::new(1));
 
     #[cfg(feature = "with-gtk")]
+    {
     let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new(1));
     program.dispatch(Msg::Click);
+    }
 
+    
     #[cfg(feature = "with-nwg")]
+    {
     let program: Rc<Program<App, Msg, NwgBackend<App, Msg>>> = Program::new(App::new(1));
     program.dispatch(Msg::Click);
+    }
 }

@@ -11,6 +11,10 @@ pub mod text_ui;
 #[cfg(feature = "with-gtk")]
 pub mod gtk_ui;
 
+#[cfg(feature = "with-nwg")]
+pub mod nwg_ui;
+
+
 pub trait Backend<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
