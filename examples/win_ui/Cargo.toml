@@ -7,4 +7,5 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", branch = "1.0-prerelease" }
+image = "0.23.0"
+native-windows-gui = { features = ["image-decoder"], git = "https://github.com/gabdube/native-windows-gui", branch = "1.0-prerelease" }

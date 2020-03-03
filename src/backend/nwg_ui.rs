@@ -2,10 +2,11 @@ use crate::{Attribute, Backend, Component, Node, Patch, Widget};
 use native_windows_gui as nwg;
 use nwg::{
     BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label, RadioButton,
-    TextInput, Window,
+    TextInput, Window,Bitmap,
 };
 use sauron_vdom::Dispatch;
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
+use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
 
 pub struct NwgBackend<APP, MSG>
 where
@@ -87,137 +88,6 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         rc_backend
     }
 
-    /*
-    fn create_app(&self) {
-        let mut name_edit: TextInput = TextInput::default();
-        let mut hello_button: Button = Button::default();
-        let mut hello_button2: Button = Button::default();
-        let mut cb1 = CheckBox::default();
-        let mut rb1 = RadioButton::default();
-        let mut txt1 = TextInput::default();
-        let mut lbl1 = Label::default();
-        let mut img1 = ImageFrame::default();
-
-        let mut vbox: BoxLayout = BoxLayout::default();
-        let mut hbox: BoxLayout = BoxLayout::default();
-
-        TextInput::builder()
-            .size((280, 25))
-            .text("Heisenberg")
-            .parent(&*self.window)
-            .build(&mut name_edit)
-            .unwrap();
-
-        Button::builder()
-            .size((280, 60))
-            .text("Say my name")
-            .parent(&*self.window)
-            .build(&mut hello_button)
-            .unwrap();
-
-        Button::builder()
-            .size((280, 60))
-            .text("Button2")
-            .parent(&*self.window)
-            .build(&mut hello_button2)
-            .unwrap();
-
-        CheckBox::builder()
-            .size((280, 60))
-            .text("Checkbox1")
-            .parent(&*self.window)
-            .build(&mut cb1)
-            .unwrap();
-
-        RadioButton::builder()
-            .size((280, 60))
-            .text("Radio1")
-            .parent(&*self.window)
-            .build(&mut rb1)
-            .unwrap();
-
-        TextInput::builder()
-            .size((280, 60))
-            .text("TextInput1")
-            .parent(&*self.window)
-            .build(&mut txt1)
-            .unwrap();
-
-        Label::builder()
-            .size((280, 60))
-            .text("Label1")
-            .parent(&*self.window)
-            .build(&mut lbl1)
-            .unwrap();
-
-        let bitmap = ImageDecoder::new()
-            .unwrap()
-            .from_filename("horse.jpg")
-            .ok()
-            .map(|img| img.frame(0).unwrap().as_bitmap().ok())
-            .flatten();
-
-        ImageFrame::builder()
-            .size((400, 200))
-            .bitmap(bitmap.as_ref())
-            .parent(&*self.window)
-            .build(&mut img1)
-            .unwrap();
-
-        BoxLayout::builder()
-            .parent(&*self.window)
-            .layout_type(nwg::BoxLayoutType::Vertical)
-            .cell_count(Some(15))
-            .child(0, &hello_button)
-            .child(1, &name_edit)
-            .child(2, &hello_button2)
-            .child(3, &cb1)
-            .child(4, &rb1)
-            .child(5, &txt1)
-            .child(6, &lbl1)
-            .child(7, &img1)
-            .build(&mut vbox);
-
-        let mut btns = vec![];
-        for i in 0..5 {
-            let mut btn = Button::default();
-            btns.push(btn);
-
-            Button::builder()
-                .size((280, 60))
-                .text(&format!("Button {}", 3 + i))
-                .parent(&*self.window)
-                .build(&mut btns[i])
-                .unwrap();
-
-            vbox.add_child((8 + i) as u32, &btns[i]);
-        }
-
-        let events_window = self.window.clone();
-
-        let handler =
-            nwg::full_bind_event_handler(&self.window.handle, move |evt, _evt_data, handle| {
-                use nwg::Event;
-
-                match evt {
-                    Event::OnWindowClose => {
-                        if &handle == &events_window as &nwg::Window {
-                            //nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
-                            nwg::stop_thread_dispatch();
-                        }
-                    }
-                    Event::OnButtonClick => {
-                        if &handle == &hello_button {
-                            nwg::simple_message("Hello", &format!("Hello {}", name_edit.text()));
-                        }
-                    }
-                    _ => {}
-                }
-            });
-        nwg::dispatch_thread_events();
-        nwg::unbind_event_handler(&handler);
-    }
-    */
 }
 
 impl<APP, MSG> Backend<APP, MSG> for NwgBackend<APP, MSG>
@@ -248,7 +118,7 @@ enum NwgWidget {
     TextInput(TextInput),
     Checkbox(CheckBox),
     Radio(RadioButton),
-    Image(ImageFrame),
+    Image(ImageFrame, Bitmap),
 }
 
 impl fmt::Debug for NwgWidget {
@@ -260,7 +130,7 @@ impl fmt::Debug for NwgWidget {
             NwgWidget::TextInput(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Checkbox(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Radio(w) => write!(f, "{}", w.class_name()),
-            NwgWidget::Image(w) => write!(f, "{}", w.class_name()),
+            NwgWidget::Image(w,_) => write!(f, "{}", w.class_name()),
         }
     }
 }
@@ -274,7 +144,7 @@ impl NwgWidget {
             NwgWidget::TextInput(w) => w.into(),
             NwgWidget::Checkbox(w) => w.into(),
             NwgWidget::Radio(w) => w.into(),
-            NwgWidget::Image(w) => w.into(),
+            NwgWidget::Image(w,_) => w.into(),
         }
     }
 
@@ -429,17 +299,27 @@ impl NwgWidget {
 
                 NwgWidget::Radio(radio)
             }
-            Widget::Image(_image) => {
-                let mut label = Label::default();
+            Widget::Image(blob) => {
+                let mut bitmap = Bitmap::default();
+                let img = image::load_from_memory(&blob).expect("should load");
+                let (width, height) = img.dimensions();
+                let mut bytes: Vec<u8> = vec![];
 
-                Label::builder()
-                    .size((280, 60))
-                    .text("Image soon")
-                    .parent(window)
-                    .build(&mut label)
-                    .expect("must build label");
+                BMPEncoder::new(&mut bytes).write_image(&img.to_rgb().into_raw(), width, height, ColorType::Rgb8);
 
-                NwgWidget::Text(label)
+                Bitmap::builder()
+                    .source_bin(Some(&bytes))
+                    .build(&mut bitmap);
+
+                let mut image_frame = ImageFrame::default();
+                ImageFrame::builder()
+                        .size((400, 200))
+                        .bitmap(Some(&bitmap))
+                        .parent(window)
+                        .build(&mut image_frame)
+                        .expect("must build image_frame");
+
+                NwgWidget::Image(image_frame, bitmap)
             }
         }
     }
@@ -460,7 +340,7 @@ impl NwgWidget {
                         NwgWidget::TextInput(child) => container.add_child(i as u32, child),
                         NwgWidget::Checkbox(child) => container.add_child(i as u32, child),
                         NwgWidget::Radio(child) => container.add_child(i as u32, child),
-                        NwgWidget::Image(child) => container.add_child(i as u32, child),
+                        NwgWidget::Image(child,_) => container.add_child(i as u32, child),
                     }
                 }
             }
