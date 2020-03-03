@@ -1,5 +1,5 @@
 use native_windows_gui as nwg;
-use nwg::{Button, TextInput, Window};
+use nwg::{BoxLayout, Button, TextInput, Window};
 /**
     A very simple application that show your name in a message box.
 
@@ -17,6 +17,9 @@ fn main() {
     let mut name_edit: TextInput = TextInput::default();
     let mut hello_button: Button = Button::default();
 
+    let mut vbox: BoxLayout = BoxLayout::default();
+    let mut hbox: BoxLayout = BoxLayout::default();
+
     Window::builder()
         .flags(nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE)
         .size((300, 115))
@@ -24,6 +27,21 @@ fn main() {
         .title("Basic example")
         .build(&mut window)
         .unwrap();
+
+    BoxLayout::builder()
+        .parent(&window)
+        .layout_type(nwg::BoxLayoutType::Vertical)
+        .cell_count(Some(2))
+        .build(&mut vbox);
+
+    // NOTE: Uncomment this to panic at runtime with:
+    // 'There is already a raw event handler bound with the handler ID 0',
+    // <..>native-windows-gui-b74f684ad4534f77\14859f5\native-windows-gui\src\win32\window.rs:278:17
+    BoxLayout::builder()
+        .parent(&window)
+        .layout_type(nwg::BoxLayoutType::Horizontal)
+        .cell_count(Some(2))
+        .build(&mut hbox);
 
     TextInput::builder()
         .size((280, 25))
@@ -44,6 +62,7 @@ fn main() {
     let window = Rc::new(window);
     let events_window = window.clone();
 
+    /*
     let handler = nwg::full_bind_event_handler(&window.handle, move |evt, _evt_data, handle| {
         use nwg::Event;
 
@@ -62,7 +81,8 @@ fn main() {
             _ => {}
         }
     });
+    */
 
-    nwg::dispatch_thread_events();
-    nwg::unbind_event_handler(&handler);
+    //nwg::dispatch_thread_events();
+    //nwg::unbind_event_handler(&handler);
 }
