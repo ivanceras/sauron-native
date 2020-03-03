@@ -15,7 +15,6 @@ pub enum Widget {
     Hbox,
     Button,
     Text(String),
-    Block(String),
     TextInput(String),
     Checkbox(String, bool),
     Radio(String, bool),
@@ -48,10 +47,6 @@ pub fn text<MSG>(txt: &str) -> Node<MSG> {
 
 pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
     widget(Widget::TextInput(txt.to_string()), attrs, vec![])
-}
-
-pub fn block<MSG>(title: &str) -> Node<MSG> {
-    widget(Widget::Block(title.to_string()), vec![], vec![])
 }
 
 pub fn checkbox<MSG>(label: &str, checked: bool) -> Node<MSG> {
