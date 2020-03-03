@@ -1,3 +1,5 @@
+use native_windows_gui as nwg;
+use nwg::{Button, TextInput, Window};
 /**
     A very simple application that show your name in a message box.
 
@@ -7,11 +9,6 @@
     See `basic` for the NativeUi version and `basic_d` for the derive version
 */
 use std::rc::Rc;
-use native_windows_gui as nwg;
-use nwg::Window;
-use nwg::TextInput;
-use nwg::Button;
-
 
 fn main() {
     nwg::init().expect("Failed to init Native Windows GUI");
@@ -51,15 +48,17 @@ fn main() {
         use nwg::Event;
 
         match evt {
-            Event::OnWindowClose => 
+            Event::OnWindowClose => {
                 if &handle == &events_window as &nwg::Window {
                     //nwg::simple_message("Goodbye", &format!("Goodbye {}", name_edit.text()));
                     nwg::stop_thread_dispatch();
-                },
-            Event::OnButtonClick => 
+                }
+            }
+            Event::OnButtonClick => {
                 if &handle == &hello_button {
                     //nwg::simple_message("Hello", &format!("Hello {}", name_edit.text()));
-                },
+                }
+            }
             _ => {}
         }
     });
