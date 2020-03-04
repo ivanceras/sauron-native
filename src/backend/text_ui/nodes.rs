@@ -1,4 +1,4 @@
-use crate::{Attribute, Widget};
+use crate::{AttribKey, Attribute, Widget};
 use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,
@@ -162,7 +162,9 @@ fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG>
 where
     MSG: 'static,
 {
-    let button = Button::new(events, text);
+    //let button = Button::new(events, text);
+    //TODO: convert the events into static str for the TUI
+    let button = Button::new(vec![], text);
     TuiWidget::Button(button)
 }
 
@@ -176,15 +178,16 @@ fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWid
 where
     MSG: 'static,
 {
-    let value_txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
-        if let Some(value) = attr.get_value() {
-            value.to_string()
+    let value_txt: String =
+        if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
+            if let Some(value) = attr.get_value() {
+                value.to_string()
+            } else {
+                "value1".to_string()
+            }
         } else {
-            "".to_string()
-        }
-    } else {
-        "".to_string()
-    };
+            "Value1".to_string()
+        };
 
     match widget {
         Widget::Vbox => layout(Direction::Vertical, vec![], vec![]),

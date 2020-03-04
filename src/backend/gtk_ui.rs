@@ -9,7 +9,7 @@ use gtk::{
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
-use crate::{Attribute, Node, Patch};
+use crate::{AttribKey, Attribute, Node, Patch};
 use gtk::{IsA, Label, Paned};
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
@@ -80,7 +80,7 @@ where
         let new_view = self.app.borrow().view();
         {
             let current_vdom = self.current_vdom.borrow();
-            let diff = sauron_vdom::diff(&current_vdom, &new_view);
+            let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
             println!("diff: {:#?}", diff);
             apply_patches::apply_patches(&self.root_container(), &diff);
         }
@@ -149,21 +149,21 @@ where
             }
             Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
             Widget::Button => {
-                let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value")
-                {
-                    if let Some(value) = attr.get_value() {
-                        value.to_string()
+                let txt: String =
+                    if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
+                        if let Some(value) = attr.get_value() {
+                            value.to_string()
+                        } else {
+                            "".to_string()
+                        }
                     } else {
                         "".to_string()
-                    }
-                } else {
-                    "".to_string()
-                };
+                    };
                 let btn = Button::new_with_label(&txt);
                 for attr in attrs {
                     match &attr.value {
                         AttribValue::Callback(cb) => match attr.name {
-                            "click" => {
+                            AttribKey::ClickEvent => {
                                 let program = Rc::clone(program);
                                 let cb_clone = cb.clone();
                                 btn.connect_clicked(move |_| {
@@ -189,7 +189,7 @@ where
                 for attr in attrs {
                     match &attr.value {
                         AttribValue::Callback(cb) => match attr.name {
-                            "input" => {
+                            AttribKey::InputEvent => {
                                 let program = Rc::clone(program);
                                 let cb_clone = cb.clone();
                                 entry.connect_property_text_notify(move |entry| {

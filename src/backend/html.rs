@@ -1,4 +1,4 @@
-use crate::{Attribute, Backend, Component, Widget};
+use crate::{AttribKey, Attribute, Backend, Component, Widget};
 use image::ImageFormat;
 use sauron::{
     html::{attributes::*, div, events::mapper, img, input, text},
@@ -72,7 +72,7 @@ where
 }
 
 /// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> sauron::Node<MSG>
+fn widget_to_html<MSG>(widget: &Widget, attrs: Vec<Attribute<MSG>>) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
@@ -89,28 +89,37 @@ where
             vec![],
         ),
         Widget::Button => {
-            /*
-            let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value") {
-                if let Some(value) = attr.get_value() {
-                    value.to_string()
+            let txt: String =
+                if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
+                    if let Some(value) = attr.get_value() {
+                        value.to_string()
+                    } else {
+                        "btn1".to_string()
+                    }
                 } else {
-                    "".to_string()
-                }
-            } else {
-                "".to_string()
-            };
-            */
-            let ce = if let Some(ce) = attrs.iter().find(|att| att.name == "click") {
-                vec![ce.clone().reform(map_to_event)]
+                    "Btn1".to_string()
+                };
+            let attributes = if let Some(ce) = attrs
+                .into_iter()
+                .find(|att| att.name == AttribKey::ClickEvent)
+                .map(|att| att.take_callback())
+                .flatten()
+            {
+                vec![onclick(move |ev| ce.emit(ev))]
             } else {
                 vec![]
             };
-            input(vec![r#type("button")], vec![]).add_attributes(ce)
+            input(vec![r#type("button"), value(txt)], vec![]).add_attributes(attributes)
         }
         Widget::Text(txt) => text(&txt),
         Widget::TextInput(txt) => {
-            let ie = if let Some(ie) = attrs.iter().find(|att| att.name == "input") {
-                vec![ie.clone().reform(map_to_event)]
+            let ie = if let Some(ie) = attrs
+                .into_iter()
+                .find(|att| att.name == AttribKey::InputEvent)
+                .map(|att| att.take_callback())
+                .flatten()
+            {
+                vec![oninput(move |input| ie.emit(input))]
             } else {
                 vec![]
             };
@@ -181,12 +190,9 @@ where
     match widget_node {
         crate::Node::Element(widget) => {
             // convert the Widget tag to html node
-            let mut html_node: sauron::Node<MSG> = widget_to_html(&widget.tag, &widget.attrs);
+            let mut html_node: sauron::Node<MSG> = widget_to_html(&widget.tag, widget.attrs);
             // cast the html node to element
             if let Some(html_element) = html_node.as_element_mut() {
-                for attr in widget.attributes() {
-                    html_element.attrs.push(attr.reform(map_to_event));
-                }
                 for widget_child in widget.children {
                     // convert all widget child to an html child node
                     let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
@@ -196,22 +202,5 @@ where
             html_node
         }
         crate::Node::Text(txt) => text(txt.text),
-    }
-}
-
-/// convert html event into sauron_vdom event
-fn map_to_event(event: sauron::Event) -> sauron_vdom::Event {
-    //sauron_vdom::Event::KeyEvent(sauron_vdom::event::KeyEvent::new("k".to_string()))
-    if let Some(_mouse_event) = event.dyn_ref::<web_sys::MouseEvent>() {
-        let me = mapper::mouse_event_mapper(event);
-        sauron_vdom::Event::MouseEvent(me)
-    } else if let Some(_input_event) = event.dyn_ref::<web_sys::InputEvent>() {
-        let input_event = mapper::input_event_mapper(event);
-        sauron_vdom::Event::InputEvent(input_event)
-    } else if let Some(_key_event) = event.dyn_ref::<web_sys::KeyboardEvent>() {
-        let key_event = mapper::keyboard_event_mapper(event);
-        sauron_vdom::Event::KeyEvent(key_event)
-    } else {
-        panic!("unsupported event!")
     }
 }

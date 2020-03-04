@@ -1,4 +1,4 @@
-use crate::Patch;
+use crate::{AttribKey, Patch};
 use gtk::{prelude::*, Button, Container, ContainerExt, Widget};
 use std::{
     collections::{HashMap, HashSet},
@@ -24,7 +24,7 @@ where
             Patch::AddAttributes(_node_idx, attrs) => {
                 for att in attrs {
                     println!("att: {:?}", att);
-                    if att.name == "value" {
+                    if att.name == AttribKey::Value {
                         if let Some(button) = widget.downcast_ref::<Button>() {
                             println!("this is a button");
                             println!("with a label of: {:?}", button.get_label());

@@ -1,27 +1,27 @@
-use crate::{event::on, Attribute, Callback, Event, Value};
+use crate::{event::on, AttribKey, Attribute, Callback, Event, Value};
 
 pub fn value<V, MSG>(v: V) -> Attribute<MSG>
 where
     V: Into<Value>,
 {
-    attr("value", v)
+    attr(AttribKey::Value, v)
 }
 
-pub fn oninput<C, MSG>(c: C) -> Attribute<MSG>
+pub fn on_input<C, MSG>(c: C) -> Attribute<MSG>
 where
     C: Into<Callback<Event, MSG>>,
 {
-    on("input", c)
+    on(AttribKey::InputEvent, c)
 }
 
-pub fn onclick<C, MSG>(c: C) -> Attribute<MSG>
+pub fn on_click<C, MSG>(c: C) -> Attribute<MSG>
 where
     C: Into<Callback<Event, MSG>>,
 {
-    on("click", c)
+    on(AttribKey::ClickEvent, c)
 }
 
-pub fn attr<V, MSG>(name: &'static str, v: V) -> Attribute<MSG>
+pub fn attr<V, MSG>(name: AttribKey, v: V) -> Attribute<MSG>
 where
     V: Into<Value>,
 {

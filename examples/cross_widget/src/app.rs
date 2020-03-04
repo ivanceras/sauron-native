@@ -62,14 +62,14 @@ impl Component<Msg> for App {
             vec![],
             vec![
                 column(
-                    vec![attr("class", "column2")],
+                    vec![],
                     vec![
                         text(&self.debug.join("\n")),
-                        button(vec![onclick(|_| Msg::Decrement), value(&self.text)]),
+                        button(vec![on_click(|_| Msg::Decrement), value(&self.text)]),
                     ],
                 ),
                 button(vec![
-                    onclick(|_| Msg::Click),
+                    on_click(|_| Msg::Click),
                     value(format!("Hello: {}", self.click_count)),
                 ]),
                 checkbox("Checkbox1", true),
@@ -83,7 +83,7 @@ impl Component<Msg> for App {
                         .collect()
                 }),
                 text_input(
-                    vec![oninput(|event: Event| match event {
+                    vec![on_input(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
                         _ => {
                             trace!("This is unexpected: {:#?}", event);

@@ -105,7 +105,8 @@ where
                 let text: Vec<Text> = paragraph.text.iter().map(|txt| Text::raw(txt)).collect();
                 let mut actual_paragraph: Paragraph<_, MSG> =
                     Paragraph::new(text.iter()).area(area);
-                actual_paragraph.events = paragraph.events;
+                // TODO: convert AttribKey to txt
+                //actual_paragraph.events = paragraph.events;
                 if let Some(block) = &paragraph.block {
                     let mut tui_block = itui::widgets::Block::default()
                         .title_style(block.title_style)
