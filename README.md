@@ -18,6 +18,9 @@ Sauron native can target multiple GUI backends.
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-gtk.png)
 
 
+![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-windows.png)
+
+
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-html.png)
 
 
@@ -49,5 +52,13 @@ cd examples/cross_widget
 - [ ] space
 - [x] text
 - [X] text_input (textbox)
+
+## TODO platforms
+- [X] Linux (gtk)
+- [ ] Windows ([native-windows-gui](https://github.com/gabdube/native-windows-gu))
+- [ ] Mac ([appki-rs](https://github.com/ryanmcgrath/appkit-rs))
+
+- [X] Browser(html)
+- [X] TUI
 
  [![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/ivanceras)

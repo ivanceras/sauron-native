@@ -1,5 +1,5 @@
 [package]
-name = "cross_widget"
+name = "cross_win"
 version = "0.1.0"
 authors = ["lee"]
 edition = "2018"

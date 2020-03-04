@@ -207,7 +207,6 @@ where
                 }
                 GtkWidget::TextInput(entry)
             }
-            Widget::Block(txt) => textview(&txt),
             Widget::Checkbox(label, value) => {
                 let cb = CheckButton::new_with_label(&label);
                 cb.set_property("active", &value);
