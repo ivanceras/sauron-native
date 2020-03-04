@@ -70,7 +70,6 @@ with-nwg = ["native-windows-gui"]
 [workspace]
 members = [
     "examples/cross_widget",
-    "examples/cross_win",
     "examples/todomvc",
     "examples/win_ui",
     "crates/itui",
