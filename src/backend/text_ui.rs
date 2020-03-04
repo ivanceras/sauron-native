@@ -136,27 +136,6 @@ where
                 }
                 actual_paragraph.render(frame);
             }
-            TuiWidget::Block(block) => {
-                let mut actual_block: Block<MSG> = itui::widgets::Block::default()
-                    .title_style(block.title_style)
-                    .borders(block.borders)
-                    .border_style(block.border_style)
-                    .area(area)
-                    .style(block.style);
-                actual_block.events = block.events;
-                if let Some(title) = &block.title {
-                    actual_block = actual_block.title(&title)
-                }
-
-                if let Some(event) = event {
-                    let cb = actual_block.triggers_event(event);
-                    if let Some(cb) = cb {
-                        let msg = cb.emit(event.clone());
-                        self.app.borrow_mut().update(msg);
-                    }
-                }
-                actual_block.render(frame);
-            }
             TuiWidget::Button(button) => {
                 let mut button = button.clone();
                 /*
@@ -209,6 +188,7 @@ where
         };
 
         let backend = Rc::new(tui_backend);
+        backend.start_render();
         backend
     }
 

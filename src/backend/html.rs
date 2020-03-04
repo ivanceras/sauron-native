@@ -116,7 +116,6 @@ where
             };
             input(vec![r#type("text"), value(txt)], vec![]).add_attributes(ie)
         }
-        Widget::Block(title) => div(vec![], vec![text(title)]),
         Widget::Checkbox(cb_label, value) => {
             let checked = attrs_flag([("checked", "checked", *value)]);
             div(

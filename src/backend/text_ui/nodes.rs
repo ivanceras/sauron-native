@@ -11,7 +11,6 @@ use std::rc::Rc;
 pub enum TuiWidget<MSG> {
     Layout(Layout<MSG>),
     Paragraph(Paragraph<MSG>),
-    Block(Block<MSG>),
     Button(Button<MSG>),
 }
 #[derive(Clone)]
@@ -72,13 +71,6 @@ impl<MSG> TuiWidget<MSG> {
     fn as_layout(&mut self) -> Option<&mut Layout<MSG>> {
         match self {
             TuiWidget::Layout(layout) => Some(layout),
-            _ => None,
-        }
-    }
-
-    pub fn preferred_constraint(&self) -> Option<Constraint> {
-        match self {
-            TuiWidget::Block(block) => block.preferred_constraint,
             _ => None,
         }
     }
@@ -180,14 +172,6 @@ fn plain_block<MSG>(events: Vec<Attribute<MSG>>) -> Block<MSG> {
     block
 }
 
-fn block<MSG>(events: Vec<Attribute<MSG>>, title: &str) -> TuiWidget<MSG> {
-    let mut block: Block<MSG> = Block::default();
-    block.title = Some(title.to_string());
-    block.borders = Borders::ALL;
-    block.events = events;
-    TuiWidget::Block(block)
-}
-
 fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWidget<MSG>
 where
     MSG: 'static,
@@ -208,7 +192,6 @@ where
         Widget::Button => button(attrs, &value_txt),
         Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::TextInput(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
-        Widget::Block(title) => block(attrs, &*title),
         Widget::Checkbox(label, value) => button(vec![], "X"),
         Widget::Radio(label, value) => button(vec![], "O"),
         Widget::Image(bytes) => button(vec![], "Image here soon..."),
