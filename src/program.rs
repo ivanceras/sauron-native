@@ -27,9 +27,4 @@ where
         };
         Rc::new(program)
     }
-
-    /// This is called when an event is triggered in the html DOM.
-    pub fn dispatch(self: &Rc<Self>, msg: MSG) {
-        self.backend.start_render();
-    }
 }

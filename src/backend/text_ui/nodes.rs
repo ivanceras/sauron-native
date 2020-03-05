@@ -1,5 +1,5 @@
 use super::TuiBackend;
-use crate::{AttribKey, Attribute, Widget};
+use crate::{widget::find_value, AttribKey, Attribute, Widget};
 use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,
@@ -195,9 +195,14 @@ where
         Widget::Hbox => layout(Direction::Horizontal, vec![], vec![]),
         Widget::Button => button(attrs, &value_txt),
         Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
-        Widget::TextInput(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
-        Widget::Checkbox(label, value) => button(vec![], "X"),
-        Widget::Radio(label, value) => button(vec![], "O"),
+        Widget::TextInput => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            paragraph(attrs, Some(plain_block(vec![])), vec![value])
+        }
+        Widget::Checkbox => button(vec![], "X"),
+        Widget::Radio => button(vec![], "O"),
         Widget::Image(bytes) => button(vec![], "Image here soon..."),
     }
 }

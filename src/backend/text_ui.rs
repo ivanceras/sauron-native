@@ -191,6 +191,7 @@ impl AttribKey {
             AttribKey::ClickEvent => "click",
             AttribKey::InputEvent => "input",
             AttribKey::Value => "value",
+            AttribKey::Label => "label",
             _ => panic!("not yet implemented for {}", self),
         }
     }

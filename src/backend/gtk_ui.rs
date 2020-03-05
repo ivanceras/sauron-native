@@ -9,7 +9,10 @@ use gtk::{
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
-use crate::{widget::find_value, AttribKey, Attribute, Node, Patch};
+use crate::{
+    widget::{find_callback, find_value},
+    AttribKey, Attribute, Node, Patch,
+};
 use gtk::{IsA, Label, Paned};
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
@@ -154,28 +157,16 @@ where
                     .unwrap_or(String::new());
 
                 let btn = Button::new_with_label(&label);
-                //NOTE: had to set the events here
-                //otherwise the widget will need to
-                //hold Callbacks which leads to Widget having generics, which includes
-                //MSG, which means Widget<MSG> and MSG has to have PartialEq
-                for attr in attrs {
-                    match &attr.value {
-                        AttribValue::Callback(cb) => match attr.name {
-                            AttribKey::ClickEvent => {
-                                let program = Rc::clone(program);
-                                let cb_clone = cb.clone();
-                                btn.connect_clicked(move |_| {
-                                    let mouse_event = MouseEvent::default();
-                                    let msg = cb_clone.emit(mouse_event);
-                                    println!("got msg: {:?}", msg);
-                                    //TODO: set the current_vdom after dispatching the callback
-                                    program.dispatch(msg);
-                                });
-                            }
-                            _ => {}
-                        },
-                        _ => (),
-                    }
+                if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
+                    let cb_clone = cb.clone();
+                    let program_clone = Rc::clone(&program);
+                    btn.connect_clicked(move |_| {
+                        let mouse_event = MouseEvent::default();
+                        let msg = cb_clone.emit(mouse_event);
+                        println!("got msg: {:?}", msg);
+                        //TODO: set the current_vdom after dispatching the callback
+                        program_clone.dispatch(msg);
+                    });
                 }
                 btn.into()
             }
