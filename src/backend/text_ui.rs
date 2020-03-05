@@ -211,12 +211,8 @@ where
         };
 
         let backend = Rc::new(tui_backend);
-        backend.start_render();
+        backend.start_draw_loop();
         backend
-    }
-
-    fn start_render(self: &Rc<Self>) {
-        self.start_draw_loop();
     }
 }
 
