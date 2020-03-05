@@ -7,12 +7,17 @@ description = "Truly native, truly cross platform GUI framework for rust"
 repository = "https://github.com/ivanceras/sauron-native"
 documentation = "https://docs.rs/sauron-native"
 readme = "README.md"
-keywords = ["html", "dom", "web"]
+keywords = ["gui", "native", "gtk", "windows"]
 edition = "2018"
 
+[badges]
+maintenance = { status = "actively-developed" }
+
 [dependencies]
-sauron = { version = "0.22.0", optional = true, path = "../sauron" }
-sauron_vdom = { version = "0.22.0", path = "../sauron/crates/sauron_vdom" }
+#sauron = { version = "0.22.2", optional = true}
+sauron = { version = "0.22.2", optional = true, path = "../sauron" }
+#sauron_vdom = { version = "0.22.2"}
+sauron_vdom = { version = "0.22.2", path = "../sauron/crates/sauron_vdom" }
 itui = { path = "crates/itui", optional = true }
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2.42", optional = true }

@@ -1,3 +1,4 @@
+use super::TuiBackend;
 use crate::{AttribKey, Attribute, Widget};
 use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
@@ -162,9 +163,7 @@ fn button<MSG>(events: Vec<Attribute<MSG>>, text: &str) -> TuiWidget<MSG>
 where
     MSG: 'static,
 {
-    //let button = Button::new(events, text);
-    //TODO: convert the events into static str for the TUI
-    let button = Button::new(vec![], text);
+    let button = Button::new(super::convert_events(events), text);
     TuiWidget::Button(button)
 }
 

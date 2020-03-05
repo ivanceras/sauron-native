@@ -16,7 +16,7 @@ pub mod nwg_ui;
 
 pub trait Backend<APP, MSG>
 where
-    MSG: Clone + Debug + 'static,
+    MSG: 'static,
     APP: Component<MSG> + 'static,
 {
     fn init(app: APP) -> Rc<Self>;

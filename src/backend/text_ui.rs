@@ -1,10 +1,10 @@
-use crate::{widget::Widget, Attribute, Backend, Component, Node};
+use crate::{widget::Widget, AttribKey, Attribute, Backend, Component, Node};
 use events::Events;
 use itui::{
     backend::TermionBackend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
-    widgets::{Block, Borders, Paragraph, Text, Widget as TermWidget},
+    widgets::{Block, Borders, Button, Paragraph, Text, Widget as TermWidget},
     Frame, Terminal,
 };
 use nodes::TuiWidget;
@@ -48,7 +48,7 @@ pub struct TuiBackend<APP, MSG> {
 impl<APP, MSG> TuiBackend<APP, MSG>
 where
     APP: Component<MSG> + 'static,
-    MSG: Clone + Debug + 'static,
+    MSG: 'static,
 {
     fn start_draw_loop(&self) {
         let events = Events::new();
@@ -88,7 +88,7 @@ where
         area: Rect,
         event: &Option<Event>,
     ) where
-        MSG: Clone + Debug + 'static,
+        MSG: 'static,
         B: itui::backend::Backend,
     {
         match tui_widget {
@@ -106,7 +106,7 @@ where
                 let mut actual_paragraph: Paragraph<_, MSG> =
                     Paragraph::new(text.iter()).area(area);
                 // TODO: convert AttribKey to txt
-                //actual_paragraph.events = paragraph.events;
+                actual_paragraph.events = convert_events(paragraph.events);
                 if let Some(block) = &paragraph.block {
                     let mut tui_block = itui::widgets::Block::default()
                         .title_style(block.title_style)
@@ -137,20 +137,7 @@ where
                 }
                 actual_paragraph.render(frame);
             }
-            TuiWidget::Button(button) => {
-                let mut button = button.clone();
-                /*
-                let mut actual_block: Block<MSG> = itui::widgets::Block::default()
-                    .title_style(block.title_style)
-                    .borders(block.borders)
-                    .border_style(block.border_style)
-                    .area(area)
-                    .style(block.style);
-                actual_block.events = block.events;
-                if let Some(title) = &block.title {
-                    actual_block = actual_block.title(&title)
-                }
-                */
+            TuiWidget::Button(mut button) => {
                 let mut area1 = area.clone();
                 area1.height = 3;
                 let label_len = button.text.len();
@@ -174,10 +161,40 @@ where
     }
 }
 
+fn convert_events<MSG>(
+    events: Vec<Attribute<MSG>>,
+) -> Vec<sauron_vdom::Attribute<&'static str, Event, MSG>>
+where
+    MSG: 'static,
+{
+    events
+        .into_iter()
+        .filter_map(|att| {
+            let att_name = att.name.to_static_str();
+            if let Some(cb) = att.take_callback() {
+                Some(sauron_vdom::Attribute::from_callback(att_name, cb))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+impl AttribKey {
+    fn to_static_str(&self) -> &'static str {
+        match self {
+            AttribKey::ClickEvent => "click",
+            AttribKey::InputEvent => "input",
+            AttribKey::Value => "value",
+            _ => panic!("not yet implemented for {}", self),
+        }
+    }
+}
+
 impl<APP, MSG> Backend<APP, MSG> for TuiBackend<APP, MSG>
 where
     APP: Component<MSG> + 'static,
-    MSG: Clone + Debug + 'static,
+    MSG: 'static,
 {
     fn init(app: APP) -> Rc<Self> {
         println!("Initializing terminal backend");
