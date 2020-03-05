@@ -7,6 +7,7 @@ use nwg::{
 use sauron_vdom::Dispatch;
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
+use crate::AttribKey;
 
 pub struct NwgBackend<APP, MSG>
 where
@@ -226,15 +227,15 @@ impl NwgWidget {
             }
             Widget::Button => {
                 println!("button..");
-                let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == "value")
+                let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value)
                 {
                     if let Some(value) = attr.get_value() {
                         value.to_string()
                     } else {
-                        "".to_string()
+                        "btn1".to_string()
                     }
                 } else {
-                    "".to_string()
+                    "Btn1".to_string()
                 };
 
                 let mut btn = Button::default();
