@@ -1,4 +1,4 @@
-use crate::{AttribKey, Attribute, Backend, Component, Widget};
+use crate::{widget::find_value, AttribKey, Attribute, Backend, Component, Widget};
 use image::ImageFormat;
 use sauron::{
     html::{attributes::*, div, events::mapper, img, input, text},
@@ -89,44 +89,47 @@ where
             vec![],
         ),
         Widget::Button => {
-            let txt: String =
-                if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
-                    if let Some(value) = attr.get_value() {
-                        value.to_string()
-                    } else {
-                        "btn1".to_string()
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let attributes = attrs
+                .into_iter()
+                .filter_map(|att| match att.name {
+                    AttribKey::ClickEvent => {
+                        att.take_callback().map(|cb| onclick(move |ev| cb.emit(ev)))
                     }
-                } else {
-                    "Btn1".to_string()
-                };
-            let attributes = if let Some(ce) = attrs
-                .into_iter()
-                .find(|att| att.name == AttribKey::ClickEvent)
-                .map(|att| att.take_callback())
-                .flatten()
-            {
-                vec![onclick(move |ev| ce.emit(ev))]
-            } else {
-                vec![]
-            };
-            input(vec![r#type("button"), value(txt)], vec![]).add_attributes(attributes)
+                    _ => None,
+                })
+                .collect();
+            input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
         }
-        Widget::Text(txt) => text(&txt),
-        Widget::TextInput(txt) => {
-            let ie = if let Some(ie) = attrs
+        Widget::Text(txt) => label(vec![], vec![text(txt)]),
+        Widget::TextInput => {
+            let txt_value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            let attributes = attrs
                 .into_iter()
-                .find(|att| att.name == AttribKey::InputEvent)
-                .map(|att| att.take_callback())
-                .flatten()
-            {
-                vec![oninput(move |input| ie.emit(input))]
-            } else {
-                vec![]
-            };
-            input(vec![r#type("text"), value(txt)], vec![]).add_attributes(ie)
+                .filter_map(|att| match att.name {
+                    AttribKey::InputEvent => {
+                        att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
+                    }
+                    _ => None,
+                })
+                .collect();
+            input(vec![r#type("text"), value(txt_value)], vec![]).add_attributes(attributes)
         }
-        Widget::Checkbox(cb_label, value) => {
-            let checked = attrs_flag([("checked", "checked", *value)]);
+        Widget::Checkbox => {
+            let cb_label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            let cb_value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+            let checked = attrs_flag([("checked", "checked", cb_value)]);
+
             div(
                 vec![],
                 vec![
@@ -135,8 +138,15 @@ where
                 ],
             )
         }
-        Widget::Radio(cb_label, value) => {
-            let checked = attrs_flag([("checked", "checked", *value)]);
+        Widget::Radio => {
+            let cb_label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            let cb_value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+            let checked = attrs_flag([("checked", "checked", cb_value)]);
             div(
                 vec![],
                 vec![
