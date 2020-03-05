@@ -4,6 +4,7 @@ use nwg::{
     BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label, RadioButton,
     TextInput, Window,Bitmap,
 };
+use crate::widget::{find_callback, find_value};
 use sauron_vdom::Dispatch;
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
@@ -262,13 +263,18 @@ impl NwgWidget {
 
                 NwgWidget::Text(label)
             }
-            Widget::TextInput(txt) => {
+            Widget::TextInput => {
                 println!("textinput..");
+                let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
                 let mut text_input = TextInput::default();
 
+                
                 TextInput::builder()
                     .size((280, 60))
-                    .text(&txt)
+                    .text(&value)
                     .parent(window)
                     .build(&mut text_input)
                     .expect("must build label");
@@ -276,8 +282,17 @@ impl NwgWidget {
                 NwgWidget::TextInput(text_input)
             }
 
-            Widget::Checkbox(label, value) => {
+            Widget::Checkbox => {
                 println!("checkbox..");
+                let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+
                 let mut checkbox = CheckBox::default();
                 CheckBox::builder()
                     .size((280, 60))
@@ -288,8 +303,17 @@ impl NwgWidget {
 
                 NwgWidget::Checkbox(checkbox)
             }
-            Widget::Radio(label, value) => {
+            Widget::Radio => {
                 println!("radio button..");
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+
                 let mut radio = RadioButton::default();
                 RadioButton::builder()
                     .size((280, 60))
