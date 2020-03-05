@@ -85,6 +85,8 @@ impl<MSG> Layout<MSG> {
         let child_count = self.children.len();
         if self.constraints.is_empty() {
             if child_count > 0 {
+                //TODO: get the sizes of each of the children
+                // and add set each independent reference
                 let alloted = 100 / child_count as u16;
                 let new_constraints = self
                     .children

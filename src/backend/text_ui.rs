@@ -98,6 +98,9 @@ where
                     .constraints(layout.constraints)
                     .split(area);
                 for (i, child) in layout.children.into_iter().enumerate() {
+                    //TODO: calculate the chunks area for each
+                    // of the children, taking into account the preference/properties
+                    // set in each of the children
                     self.draw_widget_node_tree(child, frame, chunks[i], event);
                 }
             }
@@ -105,8 +108,9 @@ where
                 let text: Vec<Text> = paragraph.text.iter().map(|txt| Text::raw(txt)).collect();
                 let mut actual_paragraph: Paragraph<_, MSG> =
                     Paragraph::new(text.iter()).area(area);
-                // TODO: convert AttribKey to txt
                 actual_paragraph.events = convert_events(paragraph.events);
+
+                //TODO: the area of widgets should be handled when converting from abstract Widget
                 if let Some(block) = &paragraph.block {
                     let mut tui_block = itui::widgets::Block::default()
                         .title_style(block.title_style)
@@ -138,6 +142,7 @@ where
                 actual_paragraph.render(frame);
             }
             TuiWidget::Button(mut button) => {
+                //TODO: the area of widgets should be handled when converting from abstract Widget
                 let mut area1 = area.clone();
                 area1.height = 3;
                 let label_len = button.text.len();
