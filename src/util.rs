@@ -7,6 +7,13 @@ where
     attr(AttribKey::Value, v)
 }
 
+pub fn label<V, MSG>(v: V) -> Attribute<MSG>
+where
+    V: Into<Value>,
+{
+    attr(AttribKey::Label, v)
+}
+
 pub fn on_input<C, MSG>(c: C) -> Attribute<MSG>
 where
     C: Into<Callback<Event, MSG>>,

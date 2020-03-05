@@ -1,6 +1,9 @@
-use crate::{Attribute, Node};
+use crate::{AttribKey, Attribute, Node};
+use control::{Button, Checkbox, TextInput};
 use sauron_vdom::builder::element;
 use std::fmt::Debug;
+
+mod control;
 
 /// TODO: Each widget variant will need to have more details
 ///  such as attributes, that will be converted to their
@@ -15,9 +18,9 @@ pub enum Widget {
     Hbox,
     Button,
     Text(String),
-    TextInput(String),
-    Checkbox(String, bool),
-    Radio(String, bool),
+    TextInput,
+    Checkbox,
+    Radio,
     Image(Vec<u8>),
 }
 
@@ -45,18 +48,29 @@ pub fn text<MSG>(txt: &str) -> Node<MSG> {
     widget(Widget::Text(txt.to_string()), vec![], vec![])
 }
 
-pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>, txt: &str) -> Node<MSG> {
-    widget(Widget::TextInput(txt.to_string()), attrs, vec![])
+pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::TextInput, attrs, vec![])
 }
 
-pub fn checkbox<MSG>(label: &str, checked: bool) -> Node<MSG> {
-    widget(Widget::Checkbox(label.to_string(), checked), vec![], vec![])
+pub fn checkbox<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Checkbox, attrs, vec![])
 }
 
-pub fn radio<MSG>(label: &str, checked: bool) -> Node<MSG> {
-    widget(Widget::Radio(label.to_string(), checked), vec![], vec![])
+pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Radio, attrs, vec![])
 }
 
 pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
     widget(Widget::Image(image), vec![], vec![])
+}
+
+pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
+where
+    MSG: 'static,
+{
+    attrs
+        .iter()
+        .find(|att| att.name == key)
+        .map(|att| att.get_value())
+        .flatten()
 }

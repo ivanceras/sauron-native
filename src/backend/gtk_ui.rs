@@ -9,7 +9,7 @@ use gtk::{
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
-use crate::{AttribKey, Attribute, Node, Patch};
+use crate::{widget::find_value, AttribKey, Attribute, Node, Patch};
 use gtk::{IsA, Label, Paned};
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
@@ -149,17 +149,15 @@ where
             }
             Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
             Widget::Button => {
-                let txt: String =
-                    if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
-                        if let Some(value) = attr.get_value() {
-                            value.to_string()
-                        } else {
-                            "".to_string()
-                        }
-                    } else {
-                        "".to_string()
-                    };
-                let btn = Button::new_with_label(&txt);
+                let label = find_value(AttribKey::Label, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let btn = Button::new_with_label(&label);
+                //NOTE: had to set the events here
+                //otherwise the widget will need to
+                //hold Callbacks which leads to Widget having generics, which includes
+                //MSG, which means Widget<MSG> and MSG has to have PartialEq
                 for attr in attrs {
                     match &attr.value {
                         AttribValue::Callback(cb) => match attr.name {
@@ -182,8 +180,12 @@ where
                 btn.into()
             }
             Widget::Text(txt) => textview(&txt),
-            Widget::TextInput(txt) => {
-                let buffer = EntryBuffer::new(Some(&*txt));
+            Widget::TextInput => {
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let buffer = EntryBuffer::new(Some(&*value));
                 let entry = Entry::new_with_buffer(&buffer);
 
                 for attr in attrs {
@@ -207,12 +209,29 @@ where
                 }
                 GtkWidget::TextInput(entry)
             }
-            Widget::Checkbox(label, value) => {
+            Widget::Checkbox => {
+                let label = find_value(AttribKey::Label, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.as_bool())
+                    .flatten()
+                    .unwrap_or(false);
+
                 let cb = CheckButton::new_with_label(&label);
                 cb.set_property("active", &value);
                 GtkWidget::Checkbox(cb)
             }
-            Widget::Radio(label, value) => {
+            Widget::Radio => {
+                let label = find_value(AttribKey::Label, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.as_bool())
+                    .flatten()
+                    .unwrap_or(false);
                 let rb = RadioButton::new_with_label(&label);
                 rb.set_property("active", &value);
                 GtkWidget::Radio(rb)

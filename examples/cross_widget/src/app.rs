@@ -65,33 +65,33 @@ impl Component<Msg> for App {
                     vec![],
                     vec![
                         text(&self.debug.join("\n")),
-                        button(vec![on_click(|_| Msg::Decrement), value(&self.text)]),
+                        button(vec![on_click(|_| Msg::Decrement), label(&self.text)]),
                     ],
                 ),
                 button(vec![
                     on_click(|_| Msg::Click),
-                    value(format!("Hello: {}", self.click_count)),
+                    label(format!("Hello: {}", self.click_count)),
                 ]),
-                checkbox("Checkbox1", true),
-                checkbox("Checkbox2", true),
-                checkbox("Checkbox3", true),
-                radio("Radio1", true),
-                radio("Radio2", false),
+                checkbox(vec![label("Checkbox1"), value(true)]),
+                checkbox(vec![label("Checkbox2"), value(true)]),
+                checkbox(vec![label("Checkbox3"), value(true)]),
+                radio(vec![label("Radio1"), value(true)]),
+                radio(vec![label("Radio2"), value(false)]),
                 column(vec![], {
                     (0..self.click_count)
-                        .map(|x| button(vec![value("Hello".to_string())]))
+                        .map(|x| button(vec![label("Hello".to_string())]))
                         .collect()
                 }),
-                text_input(
-                    vec![on_input(|event: Event| match event {
+                text_input(vec![
+                    value(self.events.join("\n")),
+                    on_input(|event: Event| match event {
                         Event::InputEvent(input) => Msg::ChangeText(input.value),
                         _ => {
                             trace!("This is unexpected: {:#?}", event);
                             panic!();
                         }
-                    })],
-                    &self.events.join("\n"),
-                ),
+                    }),
+                ]),
                 image(include_bytes!("../horse.jpg").to_vec()),
                 text(
                     "Hello, will this be a paragraph
