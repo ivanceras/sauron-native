@@ -29,6 +29,7 @@ pub struct Paragraph<MSG> {
     /// Aligenment of the text
     pub alignment: Alignment,
     /// events attached to this block
+    /// TODO: This doesn't need to hold the events, just store the event to the actual paragraph
     pub events: Vec<Attribute<MSG>>,
 }
 
@@ -179,21 +180,15 @@ fn widget_to_tui_node<MSG>(widget: Widget, attrs: Vec<Attribute<MSG>>) -> TuiWid
 where
     MSG: 'static,
 {
-    let value_txt: String =
-        if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
-            if let Some(value) = attr.get_value() {
-                value.to_string()
-            } else {
-                "value1".to_string()
-            }
-        } else {
-            "Value1".to_string()
-        };
-
     match widget {
         Widget::Vbox => layout(Direction::Vertical, vec![], vec![]),
         Widget::Hbox => layout(Direction::Horizontal, vec![], vec![]),
-        Widget::Button => button(attrs, &value_txt),
+        Widget::Button => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            button(attrs, &label)
+        }
         Widget::Text(txt) => paragraph(attrs, Some(plain_block(vec![])), vec![txt]),
         Widget::TextInput => {
             let value = find_value(AttribKey::Value, &attrs)

@@ -163,8 +163,6 @@ where
                     btn.connect_clicked(move |_| {
                         let mouse_event = MouseEvent::default();
                         let msg = cb_clone.emit(mouse_event);
-                        println!("got msg: {:?}", msg);
-                        //TODO: set the current_vdom after dispatching the callback
                         program_clone.dispatch(msg);
                     });
                 }
@@ -179,24 +177,15 @@ where
                 let buffer = EntryBuffer::new(Some(&*value));
                 let entry = Entry::new_with_buffer(&buffer);
 
-                for attr in attrs {
-                    match &attr.value {
-                        AttribValue::Callback(cb) => match attr.name {
-                            AttribKey::InputEvent => {
-                                let program = Rc::clone(program);
-                                let cb_clone = cb.clone();
-                                entry.connect_property_text_notify(move |entry| {
-                                    let input_event =
-                                        InputEvent::new(entry.get_buffer().get_text());
-                                    let msg = cb_clone.emit(input_event);
-                                    println!("got msg: {:?}", msg);
-                                    program.dispatch(msg);
-                                });
-                            }
-                            _ => {}
-                        },
-                        _ => (),
-                    }
+                if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
+                    let cb_clone = cb.clone();
+                    let program_clone = Rc::clone(&program);
+                    entry.connect_property_text_notify(move |entry| {
+                        let input_event = InputEvent::new(entry.get_buffer().get_text());
+                        let msg = cb_clone.emit(input_event);
+                        println!("got msg: {:?}", msg);
+                        program_clone.dispatch(msg);
+                    });
                 }
                 GtkWidget::TextInput(entry)
             }
