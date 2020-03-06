@@ -34,3 +34,28 @@ where
 {
     crate::builder::attr(name, v)
 }
+
+pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
+where
+    MSG: 'static,
+{
+    attrs
+        .iter()
+        .find(|att| att.name == key)
+        .map(|att| att.get_value())
+        .flatten()
+}
+
+pub fn find_callback<MSG>(
+    key: AttribKey,
+    attrs: &Vec<Attribute<MSG>>,
+) -> Option<&Callback<Event, MSG>>
+where
+    MSG: 'static,
+{
+    attrs
+        .iter()
+        .find(|att| att.name == key)
+        .map(|att| att.get_callback())
+        .flatten()
+}

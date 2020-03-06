@@ -3,6 +3,7 @@ use control::{Button, Checkbox, TextInput};
 use sauron_vdom::{builder::element, Callback, Event};
 use std::fmt::Debug;
 
+pub mod attribute;
 mod control;
 
 /// TODO: Each widget variant will need to have more details
@@ -62,29 +63,4 @@ pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 
 pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
     widget(Widget::Image(image), vec![], vec![])
-}
-
-pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_value())
-        .flatten()
-}
-
-pub fn find_callback<MSG>(
-    key: AttribKey,
-    attrs: &Vec<Attribute<MSG>>,
-) -> Option<&Callback<Event, MSG>>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_callback())
-        .flatten()
 }

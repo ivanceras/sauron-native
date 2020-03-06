@@ -1,5 +1,5 @@
 use super::TuiBackend;
-use crate::{widget::find_value, AttribKey, Attribute, Widget};
+use crate::{widget::attribute::find_value, AttribKey, Attribute, Widget};
 use itui::{
     layout::{Alignment, Constraint, Corner, Direction},
     style::Style,

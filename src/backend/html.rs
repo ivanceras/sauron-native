@@ -1,4 +1,4 @@
-use crate::{widget::find_value, AttribKey, Attribute, Backend, Component, Widget};
+use crate::{widget::attribute::find_value, AttribKey, Attribute, Backend, Component, Widget};
 use image::ImageFormat;
 use sauron::{
     html::{attributes::*, div, events::mapper, img, input, text},

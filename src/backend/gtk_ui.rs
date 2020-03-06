@@ -10,7 +10,7 @@ use gtk::{
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
 
 use crate::{
-    widget::{find_callback, find_value},
+    widget::attribute::{find_callback, find_value},
     AttribKey, Attribute, Node, Patch,
 };
 use gtk::{IsA, Label, Paned};
