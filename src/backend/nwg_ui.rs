@@ -4,7 +4,7 @@ use nwg::{
     BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label, RadioButton,
     TextInput, Window,Bitmap,
 };
-use crate::widget::{find_callback, find_value};
+use crate::widget::attribute::{find_callback, find_value};
 use sauron_vdom::Dispatch;
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
