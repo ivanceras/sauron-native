@@ -1,14 +1,15 @@
-use crate::{Attribute, Backend, Component, Node, Patch, Widget};
+use crate::{
+    widget::attribute::{find_callback, find_value},
+    AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
+};
+use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
 use nwg::{
-    BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label, RadioButton,
-    TextInput, Window,Bitmap,
+    Bitmap, BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label,
+    RadioButton, TextInput, Window,
 };
-use crate::widget::attribute::{find_callback, find_value};
 use sauron_vdom::Dispatch;
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
-use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
-use crate::AttribKey;
 
 pub struct NwgBackend<APP, MSG>
 where
@@ -89,7 +90,6 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
 
         rc_backend
     }
-
 }
 
 impl<APP, MSG> Backend<APP, MSG> for NwgBackend<APP, MSG>
@@ -132,7 +132,7 @@ impl fmt::Debug for NwgWidget {
             NwgWidget::TextInput(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Checkbox(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Radio(w) => write!(f, "{}", w.class_name()),
-            NwgWidget::Image(w,_) => write!(f, "{}", w.class_name()),
+            NwgWidget::Image(w, _) => write!(f, "{}", w.class_name()),
         }
     }
 }
@@ -146,7 +146,7 @@ impl NwgWidget {
             NwgWidget::TextInput(w) => w.into(),
             NwgWidget::Checkbox(w) => w.into(),
             NwgWidget::Radio(w) => w.into(),
-            NwgWidget::Image(w,_) => w.into(),
+            NwgWidget::Image(w, _) => w.into(),
         }
     }
 
@@ -228,16 +228,16 @@ impl NwgWidget {
             }
             Widget::Button => {
                 println!("button..");
-                let txt: String = if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value)
-                {
-                    if let Some(value) = attr.get_value() {
-                        value.to_string()
+                let txt: String =
+                    if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
+                        if let Some(value) = attr.get_value() {
+                            value.to_string()
+                        } else {
+                            "btn1".to_string()
+                        }
                     } else {
-                        "btn1".to_string()
-                    }
-                } else {
-                    "Btn1".to_string()
-                };
+                        "Btn1".to_string()
+                    };
 
                 let mut btn = Button::default();
 
@@ -266,12 +266,11 @@ impl NwgWidget {
             Widget::TextInput => {
                 println!("textinput..");
                 let value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
 
                 let mut text_input = TextInput::default();
 
-                
                 TextInput::builder()
                     .size((280, 60))
                     .text(&value)
@@ -285,13 +284,13 @@ impl NwgWidget {
             Widget::Checkbox => {
                 println!("checkbox..");
                 let label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
 
-            let value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.as_bool())
-                .flatten()
-                .unwrap_or(false);
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.as_bool())
+                    .flatten()
+                    .unwrap_or(false);
 
                 let mut checkbox = CheckBox::default();
                 CheckBox::builder()
@@ -305,14 +304,14 @@ impl NwgWidget {
             }
             Widget::Radio => {
                 println!("radio button..");
-            let label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                let label = find_value(AttribKey::Label, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
 
-            let value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.as_bool())
-                .flatten()
-                .unwrap_or(false);
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.as_bool())
+                    .flatten()
+                    .unwrap_or(false);
 
                 let mut radio = RadioButton::default();
                 RadioButton::builder()
@@ -330,7 +329,12 @@ impl NwgWidget {
                 let (width, height) = img.dimensions();
                 let mut bytes: Vec<u8> = vec![];
 
-                BMPEncoder::new(&mut bytes).write_image(&img.to_rgb().into_raw(), width, height, ColorType::Rgb8);
+                BMPEncoder::new(&mut bytes).write_image(
+                    &img.to_rgb().into_raw(),
+                    width,
+                    height,
+                    ColorType::Rgb8,
+                );
 
                 Bitmap::builder()
                     .source_bin(Some(&bytes))
@@ -338,11 +342,11 @@ impl NwgWidget {
 
                 let mut image_frame = ImageFrame::default();
                 ImageFrame::builder()
-                        .size((400, 200))
-                        .bitmap(Some(&bitmap))
-                        .parent(window)
-                        .build(&mut image_frame)
-                        .expect("must build image_frame");
+                    .size((400, 200))
+                    .bitmap(Some(&bitmap))
+                    .parent(window)
+                    .build(&mut image_frame)
+                    .expect("must build image_frame");
 
                 NwgWidget::Image(image_frame, bitmap)
             }
@@ -365,7 +369,7 @@ impl NwgWidget {
                         NwgWidget::TextInput(child) => container.add_child(i as u32, child),
                         NwgWidget::Checkbox(child) => container.add_child(i as u32, child),
                         NwgWidget::Radio(child) => container.add_child(i as u32, child),
-                        NwgWidget::Image(child,_) => container.add_child(i as u32, child),
+                        NwgWidget::Image(child, _) => container.add_child(i as u32, child),
                     }
                 }
             }

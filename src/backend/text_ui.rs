@@ -142,16 +142,7 @@ where
                 actual_paragraph.render(frame);
             }
             TuiWidget::Button(mut button) => {
-                //TODO: the area of widgets should be handled when converting from abstract Widget
-                let mut area1 = area.clone();
-                area1.height = 3;
-                let label_len = button.text.len();
-                area1.width = if label_len > 0 {
-                    (label_len + 4) as u16
-                } else {
-                    10
-                };
-                button = button.area(area1);
+                button = button.area(area);
 
                 if let Some(event) = event {
                     let cb = button.triggers_event(event);

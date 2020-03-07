@@ -1,6 +1,6 @@
+use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
-use nwg::{BoxLayout, Button, TextInput, Window,ImageDecoder, ImageFrame, Bitmap};
-use image::{bmp::BMPEncoder,ColorType,ImageEncoder, GenericImageView};
+use nwg::{Bitmap, BoxLayout, Button, ImageDecoder, ImageFrame, TextInput, Window};
 /**
     A very simple application that show your name in a message box.
 
@@ -29,8 +29,7 @@ fn main() {
         .build(&mut window)
         .unwrap();
 
-
-        /*
+    /*
     // NOTE: Uncomment this to panic at runtime with:
     // 'There is already a raw event handler bound with the handler ID 0',
     // <..>native-windows-gui-b74f684ad4534f77\14859f5\native-windows-gui\src\win32\window.rs:278:17
@@ -64,15 +63,18 @@ fn main() {
     let img = image::load_from_memory(include_bytes!("../horse.jpg")).expect("should load");
     let (width, height) = img.dimensions();
     let mut bytes: Vec<u8> = vec![];
-    BMPEncoder::new(&mut bytes).write_image(&img.to_rgb().into_raw(), width, height, ColorType::Rgb8);
+    BMPEncoder::new(&mut bytes).write_image(
+        &img.to_rgb().into_raw(),
+        width,
+        height,
+        ColorType::Rgb8,
+    );
 
     //let bytes = include_bytes!("../horse.bmp");
 
     Bitmap::builder()
         .source_bin(Some(&bytes))
         .build(&mut bitmap);
-    
-
 
     Button::builder()
         .size((280, 60))
@@ -83,11 +85,11 @@ fn main() {
         .unwrap();
 
     ImageFrame::builder()
-            .size((400, 200))
-            .bitmap(Some(&bitmap))
-            .parent(&window)
-            .build(&mut img1)
-            .unwrap();
+        .size((400, 200))
+        .bitmap(Some(&bitmap))
+        .parent(&window)
+        .build(&mut img1)
+        .unwrap();
 
     BoxLayout::builder()
         .parent(&window)

@@ -218,6 +218,7 @@ where
             }
             Widget::Image(bytes) => {
                 let image = Image::new();
+                //TODO: also deal with other formats
                 let pixbuf_loader =
                     PixbufLoader::new_with_mime_type("image/jpeg").expect("error loader");
                 pixbuf_loader
