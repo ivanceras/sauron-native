@@ -54,7 +54,7 @@ where
             _phantom_msg: PhantomData,
         };
         let rc_backend = Rc::new(backend);
-        let root_widget = Self::node_tree_to_gtk(&rc_backend, root_vdom);
+        let root_widget = Self::from_node_tree(&rc_backend, root_vdom);
         *rc_backend.root_node.borrow_mut() = Some(root_widget);
         rc_backend
     }
@@ -120,17 +120,17 @@ where
         }
     }
 
-    fn node_tree_to_gtk<DSP>(program: &Rc<DSP>, widget_node: crate::Node<MSG>) -> GtkWidget
+    fn from_node_tree<DSP>(program: &Rc<DSP>, widget_node: crate::Node<MSG>) -> GtkWidget
     where
         MSG: Debug + 'static,
         DSP: Dispatch<MSG> + 'static,
     {
         match widget_node {
             crate::Node::Element(element) => {
-                let mut gtk_widget = Self::node_to_gtk(program, element.tag, &element.attrs);
+                let mut gtk_widget = Self::from_node(program, element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
-                    let gtk_child = Self::node_tree_to_gtk(program, child);
+                    let gtk_child = Self::from_node_tree(program, child);
                     children.push(gtk_child);
                 }
                 gtk_widget.add_children(children);
@@ -140,7 +140,7 @@ where
         }
     }
 
-    fn node_to_gtk<DSP>(program: &Rc<DSP>, widget: Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
+    fn from_node<DSP>(program: &Rc<DSP>, widget: Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
     where
         MSG: Debug + 'static,
         DSP: Dispatch<MSG> + 'static,

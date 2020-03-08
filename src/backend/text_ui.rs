@@ -194,7 +194,6 @@ where
     MSG: 'static,
 {
     fn init(app: APP) -> Rc<Self> {
-        println!("Initializing terminal backend");
         let terminal = setup_terminal().expect("unable to setup terminal");
         let tui_backend = TuiBackend {
             terminal: Rc::new(RefCell::new(terminal)),

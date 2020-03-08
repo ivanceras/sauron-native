@@ -5,8 +5,12 @@ use std::{fmt::Debug, rc::Rc};
 pub mod html;
 #[cfg(feature = "with-html")]
 pub use html::HtmlBackend;
+
 #[cfg(feature = "with-tui")]
 pub mod text_ui;
+
+#[cfg(feature = "with-titik")]
+pub mod titik_ui;
 
 #[cfg(feature = "with-gtk")]
 pub mod gtk_ui;

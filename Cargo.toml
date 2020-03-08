@@ -30,6 +30,7 @@ base64 = "0.11.0"
 image = "0.23.0"
 console_log = { version = "0.1.2", optional = true }
 native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", branch = "1.0-prerelease", optional = true , features = ["image-decoder"]}
+titik = { path = "../titik", optional = true }
 
 [dependencies.web-sys]
 version = "0.3.19"
@@ -71,6 +72,7 @@ with-tui = ["itui/termion", "termion"]
 with-html = ["sauron", "web-sys", "wasm-bindgen", "console_log"]
 with-gtk = ["gtk", "gio", "glib", "gdk-pixbuf"]
 with-nwg = ["native-windows-gui"]
+with-titik = ["titik"]
 
 [workspace]
 members = [

@@ -19,7 +19,6 @@ where
     /// Create an Rc wrapped instance of program, initializing DomUpdater with the initial view
     /// and root node, but doesn't mount it yet.
     pub fn new(app: APP) -> Rc<Self> {
-        println!("Instantiation..");
         let program = Program {
             backend: B::init(app),
             _phantom_data: PhantomData,

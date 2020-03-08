@@ -48,14 +48,6 @@ impl Component<Msg> for App {
         }
     }
 
-    fn on_event(&mut self, event: Event) {
-        //self.events.push(format!("{:?}", event));
-    }
-
-    fn debug(&mut self, s: String) {
-        //self.debug.push(s);
-    }
-
     fn view(&self) -> Node<Msg> {
         column(
             vec![],
@@ -71,12 +63,12 @@ impl Component<Msg> for App {
                     on_click(|_| Msg::Click),
                     label(format!("Hello: {}", self.click_count)),
                 ]),
-                row(
+                column(
                     vec![],
                     vec![
                         checkbox(vec![label("Checkbox1"), value(true)]),
-                        checkbox(vec![label("Checkbox2"), value(true)]),
-                        checkbox(vec![label("Checkbox3"), value(true)]),
+                        checkbox(vec![label("Checkbox2"), value(false)]),
+                        checkbox(vec![label("Checkbox3"), value(false)]),
                         radio(vec![label("Radio1"), value(true)]),
                         radio(vec![label("Radio2"), value(false)]),
                     ],
@@ -97,11 +89,7 @@ impl Component<Msg> for App {
                     }),
                 ]),
                 image(include_bytes!("../horse.jpg").to_vec()),
-                text(
-                    "Hello, will this be a paragraph
-The quick brown fox jumps over the lazy
-dog. Lorem ipsum",
-                ),
+                text("This is a paragraph"),
             ],
         )
     }
