@@ -5,7 +5,11 @@ use crate::{
 use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
 use nwg::{
-    Bitmap, BoxLayout, Button, CheckBox, ControlHandle, ImageDecoder, ImageFrame, Label,
+    stretch::{
+        geometry::Size,
+        style::{Dimension, FlexDirection},
+    },
+    Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder, ImageFrame, Label,
     RadioButton, TextInput, Window,
 };
 use sauron_vdom::Dispatch;
@@ -40,7 +44,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
             )
             .size((800, 800))
             .position((300, 300))
-            .title("Basic example")
+            .title("Windows Backend")
             .build(&mut window)
             .unwrap();
 
@@ -114,7 +118,7 @@ where
 }
 
 enum NwgWidget {
-    Box(BoxLayout),
+    Box(FlexboxLayout),
     Button(Button),
     Text(Label),
     TextInput(TextInput),
@@ -126,7 +130,7 @@ enum NwgWidget {
 impl fmt::Debug for NwgWidget {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            NwgWidget::Box(w) => write!(f, "BoxLayout"),
+            NwgWidget::Box(w) => write!(f, "FlexboxLayout"),
             NwgWidget::Button(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Text(w) => write!(f, "{}", w.class_name()),
             NwgWidget::TextInput(w) => write!(f, "{}", w.class_name()),
@@ -138,19 +142,29 @@ impl fmt::Debug for NwgWidget {
 }
 
 impl NwgWidget {
-    fn as_control_handle(&self) -> ControlHandle {
+    /*
+    fn as_control_handle<C:Into<ControlHandle>>(&self) -> C {
         match self {
             NwgWidget::Box(w) => panic!("no control handle for box"),
+<<<<<<< HEAD
             NwgWidget::Button(w) => w.into(),
             NwgWidget::Text(w) => w.into(),
             NwgWidget::TextInput(w) => w.into(),
             NwgWidget::Checkbox(w) => w.into(),
             NwgWidget::Radio(w) => w.into(),
             NwgWidget::Image(w, _) => w.into(),
+=======
+            NwgWidget::Button(w) => w,
+            NwgWidget::Text(w) => w,
+            NwgWidget::TextInput(w) => w,
+            NwgWidget::Checkbox(w) => w,
+            NwgWidget::Radio(w) => w,
+            NwgWidget::Image(w, _) => w,
+>>>>>>> Improvements of Flexboxlayout from nwg
         }
-    }
+    }*/
 
-    fn as_box(self) -> Option<BoxLayout> {
+    fn as_box(self) -> Option<FlexboxLayout> {
         match self {
             NwgWidget::Box(box_layout) => Some(box_layout),
             _ => None,
@@ -170,7 +184,6 @@ impl NwgWidget {
         match widget_node {
             crate::Node::Element(element) => {
                 println!("element...");
-                let nwg_widget = Self::from_node(window, program, element.tag, element.attrs);
                 let mut children: Vec<(Self, Vec<Self>)> = element
                     .children
                     .into_iter()
@@ -179,9 +192,8 @@ impl NwgWidget {
 
                 let mut all_children = vec![];
                 let (direct, indirect): (Vec<Self>, Vec<Vec<Self>>) = children.into_iter().unzip();
-                if !direct.is_empty() {
-                    nwg_widget.add_children(&direct);
-                }
+                let nwg_widget =
+                    Self::from_node(window, program, element.tag, &direct, element.attrs);
                 all_children.extend(direct);
                 all_children.extend(indirect.into_iter().flatten());
                 (nwg_widget, all_children)
@@ -194,6 +206,7 @@ impl NwgWidget {
         window: &Window,
         program: &Rc<DSP>,
         widget: Widget,
+        children: &Vec<Self>,
         attrs: Vec<Attribute<MSG>>,
     ) -> Self
     where
@@ -204,25 +217,70 @@ impl NwgWidget {
         match widget {
             Widget::Vbox => {
                 println!("vbox..");
-                let mut box_layout = BoxLayout::default();
+                let mut box_layout = FlexboxLayout::default();
 
-                BoxLayout::builder()
+                let mut builder = FlexboxLayout::builder()
                     .parent(window)
-                    .layout_type(nwg::BoxLayoutType::Vertical)
-                    .cell_count(Some(10))
-                    .build(&mut box_layout);
+                    .flex_direction(FlexDirection::Column);
+
+                for child in children.iter() {
+                    match child {
+                        NwgWidget::Box(child) => {
+                            
+                                },
+                        NwgWidget::Button(child) => {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                                }
+                        NwgWidget::Text(child) => {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                                }
+                        NwgWidget::TextInput(child) => {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                                }
+                        NwgWidget::Checkbox(child) =>  {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                                }
+                        NwgWidget::Radio(child) =>  {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                                }
+                        NwgWidget::Image(child,_) =>  {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(400.0),
+                            });
+                                }
+                    }
+                }
+
+                builder.build(&mut box_layout);
 
                 NwgWidget::Box(box_layout)
             }
             Widget::Hbox => {
+                
                 println!("hbox..");
-                let mut box_layout = BoxLayout::default();
+                let mut box_layout = FlexboxLayout::default();
 
-                BoxLayout::builder()
+                let mut builder = FlexboxLayout::builder()
                     .parent(window)
-                    .layout_type(nwg::BoxLayoutType::Horizontal)
-                    .cell_count(Some(10))
-                    .build(&mut box_layout);
+                    .flex_direction(FlexDirection::Row);
+
+                builder.build(&mut box_layout);
 
                 NwgWidget::Box(box_layout)
             }
@@ -352,7 +410,7 @@ impl NwgWidget {
             }
         }
     }
-
+    /*
     fn add_children(&self, children: &Vec<Self>) {
         println!("adding children...");
         for child in children.iter() {
@@ -364,16 +422,27 @@ impl NwgWidget {
                     println!("child {}", i);
                     match child {
                         NwgWidget::Box(child) => (),
+<<<<<<< HEAD
                         NwgWidget::Button(child) => container.add_child(i as u32, child),
                         NwgWidget::Text(child) => container.add_child(i as u32, child),
                         NwgWidget::TextInput(child) => container.add_child(i as u32, child),
                         NwgWidget::Checkbox(child) => container.add_child(i as u32, child),
                         NwgWidget::Radio(child) => container.add_child(i as u32, child),
                         NwgWidget::Image(child, _) => container.add_child(i as u32, child),
+=======
+                        NwgWidget::Button(child) => container.child(i as u32, child),
+                        NwgWidget::Text(child) => container.child(i as u32, child),
+                        NwgWidget::TextInput(child) => container.child(i as u32, child),
+                        NwgWidget::Checkbox(child) => container.child(i as u32, child),
+                        NwgWidget::Radio(child) => container.child(i as u32, child),
+                        NwgWidget::Image(child,_) => container.child(i as u32, child),
+>>>>>>> Improvements of Flexboxlayout from nwg
                     }
+                    container.child_size(Size{width: Dimension::Percent(1.0), height: Dimension::Auto})
                 }
             }
             _ => panic!("can not add children for {:?}", self),
         }
     }
+    */
 }
