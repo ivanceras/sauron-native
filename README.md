@@ -38,6 +38,9 @@ cd examples/cross_widget
 ./start_web.sh
 ```
 
+## TODO General
+- Depracate itui, in favor of titik which is much simpler to maintain
+
 ## TODO widgets
 - [X] button
 - [x] checkbox

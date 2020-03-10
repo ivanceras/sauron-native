@@ -24,6 +24,7 @@ where
             Patch::AddAttributes(_node_idx, attrs) => {
                 for att in attrs {
                     println!("att: {:?}", att);
+                    //TODO: actuall set the property of the widget
                     if att.name == AttribKey::Value {
                         if let Some(button) = widget.downcast_ref::<Button>() {
                             println!("this is a button");
