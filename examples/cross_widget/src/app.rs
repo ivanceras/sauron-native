@@ -27,9 +27,9 @@ impl App {
     pub fn new(count: u32) -> App {
         App {
             click_count: count,
-            #[cfg(feature = "with-tui")]
-            text: String::from("CTRL-C to exit"),
-            #[cfg(not(feature = "with-tui"))]
+            #[cfg(feature = "with-titik")]
+            text: String::from("Press 'q' / CTRL-C to exit"),
+            #[cfg(not(feature = "with-titik"))]
             text: String::from("Some text"),
             events: vec![],
             debug: vec![],

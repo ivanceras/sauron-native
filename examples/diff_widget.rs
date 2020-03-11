@@ -1,30 +1,33 @@
-use sauron_native::{util::*, widget::*, Node};
-use sauron_vdom::diff;
+use sauron_native::{
+    widget::{attribute::*, *},
+    AttribKey, Node, *,
+};
+use sauron_vdom::diff_with_key;
 
 fn main() {
-    let old: Node<()> = vbox(
+    let old: Node<()> = column(
         vec![],
         vec![
-            hbox(
-                vec![attr("class", "column1")],
+            row(
+                vec![],
                 vec![
-                    button(vec![value("column1 element1")]),
-                    button(vec![value("column1 element2")]),
-                    button(vec![value("column1 element3")]),
-                    button(vec![value("column1 element4")]),
-                    button(vec![value("column1 element5")]),
-                    button(vec![value("column1 element6")]),
+                    button(vec![label("column1 element1")]),
+                    button(vec![label("column1 element2")]),
+                    button(vec![label("column1 element3")]),
+                    button(vec![label("column1 element4")]),
+                    button(vec![label("column1 element5")]),
+                    button(vec![label("column1 element6")]),
                 ],
             ),
-            hbox(
-                vec![attr("class", "column2")],
+            row(
+                vec![],
                 vec![
-                    button(vec![value("column2")]),
-                    button(vec![value("c2 element2")]),
+                    button(vec![label("column2")]),
+                    button(vec![label("c2 element2")]),
                 ],
             ),
-            button(vec![value("Hello")]),
-            block("I'm a block kid!"),
+            button(vec![label("Hello")]),
+            text("I'm a text kid!"),
             text(
                 "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
@@ -35,29 +38,29 @@ fn main() {
         ],
     );
 
-    let new: Node<()> = vbox(
+    let new: Node<()> = column(
         vec![],
         vec![
-            hbox(
-                vec![attr("class", "column1")],
+            row(
+                vec![],
                 vec![
-                    button(vec![value("Changed column1 element1")]),
-                    button(vec![value("column1 element2")]),
-                    button(vec![value("column1 element3")]),
-                    button(vec![value("column1 element4")]),
-                    button(vec![value("Changed column1 element5")]),
-                    button(vec![value("Changed column1 element6")]),
+                    button(vec![label("Changed column1 element1")]),
+                    button(vec![label("column1 element2")]),
+                    button(vec![label("column1 element3")]),
+                    button(vec![label("column1 element4")]),
+                    button(vec![label("Changed column1 element5")]),
+                    button(vec![label("Changed column1 element6")]),
                 ],
             ),
-            hbox(
-                vec![attr("class", "column2-changed")],
+            row(
+                vec![],
                 vec![
-                    button(vec![value("column2-changed")]),
-                    button(vec![value("c2 element2")]),
+                    button(vec![label("column2-changed")]),
+                    button(vec![label("c2 element2")]),
                 ],
             ),
-            button(vec![value("Hello")]),
-            block("I'm a block kid!"),
+            button(vec![label("Hello")]),
+            text("I'm a text kid!"),
             text(
                 "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
@@ -68,6 +71,6 @@ fn main() {
         ],
     );
 
-    let changed = diff(&old, &new);
+    let changed = diff_with_key(&old, &new, &AttribKey::Key);
     println!("changed: {:#?}", changed);
 }

@@ -18,7 +18,6 @@ maintenance = { status = "actively-developed" }
 sauron = { version = "0.22.2", optional = true, path = "../sauron" }
 #sauron_vdom = { version = "0.22.2"}
 sauron_vdom = { version = "0.22.2", path = "../sauron/crates/sauron_vdom" }
-itui = { path = "crates/itui", optional = true, use-default-feautures = false }
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2.42", optional = true }
 gtk = { version = "0.6.0", optional = true }
@@ -68,7 +67,6 @@ cfg-if = "0.1.7"
 
 
 [features]
-with-tui = ["itui/termion", "termion"]
 with-html = ["sauron", "web-sys", "wasm-bindgen", "console_log"]
 with-gtk = ["gtk", "gio", "glib", "gdk-pixbuf"]
 with-nwg = ["native-windows-gui"]
@@ -77,9 +75,6 @@ with-titik = ["titik"]
 [workspace]
 members = [
     "examples/cross_widget",
-    "examples/todomvc",
-    "examples/win_ui",
-    "crates/itui",
 ]
 
 
