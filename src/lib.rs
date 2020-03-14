@@ -1,6 +1,7 @@
 //#![deny(warnings)]
 #![deny(clippy::all)]
 #![feature(arbitrary_self_types)]
+#![feature(bindings_after_at)]
 
 pub mod event {
     pub use sauron_vdom::{builder::on, event::InputEvent, Event};

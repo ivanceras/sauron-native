@@ -16,15 +16,17 @@ use std::{
 use titik::{
     crossterm,
     crossterm::{
-        event::{self, Event, KeyCode, KeyEvent},
+        event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent},
         terminal,
     },
+    find_widget_mut, set_focused_node,
     stretch::{
         geometry::Size,
         number::Number,
         style::{Dimension, Style},
     },
-    Buffer, Button, Checkbox, FlexBox, Image, Radio, TextInput, Widget as Control,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, Radio, TextInput,
+    Widget as Control,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -50,29 +52,65 @@ where
         let vdom = self.app.borrow().view();
         let mut control = Self::from_node_tree(vdom);
         control.set_size(Some(width as f32), Some(height as f32));
+        let mut focused_widget_idx: Option<usize> = None;
 
-        let layout_tree = titik::compute_layout(
-            control.as_mut(),
-            Size {
-                width: Number::Defined(width as f32),
-                height: Number::Defined(height as f32),
-            },
-        );
         loop {
             titik::command::reset_top(w)?;
+            let layout_tree = titik::compute_layout(
+                control.as_mut(),
+                Size {
+                    width: Number::Defined(width as f32),
+                    height: Number::Defined(height as f32),
+                },
+            );
             let mut buf = Buffer::new(width as usize, height as usize);
-            control.draw(&mut buf, &layout_tree);
+            let cmds = control.draw(&mut buf, &layout_tree);
             write!(w, "{}", buf);
+            cmds.iter()
+                .for_each(|cmd| cmd.execute(w).expect("must execute"));
             w.flush()?;
 
             if let Ok(ev) = crossterm::event::read() {
                 match ev {
-                    Event::Key(KeyEvent {
-                        code: KeyCode::Char(c),
-                        ..
-                    }) => {
-                        if c == 'q' {
-                            break;
+                    Event::Key(key_event @ KeyEvent { code, modifiers }) => {
+                        if modifiers.contains(KeyModifiers::CONTROL) {
+                            match code {
+                                KeyCode::Char(c) => {
+                                    // To quite, press any of the following:
+                                    //  - CTRL-c
+                                    //  - CTRL-q
+                                    //  - CTRL-d
+                                    //  - CTRL-z
+                                    //
+
+                                    match c {
+                                        'c' | 'q' | 'd' | 'z' => {
+                                            break;
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                                _ => (),
+                            }
+                        } else {
+                            if let Some(idx) = focused_widget_idx.as_ref() {
+                                if let Some(focused_widget) =
+                                    find_widget_mut(control.as_mut(), *idx)
+                                {
+                                    if let Some(txt_input1) =
+                                        focused_widget.as_any_mut().downcast_mut::<TextInput>()
+                                    {
+                                        txt_input1.process_key(key_event);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Event::Mouse(MouseEvent::Down(btn, x, y, _modifier)) => {
+                        if let Some(idx) = widget_node_idx_at(&layout_tree, x as f32, y as f32) {
+                            focused_widget_idx = Some(idx);
+                            set_focused_node(control.as_mut(), idx);
                         }
                     }
                     _ => (),
