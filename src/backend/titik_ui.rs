@@ -24,7 +24,7 @@ use titik::{
         number::Number,
         style::{Dimension, Style},
     },
-    Box, Buffer, Button, Checkbox, Control, Image, Radio, TextInput,
+    Buffer, Button, Checkbox, FlexBox, Image, Radio, TextInput, Widget as Control,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -52,7 +52,7 @@ where
         control.set_size(Some(width as f32), Some(height as f32));
 
         let layout_tree = titik::compute_layout(
-            &mut control,
+            control.as_mut(),
             Size {
                 width: Number::Defined(width as f32),
                 height: Number::Defined(height as f32),
@@ -83,7 +83,7 @@ where
         Ok(())
     }
 
-    fn from_node_tree(widget_node: crate::Node<MSG>) -> Control
+    fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget>
     where
         MSG: Debug + 'static,
     {
@@ -100,20 +100,20 @@ where
         }
     }
 
-    fn from_node(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> Control
+    fn from_node(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> Box<dyn titik::Widget>
     where
         MSG: Debug + 'static,
     {
         match widget {
             Widget::Vbox => {
-                let mut vbox = Box::new();
+                let mut vbox = FlexBox::new();
                 vbox.vertical();
-                vbox.into()
+                Box::new(vbox)
             }
             Widget::Hbox => {
-                let mut hbox = Box::new();
+                let mut hbox = FlexBox::new();
                 hbox.horizontal();
-                hbox.into()
+                Box::new(hbox)
             }
             Widget::Button => {
                 let label = find_value(AttribKey::Label, &attrs)
@@ -121,18 +121,18 @@ where
                     .unwrap_or(String::new());
 
                 let btn = Button::new(&label);
-                btn.into()
+                Box::new(btn)
             }
             Widget::Text(txt) => {
                 let input = TextInput::new(txt);
-                input.into()
+                Box::new(input)
             }
             Widget::TextInput => {
                 let value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.to_string())
                     .unwrap_or(String::new());
                 let input = TextInput::new(value);
-                input.into()
+                Box::new(input)
             }
             Widget::Checkbox => {
                 let label = find_value(AttribKey::Label, &attrs)
@@ -146,7 +146,7 @@ where
 
                 let mut cb = Checkbox::new(&label);
                 cb.set_checked(value);
-                cb.into()
+                Box::new(cb)
             }
             Widget::Radio => {
                 let label = find_value(AttribKey::Label, &attrs)
@@ -160,12 +160,12 @@ where
 
                 let mut rb = Radio::new(label);
                 rb.set_checked(value);
-                rb.into()
+                Box::new(rb)
             }
             Widget::Image(bytes) => {
                 let mut img = Image::new(bytes);
                 img.set_size(Some(100.0), Some(50.0));
-                img.into()
+                Box::new(img)
             }
         }
     }
