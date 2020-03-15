@@ -1,5 +1,8 @@
 use crate::{
-    widget::{attribute::find_value, Widget},
+    widget::{
+        attribute::{find_callback, find_value},
+        Widget,
+    },
     AttribKey, Attribute, Backend, Component, Node,
 };
 use sauron_vdom::Dispatch;
@@ -46,16 +49,20 @@ where
 
     fn run<W: Write>(&self, w: &mut W) -> crossterm::Result<()> {
         titik::command::init(w);
-        let (t_width, t_height) = terminal::size()?;
-        let (width, height) = (t_width, t_height);
 
+        let mut focused_widget_idx: Option<usize> = None;
+        titik::command::reset_top(w);
+        //NOTE: Can not be done every draw loop, since the titik's widget/control will be
+        //reset, therefore we need to apply_patches to the titik root_node
         let vdom = self.app.borrow().view();
         let mut control = Self::from_node_tree(vdom);
-        control.set_size(Some(width as f32), Some(height as f32));
-        let mut focused_widget_idx: Option<usize> = None;
 
         loop {
-            titik::command::reset_top(w)?;
+            let (t_width, t_height) = terminal::size()?;
+            let (width, height) = (t_width, t_height);
+            control.set_size(Some(width as f32), Some(height as f32));
+
+            titik::command::move_top(w)?;
             let layout_tree = titik::compute_layout(
                 control.as_mut(),
                 Size {
@@ -81,8 +88,6 @@ where
                                     //  - CTRL-q
                                     //  - CTRL-d
                                     //  - CTRL-z
-                                    //
-
                                     match c {
                                         'c' | 'q' | 'd' | 'z' => {
                                             break;
@@ -109,8 +114,21 @@ where
 
                     Event::Mouse(MouseEvent::Down(btn, x, y, _modifier)) => {
                         if let Some(idx) = widget_node_idx_at(&layout_tree, x as f32, y as f32) {
+                            eprintln!("focused idx: {}", idx);
                             focused_widget_idx = Some(idx);
                             set_focused_node(control.as_mut(), idx);
+
+                            if let Some(focused_widget) = find_widget_mut(control.as_mut(), idx) {
+                                eprintln!("focused widget: {:?}", focused_widget);
+                                if let Some(btn) =
+                                    focused_widget.as_any_mut().downcast_mut::<Button<MSG>>()
+                                {
+                                    let msgs = btn.process_event(ev);
+                                    for msg in msgs.into_iter() {
+                                        self.app.borrow_mut().update(msg);
+                                    }
+                                }
+                            }
                         }
                     }
                     _ => (),
@@ -158,7 +176,19 @@ where
                     .map(|v| v.to_string())
                     .unwrap_or(String::new());
 
-                let btn = Button::new(&label);
+                let mut btn: Button<MSG> = Button::new(&label);
+                if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
+                    fn map_event_from_crossterm(
+                        event: crossterm::event::Event,
+                    ) -> sauron_vdom::Event {
+                        sauron_vdom::event::Event::MouseEvent(
+                            sauron_vdom::event::MouseEvent::click(1, 1),
+                        )
+                    }
+                    let cb = cb.clone();
+                    let cb2 = cb.reform(map_event_from_crossterm);
+                    btn.on_click = vec![cb2];
+                }
                 Box::new(btn)
             }
             Widget::Text(txt) => {
