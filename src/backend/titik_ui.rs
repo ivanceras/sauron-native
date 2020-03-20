@@ -5,6 +5,7 @@ use crate::{
     },
     AttribKey, Attribute, Backend, Component, Node,
 };
+use image::GenericImageView;
 use sauron_vdom::Dispatch;
 use std::{
     cell::RefCell,
@@ -28,7 +29,7 @@ use titik::{
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, Radio, TextInput,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, TextInput,
     Widget as Control,
 };
 
@@ -47,22 +48,35 @@ where
         self.run(&mut stderr);
     }
 
+    fn draw_buffer<W: Write>(
+        w: &mut W,
+        buf: &mut Buffer,
+        control: &titik::Widget<MSG>,
+        layout_tree: &LayoutTree,
+    ) -> crossterm::Result<()> {
+        let cmds = control.draw(buf, &layout_tree);
+        //write!(w, "{}", buf);
+        buf.render(w);
+        cmds.iter()
+            .for_each(|cmd| cmd.execute(w).expect("must execute"));
+        w.flush()?;
+        Ok(())
+    }
+
     fn run<W: Write>(&self, w: &mut W) -> crossterm::Result<()> {
         titik::command::init(w);
 
         let mut focused_widget_idx: Option<usize> = None;
-        titik::command::reset_top(w);
         //NOTE: Can not be done every draw loop, since the titik's widget/control will be
         //reset, therefore we need to apply_patches to the titik root_node
         let vdom = self.app.borrow().view();
         let mut control = Self::from_node_tree(vdom);
+        titik::command::reset_top(w);
 
         loop {
-            let (t_width, t_height) = terminal::size()?;
-            let (width, height) = (t_width, t_height);
-            control.set_size(Some(width as f32), Some(height as f32));
+            let (width, height) = terminal::size()?;
+            control.set_size(Some((width - 2) as f32), Some(height as f32));
 
-            titik::command::move_top(w)?;
             let layout_tree = titik::compute_layout(
                 control.as_mut(),
                 Size {
@@ -71,11 +85,9 @@ where
                 },
             );
             let mut buf = Buffer::new(width as usize, height as usize);
-            let cmds = control.draw(&mut buf, &layout_tree);
-            write!(w, "{}", buf);
-            cmds.iter()
-                .for_each(|cmd| cmd.execute(w).expect("must execute"));
-            w.flush()?;
+            titik::command::move_top(w)?;
+
+            Self::draw_buffer(w, &mut buf, &*control, &layout_tree)?;
 
             if let Ok(ev) = crossterm::event::read() {
                 match ev {
@@ -114,12 +126,10 @@ where
 
                     Event::Mouse(MouseEvent::Down(btn, x, y, _modifier)) => {
                         if let Some(idx) = widget_node_idx_at(&layout_tree, x as f32, y as f32) {
-                            eprintln!("focused idx: {}", idx);
                             focused_widget_idx = Some(idx);
                             set_focused_node(control.as_mut(), idx);
 
                             if let Some(focused_widget) = find_widget_mut(control.as_mut(), idx) {
-                                eprintln!("focused widget: {:?}", focused_widget);
                                 if let Some(btn) =
                                     focused_widget.as_any_mut().downcast_mut::<Button<MSG>>()
                                 {
@@ -139,7 +149,7 @@ where
         Ok(())
     }
 
-    fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget>
+    fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget<MSG>>
     where
         MSG: Debug + 'static,
     {
@@ -156,7 +166,7 @@ where
         }
     }
 
-    fn from_node(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> Box<dyn titik::Widget>
+    fn from_node(widget: Widget, attrs: &Vec<Attribute<MSG>>) -> Box<dyn titik::Widget<MSG>>
     where
         MSG: Debug + 'static,
     {
@@ -231,8 +241,12 @@ where
                 Box::new(rb)
             }
             Widget::Image(bytes) => {
+                let image = image::load_from_memory(&bytes).expect("should load");
+                let (width, height) = image.dimensions();
                 let mut img = Image::new(bytes);
-                img.set_size(Some(100.0), Some(50.0));
+                //TODO: get the image size, divide by 10
+                let (width, height) = image.dimensions();
+                img.set_size(Some(width as f32 / 10.0), Some(height as f32 / 10.0 / 2.0));
                 Box::new(img)
             }
         }
