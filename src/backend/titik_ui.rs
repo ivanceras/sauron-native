@@ -75,7 +75,7 @@ where
 
         loop {
             let (width, height) = terminal::size()?;
-            control.set_size(Some((width - 2) as f32), Some(height as f32));
+            control.set_size(Some(width as f32), Some(height as f32));
 
             let layout_tree = titik::compute_layout(
                 control.as_mut(),
