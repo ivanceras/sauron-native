@@ -28,7 +28,7 @@ impl App {
         App {
             click_count: count,
             #[cfg(feature = "with-titik")]
-            text: String::from("Press 'q' / CTRL-C to exit"),
+            text: String::from("Press CTRL-q / CTRL-c to exit"),
             #[cfg(not(feature = "with-titik"))]
             text: String::from("Some text"),
             events: vec![],
