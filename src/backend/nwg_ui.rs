@@ -142,28 +142,6 @@ impl fmt::Debug for NwgWidget {
 }
 
 impl NwgWidget {
-    /*
-    fn as_control_handle<C:Into<ControlHandle>>(&self) -> C {
-        match self {
-            NwgWidget::Box(w) => panic!("no control handle for box"),
-<<<<<<< HEAD
-            NwgWidget::Button(w) => w.into(),
-            NwgWidget::Text(w) => w.into(),
-            NwgWidget::TextInput(w) => w.into(),
-            NwgWidget::Checkbox(w) => w.into(),
-            NwgWidget::Radio(w) => w.into(),
-            NwgWidget::Image(w, _) => w.into(),
-=======
-            NwgWidget::Button(w) => w,
-            NwgWidget::Text(w) => w,
-            NwgWidget::TextInput(w) => w,
-            NwgWidget::Checkbox(w) => w,
-            NwgWidget::Radio(w) => w,
-            NwgWidget::Image(w, _) => w,
->>>>>>> Improvements of Flexboxlayout from nwg
-        }
-    }*/
-
     fn as_box(self) -> Option<FlexboxLayout> {
         match self {
             NwgWidget::Box(box_layout) => Some(box_layout),
@@ -226,44 +204,50 @@ impl NwgWidget {
                 for child in children.iter() {
                     match child {
                         NwgWidget::Box(child) => {
-                            
-                                },
+                            /*
+                            box_layout.add_child(child, Style{
+                                size: Size {
+                                    width: Dimension::Percent(1.0),
+                                    height: Dimension::Percent(1.0),
+                                }
+                            });*/
+                        }
                         NwgWidget::Button(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
-                                }
+                        }
                         NwgWidget::Text(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
-                                }
+                        }
                         NwgWidget::TextInput(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
-                                }
-                        NwgWidget::Checkbox(child) =>  {
+                        }
+                        NwgWidget::Checkbox(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
-                                }
-                        NwgWidget::Radio(child) =>  {
+                        }
+                        NwgWidget::Radio(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
-                                }
-                        NwgWidget::Image(child,_) =>  {
+                        }
+                        NwgWidget::Image(child, _) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(400.0),
                             });
-                                }
+                        }
                     }
                 }
 
@@ -272,7 +256,6 @@ impl NwgWidget {
                 NwgWidget::Box(box_layout)
             }
             Widget::Hbox => {
-                
                 println!("hbox..");
                 let mut box_layout = FlexboxLayout::default();
 
@@ -422,21 +405,18 @@ impl NwgWidget {
                     println!("child {}", i);
                     match child {
                         NwgWidget::Box(child) => (),
-<<<<<<< HEAD
                         NwgWidget::Button(child) => container.add_child(i as u32, child),
                         NwgWidget::Text(child) => container.add_child(i as u32, child),
                         NwgWidget::TextInput(child) => container.add_child(i as u32, child),
                         NwgWidget::Checkbox(child) => container.add_child(i as u32, child),
                         NwgWidget::Radio(child) => container.add_child(i as u32, child),
                         NwgWidget::Image(child, _) => container.add_child(i as u32, child),
-=======
                         NwgWidget::Button(child) => container.child(i as u32, child),
                         NwgWidget::Text(child) => container.child(i as u32, child),
                         NwgWidget::TextInput(child) => container.child(i as u32, child),
                         NwgWidget::Checkbox(child) => container.child(i as u32, child),
                         NwgWidget::Radio(child) => container.child(i as u32, child),
                         NwgWidget::Image(child,_) => container.child(i as u32, child),
->>>>>>> Improvements of Flexboxlayout from nwg
                     }
                     container.child_size(Size{width: Dimension::Percent(1.0), height: Dimension::Auto})
                 }
