@@ -11,8 +11,8 @@ use std::fmt;
 pub mod backend;
 mod component;
 mod program;
-pub mod widget;
 mod util;
+pub mod widget;
 
 pub use backend::Backend;
 pub use component::Component;

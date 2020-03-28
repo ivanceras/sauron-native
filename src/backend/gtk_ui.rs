@@ -1,24 +1,21 @@
-use crate::{Backend, Component, Widget};
+use crate::{
+    widget::attribute::{find_callback, find_value},
+    AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
+};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
-    EntryBuffer, Image, Orientation, RadioButton, StyleContext, TextBuffer, TextBufferExt,
-    TextTagTable, TextView, WidgetExt, Window, WindowPosition, WindowType,
+    EntryBuffer, Image, IsA, Label, Orientation, Paned, RadioButton, StyleContext, TextBuffer,
+    TextBufferExt, TextTagTable, TextView, WidgetExt, Window, WindowPosition, WindowType,
 };
-use std::{fmt::Debug, marker::PhantomData, rc::Rc};
-use crate::{
-    widget::attribute::{find_callback, find_value},
-    AttribKey, Attribute, Node, Patch,
-};
-use gtk::{IsA, Label, Paned};
+use image::ImageFormat;
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
     AttribValue, Dispatch,
 };
-use std::cell::RefCell;
-use image::ImageFormat;
+use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 mod apply_patches;
 
@@ -220,8 +217,7 @@ where
                 let image = Image::new();
                 //TODO: also deal with other formats
                 let mime = mime_type(&bytes).expect("unsupported have mime type");
-                let pixbuf_loader =
-                    PixbufLoader::new_with_mime_type(mime).expect("error loader");
+                let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
                 pixbuf_loader
                     .write(&bytes)
                     .expect("Unable to write svg data into pixbuf_loader");

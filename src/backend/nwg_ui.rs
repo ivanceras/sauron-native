@@ -395,14 +395,17 @@ impl NwgWidget {
                 NwgWidget::Image(image_frame, bitmap)
             }
             Widget::Svg(svg) => {
-                let rtree = resvg::usvg::Tree::from_str(&svg, &resvg::usvg::Options::default()).expect("must be parse into tree");
+                let rtree = resvg::usvg::Tree::from_str(&svg, &resvg::usvg::Options::default())
+                    .expect("must be parse into tree");
                 let svg_size = rtree.svg_node().size;
                 let (width, height) = (svg_size.width() as u32, svg_size.height() as u32);
                 let backend = resvg::default_backend();
-                let mut img = backend.render_to_image(&rtree, &resvg::Options::default()).expect("must render to image");
+                let mut img = backend
+                    .render_to_image(&rtree, &resvg::Options::default())
+                    .expect("must render to image");
                 //let (width, height) = (400, 400);
                 let rgba_vec = img.make_rgba_vec();
-                let rgba_raw:Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel| 
+                let rgba_raw: Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel| 
                     // make transparent pixel white
                     if pixel[3] == 0 {
                         vec![255,255,255]
@@ -413,13 +416,7 @@ impl NwgWidget {
 
                 let mut bytes: Vec<u8> = vec![];
 
-
-                BMPEncoder::new(&mut bytes).write_image(
-                    &rgba_raw,
-                    width,
-                    height,
-                    ColorType::Rgb8,
-                );
+                BMPEncoder::new(&mut bytes).write_image(&rgba_raw, width, height, ColorType::Rgb8);
 
                 let mut bitmap = Bitmap::default();
                 Bitmap::builder()

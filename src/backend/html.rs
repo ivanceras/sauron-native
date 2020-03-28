@@ -1,11 +1,12 @@
-use crate::{widget::attribute::find_value, AttribKey, Attribute, Backend, Component, Widget};
+use crate::{
+    util, widget::attribute::find_value, AttribKey, Attribute, Backend, Component, Widget,
+};
 use image::ImageFormat;
 use sauron::{
     html::{attributes::*, div, events::mapper, img, input, text},
     prelude::*,
     Component as SauronComponent, DomUpdater, Program,
 };
-use crate::util;
 use sauron_vdom::Callback;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 use wasm_bindgen::JsCast;
@@ -174,25 +175,19 @@ where
                 vec![],
             )
         }
-        Widget::Svg(svg) => {
-            img(
-                vec![
-                    styles([
-                        ("width", "100%"),
-                        ("height", "auto"),
-                        ("max-width", "800px"),
-                    ]),
-                    src(format!(
-                        "data:image/svg+xml;base64,{}",
-                        base64::encode(svg)
-                    )),
-                ],
-                vec![],
-            )
-        }
+        Widget::Svg(svg) => img(
+            vec![
+                styles([
+                    ("width", "100%"),
+                    ("height", "auto"),
+                    ("max-width", "800px"),
+                ]),
+                src(format!("data:image/svg+xml;base64,{}", base64::encode(svg))),
+            ],
+            vec![],
+        ),
     }
 }
-
 
 /// converts widget virtual node tree into an html node tree
 pub fn widget_tree_to_html_node<MSG>(widget_node: crate::Node<MSG>) -> sauron::Node<MSG>

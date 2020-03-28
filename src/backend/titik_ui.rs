@@ -5,9 +5,7 @@ use crate::{
     },
     AttribKey, Attribute, Backend, Component, Node,
 };
-use image::GenericImageView;
-use image::ImageBuffer;
-use image::RgbaImage;
+use image::{GenericImageView, ImageBuffer, RgbaImage};
 use sauron_vdom::Dispatch;
 use std::{
     cell::RefCell,
@@ -25,16 +23,14 @@ use titik::{
         event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent},
         terminal,
     },
-    find_layout,
-    find_widget_mut, set_focused_node,
+    find_layout, find_widget_mut, set_focused_node,
     stretch::{
         geometry::Size,
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, TextInput,
-    Widget as Control,
-    SvgImage,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
+    TextInput, Widget as Control,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -134,8 +130,7 @@ where
                             set_focused_node(control.as_mut(), idx);
 
                             let focused_layout =
-                                find_layout(&layout_tree, idx)
-                                    .expect("must have a layout tree");
+                                find_layout(&layout_tree, idx).expect("must have a layout tree");
 
                             if let Some(focused_widget) = find_widget_mut(control.as_mut(), idx) {
                                 if let Some(btn) =
@@ -257,9 +252,7 @@ where
                 img.set_size(Some(width as f32 / 10.0), Some(height as f32 / 10.0 / 2.0));
                 Box::new(img)
             }
-            Widget::Svg(svg) => {
-                Box::new(SvgImage::new(svg))
-            }
+            Widget::Svg(svg) => Box::new(SvgImage::new(svg)),
         }
     }
 }
