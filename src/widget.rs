@@ -18,12 +18,13 @@ pub enum Widget {
     Vbox,
     Hbox,
     Button,
-    Text(String),
+    Paragraph(String),
     TextInput,
     Checkbox,
     Radio,
-    Image(Vec<u8>),
-    Svg(String),
+    Image,
+    Svg,
+    TextArea,
 }
 
 pub fn widget<MSG>(
@@ -46,8 +47,8 @@ pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
     widget(Widget::Button, attrs, vec![])
 }
 
-pub fn text<MSG>(txt: &str) -> Node<MSG> {
-    widget(Widget::Text(txt.to_string()), vec![], vec![])
+pub fn paragraph<MSG>(txt: &str) -> Node<MSG> {
+    widget(Widget::Paragraph(txt.to_string()), vec![], vec![])
 }
 
 pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
@@ -62,10 +63,14 @@ pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
     widget(Widget::Radio, attrs, vec![])
 }
 
-pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
-    widget(Widget::Image(image), vec![], vec![])
+pub fn image<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Image, attrs, vec![])
 }
 
-pub fn svg<MSG>(svg: String) -> Node<MSG> {
-    widget(Widget::Svg(svg), vec![], vec![])
+pub fn svg<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Svg, attrs, vec![])
+}
+
+pub fn textarea<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::TextArea, attrs, vec![])
 }

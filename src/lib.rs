@@ -35,6 +35,8 @@ pub enum AttribKey {
     ClickEvent,
     InputEvent,
     Key,
+    /// data, used in image blobs and svg
+    Data,
 }
 
 impl fmt::Display for AttribKey {

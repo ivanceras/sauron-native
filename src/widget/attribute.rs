@@ -7,6 +7,11 @@ where
     attr(AttribKey::Value, v)
 }
 
+pub fn data<V, MSG>(v: V) -> Attribute<MSG>
+where V:Into<Value> {
+    attr(AttribKey::Data, v)
+}
+
 pub fn label<V, MSG>(v: V) -> Attribute<MSG>
 where
     V: Into<Value>,

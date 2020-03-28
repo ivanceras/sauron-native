@@ -31,6 +31,7 @@ use titik::{
     },
     widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
     TextInput, Widget as Control,
+    TextArea,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -204,7 +205,7 @@ where
                 }
                 Box::new(btn)
             }
-            Widget::Text(txt) => {
+            Widget::Paragraph(txt) => {
                 let input = TextInput::new(txt);
                 Box::new(input)
             }
@@ -243,16 +244,36 @@ where
                 rb.set_checked(value);
                 Box::new(rb)
             }
-            Widget::Image(bytes) => {
+            Widget::Image => {
+                let empty = vec![];
+                let bytes = find_value(AttribKey::Data, &attrs)
+                    .map(|v|v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
                 let image = image::load_from_memory(&bytes).expect("should load");
                 let (width, height) = image.dimensions();
-                let mut img = Image::new(bytes);
+                let mut img = Image::new(bytes.to_vec());
                 //TODO: get the image size, divide by 10
                 let (width, height) = image.dimensions();
                 img.set_size(Some(width as f32 / 10.0), Some(height as f32 / 10.0 / 2.0));
                 Box::new(img)
             }
-            Widget::Svg(svg) => Box::new(SvgImage::new(svg)),
+            Widget::Svg => {
+                let empty = vec![];
+                let bytes = find_value(AttribKey::Data, &attrs)
+                    .map(|v|v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
+                let svg = String::from_utf8(bytes.to_vec()).unwrap_or(String::new());
+                Box::new(SvgImage::new(svg))
+            }
+            Widget::TextArea => {
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+                let textarea = TextArea::new(value);
+                Box::new(textarea)
+            }
         }
     }
 }

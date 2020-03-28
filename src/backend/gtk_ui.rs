@@ -1,4 +1,5 @@
 use crate::{
+    util,
     widget::attribute::{find_callback, find_value},
     AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
 };
@@ -165,7 +166,12 @@ where
                 }
                 btn.into()
             }
-            Widget::Text(txt) => textview(&txt),
+            Widget::Paragraph(txt) => {
+                let buffer = TextBuffer::new(None::<&TextTagTable>);
+                let text_view = TextView::new_with_buffer(&buffer);
+                buffer.set_text(&txt);
+                GtkWidget::Paragraph(text_view)
+            }
             Widget::TextInput => {
                 let value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.to_string())
@@ -213,10 +219,14 @@ where
                 rb.set_property("active", &value);
                 GtkWidget::Radio(rb)
             }
-            Widget::Image(bytes) => {
+            Widget::Image => {
+                let empty = vec![];
+                let bytes = find_value(AttribKey::Data, &attrs)
+                    .map(|v| v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
                 let image = Image::new();
-                //TODO: also deal with other formats
-                let mime = mime_type(&bytes).expect("unsupported have mime type");
+                let mime = util::image_mime_type(&bytes).expect("unsupported have mime type");
                 let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
                 pixbuf_loader
                     .write(&bytes)
@@ -229,12 +239,17 @@ where
                 image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
                 GtkWidget::Image(image)
             }
-            Widget::Svg(svg) => {
+            Widget::Svg => {
+                let empty = vec![];
+                let bytes = find_value(AttribKey::Data, &attrs)
+                    .map(|v| v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
                 let image = Image::new();
                 let pixbuf_loader =
                     PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
                 pixbuf_loader
-                    .write(svg.as_bytes())
+                    .write(bytes)
                     .expect("Unable to write svg data into pixbuf_loader");
 
                 pixbuf_loader.close().expect("error creating pixbuf");
@@ -243,6 +258,16 @@ where
 
                 image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
                 GtkWidget::Image(image)
+            }
+            Widget::TextArea => {
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let buffer = TextBuffer::new(None::<&TextTagTable>);
+                buffer.set_text(&value);
+                let text_view = TextView::new_with_buffer(&buffer);
+                GtkWidget::TextView(text_view)
             }
         }
     }
@@ -273,11 +298,12 @@ where
 enum GtkWidget {
     GBox(gtk::Box),
     Button(Button),
-    Text(TextView),
+    Paragraph(TextView),
     TextInput(Entry),
     Checkbox(CheckButton),
     Radio(RadioButton),
     Image(Image),
+    TextView(TextView),
 }
 impl GtkWidget {
     fn as_container(&self) -> Option<&Container> {
@@ -300,7 +326,7 @@ impl GtkWidget {
                 let widget: &gtk::Widget = cbox.upcast_ref();
                 Some(widget)
             }
-            GtkWidget::Text(text_view) => {
+            GtkWidget::Paragraph(text_view) => {
                 let widget: &gtk::Widget = text_view.upcast_ref();
                 Some(widget)
             }
@@ -318,6 +344,10 @@ impl GtkWidget {
             }
             GtkWidget::Image(image) => {
                 let widget: &gtk::Widget = image.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::TextView(text_view) => {
+                let widget: &gtk::Widget = text_view.upcast_ref();
                 Some(widget)
             }
         }
@@ -343,11 +373,4 @@ impl From<gtk::Box> for GtkWidget {
     fn from(gbox: gtk::Box) -> Self {
         GtkWidget::GBox(gbox)
     }
-}
-
-fn textview(txt: &str) -> GtkWidget {
-    let buffer = TextBuffer::new(None::<&TextTagTable>);
-    let text_view = TextView::new_with_buffer(&buffer);
-    buffer.set_text(txt);
-    GtkWidget::Text(text_view)
 }

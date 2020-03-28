@@ -55,7 +55,7 @@ impl Component<Msg> for App {
                 column(
                     vec![],
                     vec![
-                        text(&self.debug.join("\n")),
+                        paragraph(&self.debug.join("\n")),
                         button(vec![on_click(|_| Msg::Decrement), label(&self.text)]),
                     ],
                 ),
@@ -88,9 +88,15 @@ impl Component<Msg> for App {
                         }
                     }),
                 ]),
-                image(include_bytes!("../horse.jpg").to_vec()),
-                svg(include_str!("../tiger.svg").to_string()),
-                text("This is a paragraph"),
+                row(vec![], vec![
+                    image(vec![data(include_bytes!("../horse.jpg").to_vec())]),
+                    svg(vec![data(include_bytes!("../tiger.svg").to_vec())]),
+                ]),
+                textarea(vec![value(
+                    "This is a paragraph\n\
+                    This is a paragraph line 1\n\
+                    This is a paragraph line 2\n\
+                        ")]),
             ],
         )
     }
