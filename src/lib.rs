@@ -12,6 +12,7 @@ pub mod backend;
 mod component;
 mod program;
 pub mod widget;
+mod util;
 
 pub use backend::Backend;
 pub use component::Component;

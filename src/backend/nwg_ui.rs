@@ -395,15 +395,11 @@ impl NwgWidget {
                 NwgWidget::Image(image_frame, bitmap)
             }
             Widget::Svg(svg) => {
-                let opt = resvg::Options::default();
-                let usvg_opt = resvg::usvg::Options::default();
-                let rtree = resvg::usvg::Tree::from_str(&svg, &usvg_opt).expect("must be parse into tree");
-                println!("rtree: {:#?}", rtree.svg_node());
+                let rtree = resvg::usvg::Tree::from_str(&svg, &resvg::usvg::Options::default()).expect("must be parse into tree");
                 let svg_size = rtree.svg_node().size;
-                //TODO: get the size when width and height is not defined
                 let (width, height) = (svg_size.width() as u32, svg_size.height() as u32);
                 let backend = resvg::default_backend();
-                let mut img = backend.render_to_image(&rtree, &opt).expect("must render to image");
+                let mut img = backend.render_to_image(&rtree, &resvg::Options::default()).expect("must render to image");
                 //let (width, height) = (400, 400);
                 let rgba_vec = img.make_rgba_vec();
                 let rgba_raw:Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel| 

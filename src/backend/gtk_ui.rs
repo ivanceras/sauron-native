@@ -8,7 +8,6 @@ use gtk::{
     TextTagTable, TextView, WidgetExt, Window, WindowPosition, WindowType,
 };
 use std::{fmt::Debug, marker::PhantomData, rc::Rc};
-
 use crate::{
     widget::attribute::{find_callback, find_value},
     AttribKey, Attribute, Node, Patch,
@@ -19,6 +18,7 @@ use sauron_vdom::{
     AttribValue, Dispatch,
 };
 use std::cell::RefCell;
+use image::ImageFormat;
 
 mod apply_patches;
 
@@ -219,10 +219,26 @@ where
             Widget::Image(bytes) => {
                 let image = Image::new();
                 //TODO: also deal with other formats
+                let mime = mime_type(&bytes).expect("unsupported have mime type");
                 let pixbuf_loader =
-                    PixbufLoader::new_with_mime_type("image/jpeg").expect("error loader");
+                    PixbufLoader::new_with_mime_type(mime).expect("error loader");
                 pixbuf_loader
                     .write(&bytes)
+                    .expect("Unable to write svg data into pixbuf_loader");
+
+                pixbuf_loader.close().expect("error creating pixbuf");
+
+                let pixbuf = pixbuf_loader.get_pixbuf();
+
+                image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+                GtkWidget::Image(image)
+            }
+            Widget::Svg(svg) => {
+                let image = Image::new();
+                let pixbuf_loader =
+                    PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
+                pixbuf_loader
+                    .write(svg.as_bytes())
                     .expect("Unable to write svg data into pixbuf_loader");
 
                 pixbuf_loader.close().expect("error creating pixbuf");

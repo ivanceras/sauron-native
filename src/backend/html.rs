@@ -5,6 +5,7 @@ use sauron::{
     prelude::*,
     Component as SauronComponent, DomUpdater, Program,
 };
+use crate::util;
 use sauron_vdom::Callback;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 use wasm_bindgen::JsCast;
@@ -156,11 +157,7 @@ where
             )
         }
         Widget::Image(image) => {
-            let mime_type = if let Some(mime) = image_mime(&image) {
-                mime
-            } else {
-                "image/jpeg".to_string()
-            };
+            let mime_type = util::image_mime_type(&image).expect("unsupported image");
             img(
                 vec![
                     styles([
@@ -177,20 +174,25 @@ where
                 vec![],
             )
         }
+        Widget::Svg(svg) => {
+            img(
+                vec![
+                    styles([
+                        ("width", "100%"),
+                        ("height", "auto"),
+                        ("max-width", "800px"),
+                    ]),
+                    src(format!(
+                        "data:image/svg+xml;base64,{}",
+                        base64::encode(svg)
+                    )),
+                ],
+                vec![],
+            )
+        }
     }
 }
 
-fn image_mime(bytes: &[u8]) -> Option<String> {
-    if let Some(format) = image::guess_format(&bytes).ok() {
-        match format {
-            ImageFormat::Png => Some("image/png".to_string()),
-            ImageFormat::Jpeg => Some("image/jpeg".to_string()),
-            _ => None,
-        }
-    } else {
-        None
-    }
-}
 
 /// converts widget virtual node tree into an html node tree
 pub fn widget_tree_to_html_node<MSG>(widget_node: crate::Node<MSG>) -> sauron::Node<MSG>
