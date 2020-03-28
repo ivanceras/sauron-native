@@ -125,6 +125,7 @@ enum NwgWidget {
     Checkbox(CheckBox),
     Radio(RadioButton),
     Image(ImageFrame, Bitmap),
+    Svg(ImageFrame),
 }
 
 impl fmt::Debug for NwgWidget {
@@ -137,6 +138,7 @@ impl fmt::Debug for NwgWidget {
             NwgWidget::Checkbox(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Radio(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Image(w, _) => write!(f, "{}", w.class_name()),
+            NwgWidget::Svg(s) => write!(f, "svg"),
         }
     }
 }
@@ -248,6 +250,7 @@ impl NwgWidget {
                                 height: Dimension::Points(400.0),
                             });
                         }
+                        NwgWidget::Svg(_) => (),
                     }
                 }
 
@@ -365,7 +368,6 @@ impl NwgWidget {
                 NwgWidget::Radio(radio)
             }
             Widget::Image(blob) => {
-                let mut bitmap = Bitmap::default();
                 let img = image::load_from_memory(&blob).expect("should load");
                 let (width, height) = img.dimensions();
                 let mut bytes: Vec<u8> = vec![];
@@ -377,13 +379,60 @@ impl NwgWidget {
                     ColorType::Rgb8,
                 );
 
+                let mut bitmap = Bitmap::default();
                 Bitmap::builder()
                     .source_bin(Some(&bytes))
                     .build(&mut bitmap);
 
                 let mut image_frame = ImageFrame::default();
                 ImageFrame::builder()
-                    .size((400, 200))
+                    .size((width as i32, height as i32))
+                    .bitmap(Some(&bitmap))
+                    .parent(window)
+                    .build(&mut image_frame)
+                    .expect("must build image_frame");
+
+                NwgWidget::Image(image_frame, bitmap)
+            }
+            Widget::Svg(svg) => {
+                let opt = resvg::Options::default();
+                let usvg_opt = resvg::usvg::Options::default();
+                let rtree = resvg::usvg::Tree::from_str(&svg, &usvg_opt).expect("must be parse into tree");
+                println!("rtree: {:#?}", rtree.svg_node());
+                let svg_size = rtree.svg_node().size;
+                //TODO: get the size when width and height is not defined
+                let (width, height) = (svg_size.width() as u32, svg_size.height() as u32);
+                let backend = resvg::default_backend();
+                let mut img = backend.render_to_image(&rtree, &opt).expect("must render to image");
+                //let (width, height) = (400, 400);
+                let rgba_vec = img.make_rgba_vec();
+                let rgba_raw:Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel| 
+                    // make transparent pixel white
+                    if pixel[3] == 0 {
+                        vec![255,255,255]
+                    }else{
+                        vec![pixel[0], pixel[1], pixel[2]]
+                    }
+                 ).collect();
+
+                let mut bytes: Vec<u8> = vec![];
+
+
+                BMPEncoder::new(&mut bytes).write_image(
+                    &rgba_raw,
+                    width,
+                    height,
+                    ColorType::Rgb8,
+                );
+
+                let mut bitmap = Bitmap::default();
+                Bitmap::builder()
+                    .source_bin(Some(&bytes))
+                    .build(&mut bitmap);
+
+                let mut image_frame = ImageFrame::default();
+                ImageFrame::builder()
+                    .size((width as i32, height as i32))
                     .bitmap(Some(&bitmap))
                     .parent(window)
                     .build(&mut image_frame)

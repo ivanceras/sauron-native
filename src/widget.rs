@@ -23,6 +23,7 @@ pub enum Widget {
     Checkbox,
     Radio,
     Image(Vec<u8>),
+    Svg(String),
 }
 
 pub fn widget<MSG>(
@@ -63,4 +64,8 @@ pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 
 pub fn image<MSG>(image: Vec<u8>) -> Node<MSG> {
     widget(Widget::Image(image), vec![], vec![])
+}
+
+pub fn svg<MSG>(svg: String) -> Node<MSG> {
+    widget(Widget::Svg(svg), vec![], vec![])
 }

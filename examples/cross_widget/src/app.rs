@@ -89,6 +89,7 @@ impl Component<Msg> for App {
                     }),
                 ]),
                 image(include_bytes!("../horse.jpg").to_vec()),
+                svg(include_str!("../tiger.svg").to_string()),
                 text("This is a paragraph"),
             ],
         )
