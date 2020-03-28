@@ -403,7 +403,6 @@ impl NwgWidget {
                 let mut img = backend
                     .render_to_image(&rtree, &resvg::Options::default())
                     .expect("must render to image");
-                //let (width, height) = (400, 400);
                 let rgba_vec = img.make_rgba_vec();
                 let rgba_raw: Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel|
                     // make transparent pixel white
