@@ -125,7 +125,6 @@ enum NwgWidget {
     Checkbox(CheckBox),
     Radio(RadioButton),
     Image(ImageFrame, Bitmap),
-    Svg(ImageFrame),
 }
 
 impl fmt::Debug for NwgWidget {
@@ -138,7 +137,6 @@ impl fmt::Debug for NwgWidget {
             NwgWidget::Checkbox(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Radio(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Image(w, _) => write!(f, "{}", w.class_name()),
-            NwgWidget::Svg(s) => write!(f, "svg"),
         }
     }
 }
@@ -217,7 +215,7 @@ impl NwgWidget {
                         NwgWidget::Button(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::Text(child) => {
@@ -250,7 +248,6 @@ impl NwgWidget {
                                 height: Dimension::Points(400.0),
                             });
                         }
-                        NwgWidget::Svg(_) => (),
                     }
                 }
 
