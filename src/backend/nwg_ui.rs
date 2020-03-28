@@ -405,7 +405,7 @@ impl NwgWidget {
                     .expect("must render to image");
                 //let (width, height) = (400, 400);
                 let rgba_vec = img.make_rgba_vec();
-                let rgba_raw: Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel| 
+                let rgba_raw: Vec<u8> = rgba_vec.chunks(4).flat_map(|pixel|
                     // make transparent pixel white
                     if pixel[3] == 0 {
                         vec![255,255,255]
