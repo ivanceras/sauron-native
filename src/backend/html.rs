@@ -106,7 +106,12 @@ where
                 .collect();
             input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
         }
-        Widget::Paragraph(txt) => p(vec![], vec![text(txt)]),
+        Widget::Paragraph => {
+            let txt_value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            p(vec![], vec![text(txt_value)])
+        }
         Widget::TextInput => {
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
