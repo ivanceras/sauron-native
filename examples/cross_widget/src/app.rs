@@ -14,6 +14,7 @@ pub struct App {
     text: String,
     events: Vec<String>,
     debug: Vec<String>,
+    paragraph_text: String,
 }
 
 #[derive(Debug, Clone)]
@@ -21,6 +22,7 @@ pub enum Msg {
     Click,
     ChangeText(String),
     Decrement,
+    ParagraphChanged(String),
 }
 
 impl App {
@@ -33,6 +35,7 @@ impl App {
             text: String::from("Some text"),
             events: vec![],
             debug: vec![],
+            paragraph_text: String::from("paragraph text"),
         }
     }
 }
@@ -44,6 +47,9 @@ impl Component<Msg> for App {
             Msg::Decrement => self.click_count -= 1,
             Msg::ChangeText(txt) => {
                 self.text = txt;
+            }
+            Msg::ParagraphChanged(txt) => {
+                self.paragraph_text = txt;
             }
         }
     }
@@ -88,19 +94,34 @@ impl Component<Msg> for App {
                         }
                     }),
                 ]),
-                row(vec![], vec![
-                    image(vec![data(include_bytes!("../horse.jpg").to_vec())]),
-                    svg(vec![data(include_bytes!("../tiger.svg").to_vec())]),
-                ]),
-                textarea(vec![value(
-                    "This is a paragraph\n\
+                row(
+                    vec![],
+                    vec![
+                        image(vec![data(include_bytes!("../horse.jpg").to_vec())]),
+                        svg(vec![data(include_bytes!("../tiger.svg").to_vec())]),
+                    ],
+                ),
+                textarea(vec![
+                    value(
+                        "This is a paragraph\n\
                     This is a paragraph line 1\n\
                     This is a paragraph line 2\n\
                     This is a paragraph line 3\n\
                     This is a paragraph line 4\n\
                     This is a paragraph line 5\n\
                     This is a paragraph line 6\n\
-                        "), height(7.0)]),
+                        ",
+                    ),
+                    on_input(|event: Event| match event {
+                        Event::InputEvent(input) => Msg::ParagraphChanged(input.value),
+                        _ => {
+                            trace!("This is unexpected: {:#?}", event);
+                            panic!();
+                        }
+                    }),
+                    height(7.0),
+                ]),
+                textarea(vec![value(&self.paragraph_text)]),
             ],
         )
     }

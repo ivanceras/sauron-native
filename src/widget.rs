@@ -18,7 +18,7 @@ pub enum Widget {
     Vbox,
     Hbox,
     Button,
-    Paragraph(String),
+    Paragraph,
     TextInput,
     Checkbox,
     Radio,
@@ -48,7 +48,7 @@ pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 }
 
 pub fn paragraph<MSG>(txt: &str) -> Node<MSG> {
-    widget(Widget::Paragraph(txt.to_string()), vec![], vec![])
+    widget(Widget::Paragraph, vec![attribute::value(txt.to_string())], vec![])
 }
 
 pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {

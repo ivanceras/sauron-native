@@ -176,10 +176,16 @@ where
             }
             btn.into()
         }
-        Widget::Paragraph(txt) => {
+        Widget::Paragraph => {
             let buffer = TextBuffer::new(None::<&TextTagTable>);
             let text_view = TextView::new_with_buffer(&buffer);
+
+            let txt = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
             buffer.set_text(&txt);
+
             GtkWidget::Paragraph(text_view)
         }
         Widget::TextInput => {
@@ -276,6 +282,22 @@ where
 
             let buffer = TextBuffer::new(None::<&TextTagTable>);
             buffer.set_text(&value);
+
+            if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
+                println!("textarea has a callback..");
+                let cb_clone = cb.clone();
+                let program_clone = Rc::clone(&program);
+                buffer.connect_changed(move |buffer| {
+                    let buffer_text = buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
+                    if let Some(buffer_text) = buffer_text{
+                        let input_event = InputEvent::new(buffer_text.to_string());
+                        let msg = cb_clone.emit(input_event);
+                        println!("got msg: {:?}", msg);
+                        program_clone.dispatch(msg);
+                    }
+                });
+            }
+
             let text_view = TextView::new_with_buffer(&buffer);
             GtkWidget::TextView(text_view)
         }
@@ -367,6 +389,8 @@ impl GtkWidget {
             for child in children {
                 if let Some(child_widget) = child.as_widget() {
                     container.add(child_widget);
+                }else{
+                    println!("was not able to add child widget: {:?}", child.as_widget());
                 }
             }
         }
