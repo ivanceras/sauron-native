@@ -96,7 +96,11 @@ impl Component<Msg> for App {
                     "This is a paragraph\n\
                     This is a paragraph line 1\n\
                     This is a paragraph line 2\n\
-                        ")]),
+                    This is a paragraph line 3\n\
+                    This is a paragraph line 4\n\
+                    This is a paragraph line 5\n\
+                    This is a paragraph line 6\n\
+                        "), height(7.0)]),
             ],
         )
     }

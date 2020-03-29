@@ -32,6 +32,7 @@ use titik::{
     widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
     TextInput, Widget as Control,
     TextArea,
+    Renderer,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -45,113 +46,13 @@ where
     MSG: Debug + 'static,
 {
     fn start_draw_loop(&self) {
-        let mut stderr = io::stdout();
-        self.run(&mut stderr);
-    }
-
-    fn draw_buffer<W: Write>(
-        w: &mut W,
-        buf: &mut Buffer,
-        control: &titik::Widget<MSG>,
-        layout_tree: &LayoutTree,
-    ) -> crossterm::Result<()> {
-        let cmds = control.draw(buf, &layout_tree);
-        //write!(w, "{}", buf);
-        buf.render(w);
-        cmds.iter()
-            .for_each(|cmd| cmd.execute(w).expect("must execute"));
-        w.flush()?;
-        Ok(())
-    }
-
-    fn run<W: Write>(&self, w: &mut W) -> crossterm::Result<()> {
-        titik::command::init(w);
-
-        let mut focused_widget_idx: Option<usize> = None;
-        //NOTE: Can not be done every draw loop, since the titik's widget/control will be
-        //reset, therefore we need to apply_patches to the titik root_node
+        let mut stdout = io::stdout();
         let vdom = self.app.borrow().view();
-        let mut control = Self::from_node_tree(vdom);
-        titik::command::reset_top(w);
-
-        loop {
-            let (width, height) = terminal::size()?;
-            control.set_size(Some(width as f32), Some(height as f32));
-
-            let layout_tree = titik::compute_layout(
-                control.as_mut(),
-                Size {
-                    width: Number::Defined(width as f32),
-                    height: Number::Defined(height as f32),
-                },
-            );
-            let mut buf = Buffer::new(width as usize, height as usize);
-            titik::command::move_top(w)?;
-
-            Self::draw_buffer(w, &mut buf, &*control, &layout_tree)?;
-
-            if let Ok(ev) = crossterm::event::read() {
-                match ev {
-                    Event::Key(key_event @ KeyEvent { code, modifiers }) => {
-                        if modifiers.contains(KeyModifiers::CONTROL) {
-                            match code {
-                                KeyCode::Char(c) => {
-                                    // To quite, press any of the following:
-                                    //  - CTRL-c
-                                    //  - CTRL-q
-                                    //  - CTRL-d
-                                    //  - CTRL-z
-                                    match c {
-                                        'c' | 'q' | 'd' | 'z' => {
-                                            break;
-                                        }
-                                        _ => (),
-                                    }
-                                }
-                                _ => (),
-                            }
-                        } else {
-                            if let Some(idx) = focused_widget_idx.as_ref() {
-                                if let Some(focused_widget) =
-                                    find_widget_mut(control.as_mut(), *idx)
-                                {
-                                    if let Some(txt_input1) =
-                                        focused_widget.as_any_mut().downcast_mut::<TextInput>()
-                                    {
-                                        txt_input1.process_key(key_event);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Event::Mouse(MouseEvent::Down(btn, x, y, _modifier)) => {
-                        if let Some(idx) = widget_node_idx_at(&layout_tree, x as f32, y as f32) {
-                            focused_widget_idx = Some(idx);
-                            set_focused_node(control.as_mut(), idx);
-
-                            let focused_layout =
-                                find_layout(&layout_tree, idx).expect("must have a layout tree");
-
-                            if let Some(focused_widget) = find_widget_mut(control.as_mut(), idx) {
-                                if let Some(btn) =
-                                    focused_widget.as_any_mut().downcast_mut::<Button<MSG>>()
-                                {
-                                    let msgs = btn.process_event(ev, &focused_layout.layout);
-                                    for msg in msgs.into_iter() {
-                                        self.app.borrow_mut().update(msg);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    _ => (),
-                }
-            }
-        }
-        titik::command::finalize(w);
-        Ok(())
+        let root_node = Self::from_node_tree(vdom);
+        let mut renderer = Renderer::new(&mut stdout, root_node);
+        renderer.run();
     }
+
 
     fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget<MSG>>
     where
