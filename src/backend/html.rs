@@ -46,9 +46,9 @@ where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn update(&mut self, msg: MSG) -> sauron_vdom::Cmd<sauron::Program<Self, MSG>, MSG> {
+    fn update(&mut self, msg: MSG) -> sauron::dom::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
         self.app.update(msg);
-        sauron_vdom::Cmd::none()
+        sauron::dom::cmd::Cmd::none()
     }
 
     fn view(&self) -> sauron::Node<MSG> {
@@ -106,7 +106,7 @@ where
                 .collect();
             input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
         }
-        Widget::Text(txt) => label(vec![], vec![text(txt)]),
+        Widget::Paragraph(txt) => p(vec![], vec![text(txt)]),
         Widget::TextInput => {
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
@@ -121,6 +121,21 @@ where
                 })
                 .collect();
             input(vec![r#type("text"), value(txt_value)], vec![]).add_attributes(attributes)
+        }
+        Widget::TextArea => {
+            let txt_value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            let attributes = attrs
+                .into_iter()
+                .filter_map(|att| match att.name {
+                    AttribKey::InputEvent => {
+                        att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
+                    }
+                    _ => None,
+                })
+                .collect();
+            textarea(vec![value(&txt_value)], vec![text(txt_value)]).add_attributes(attributes)
         }
         Widget::Checkbox => {
             let cb_label = find_value(AttribKey::Label, &attrs)
@@ -157,8 +172,14 @@ where
                 ],
             )
         }
-        Widget::Image(image) => {
-            let mime_type = util::image_mime_type(&image).expect("unsupported image");
+        Widget::Image => {
+            let empty = vec![];
+            let bytes = find_value(AttribKey::Data, &attrs)
+                .map(|v| v.as_bytes())
+                .flatten()
+                .unwrap_or(&empty);
+
+            let mime_type = util::image_mime_type(bytes).expect("unsupported image");
             img(
                 vec![
                     styles([
@@ -169,23 +190,33 @@ where
                     src(format!(
                         "data:{};base64,{}",
                         mime_type,
-                        base64::encode(image)
+                        base64::encode(bytes)
                     )),
                 ],
                 vec![],
             )
         }
-        Widget::Svg(svg) => img(
-            vec![
-                styles([
-                    ("width", "100%"),
-                    ("height", "auto"),
-                    ("max-width", "800px"),
-                ]),
-                src(format!("data:image/svg+xml;base64,{}", base64::encode(svg))),
-            ],
-            vec![],
-        ),
+        Widget::Svg => {
+            let empty = vec![];
+            let bytes = find_value(AttribKey::Data, &attrs)
+                .map(|v| v.as_bytes())
+                .flatten()
+                .unwrap_or(&empty);
+            img(
+                vec![
+                    styles([
+                        ("width", "100%"),
+                        ("height", "auto"),
+                        ("max-width", "800px"),
+                    ]),
+                    src(format!(
+                        "data:image/svg+xml;base64,{}",
+                        base64::encode(bytes)
+                    )),
+                ],
+                vec![],
+            )
+        }
     }
 }
 

@@ -6,7 +6,7 @@ use crate::{
     AttribKey, Attribute, Backend, Component, Node,
 };
 use image::{GenericImageView, ImageBuffer, RgbaImage};
-use sauron_vdom::Dispatch;
+use titik::Dispatch;
 use std::{
     cell::RefCell,
     fmt::Debug,
@@ -49,7 +49,7 @@ where
         let mut stdout = io::stdout();
         let vdom = self.app.borrow().view();
         let root_node = Self::from_node_tree(vdom);
-        let mut renderer = Renderer::new(&mut stdout, root_node);
+        let mut renderer = Renderer::new(&mut stdout, Some(self), root_node);
         renderer.run();
     }
 
@@ -200,5 +200,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(self: &Rc<Self>, msg: MSG) {}
+    fn dispatch(&self, msg: MSG) {
+        println!("dispatching..");
+    }
 }

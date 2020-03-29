@@ -5,10 +5,13 @@ use std::{
     fmt::Debug,
     rc::Rc,
 };
+use super::GtkBackend;
+use super::Dispatch;
 
-pub fn apply_patches<MSG>(container: &Container, patches: &Vec<Patch<MSG>>)
+pub fn apply_patches<MSG,DSP>(program: &Rc<DSP>, container: &Container, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
+    DSP: Dispatch<MSG> + 'static
 {
     let nodes_to_patch = find_nodes(container, patches);
 
@@ -29,15 +32,18 @@ where
                             }
                         }
                     }
+                    //TODO: set the value for checkbox
                 }
             }
             Patch::AppendChildren(_node_idx, nodes) => {
                 if let Some(container) = widget.downcast_ref::<Container>() {
-                    //TODO: instantiate the actual node, instead of just buttons
                     for node in nodes {
-                        let btn = Button::new_with_label("btn here..");
-                        container.add(&btn);
-                        btn.show();
+                        if let Some(element) = node.as_element_ref(){
+                            let child = super::from_node(program, &element.tag, &node.get_attributes());
+                            let widget = child.as_widget().expect("must be a widget");
+                            container.add(widget);
+                            widget.show();
+                        }
                     }
                 }
             }

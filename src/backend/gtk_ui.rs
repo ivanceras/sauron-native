@@ -14,11 +14,20 @@ use gtk::{
 use image::ImageFormat;
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
-    AttribValue, Dispatch,
+    AttribValue,
 };
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 mod apply_patches;
+
+/// This trait is used in the DomUpdater to call the dispatch
+/// method when an event occured
+///
+/// The Program will implement Dispatch instead of sending it to the
+/// DomUpdater, this will simplify the amount of generics being defined.
+pub trait Dispatch<MSG> {
+    fn dispatch(self: &Rc<Self>, msg: MSG);
+}
 
 pub struct GtkBackend<APP, MSG>
 where
@@ -57,7 +66,7 @@ where
         rc_backend
     }
 
-    fn root_container(self: &Rc<Self>) -> Rc<Container> {
+    fn root_container(&self) -> Rc<Container> {
         let root_widget = self.root_node.borrow();
         if let Some(root_widget) = &*root_widget {
             match &root_widget {
@@ -83,7 +92,7 @@ where
             let current_vdom = self.current_vdom.borrow();
             let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
             //println!("diff: {:#?}", diff);
-            apply_patches::apply_patches(&self.root_container(), &diff);
+            apply_patches::apply_patches(self, &self.root_container(), &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
     }
@@ -125,7 +134,7 @@ where
     {
         match widget_node {
             crate::Node::Element(element) => {
-                let mut gtk_widget = Self::from_node(program, element.tag, &element.attrs);
+                let mut gtk_widget = from_node(program, &element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
                     let gtk_child = Self::from_node_tree(program, child);
@@ -137,138 +146,138 @@ where
             crate::Node::Text(txt) => Button::new_with_label(&txt.text).into(),
         }
     }
+}
 
-    fn from_node<DSP>(program: &Rc<DSP>, widget: Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
-    where
-        MSG: Debug + 'static,
-        DSP: Dispatch<MSG> + 'static,
-    {
-        match widget {
-            Widget::Vbox => {
-                let vbox = gtk::Box::new(Orientation::Vertical, 0);
-                vbox.into()
+pub(crate) fn from_node<MSG,DSP>(program: &Rc<DSP>, widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
+where
+    MSG: Debug + 'static,
+    DSP: Dispatch<MSG> + 'static,
+{
+    match widget {
+        Widget::Vbox => {
+            let vbox = gtk::Box::new(Orientation::Vertical, 0);
+            vbox.into()
+        }
+        Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
+        Widget::Button => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let btn = Button::new_with_label(&label);
+            if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
+                let cb_clone = cb.clone();
+                let program_clone = Rc::clone(&program);
+                btn.connect_clicked(move |_| {
+                    let mouse_event = MouseEvent::default();
+                    let msg = cb_clone.emit(mouse_event);
+                    program_clone.dispatch(msg);
+                });
             }
-            Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
-            Widget::Button => {
-                let label = find_value(AttribKey::Label, &attrs)
-                    .map(|v| v.to_string())
-                    .unwrap_or(String::new());
+            btn.into()
+        }
+        Widget::Paragraph(txt) => {
+            let buffer = TextBuffer::new(None::<&TextTagTable>);
+            let text_view = TextView::new_with_buffer(&buffer);
+            buffer.set_text(&txt);
+            GtkWidget::Paragraph(text_view)
+        }
+        Widget::TextInput => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
 
-                let btn = Button::new_with_label(&label);
-                if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
-                    let cb_clone = cb.clone();
-                    let program_clone = Rc::clone(&program);
-                    btn.connect_clicked(move |_| {
-                        let mouse_event = MouseEvent::default();
-                        let msg = cb_clone.emit(mouse_event);
-                        program_clone.dispatch(msg);
-                    });
-                }
-                btn.into()
+            let buffer = EntryBuffer::new(Some(&*value));
+            let entry = Entry::new_with_buffer(&buffer);
+
+            if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
+                let cb_clone = cb.clone();
+                let program_clone = Rc::clone(&program);
+                entry.connect_property_text_notify(move |entry| {
+                    let input_event = InputEvent::new(entry.get_buffer().get_text());
+                    let msg = cb_clone.emit(input_event);
+                    println!("got msg: {:?}", msg);
+                    program_clone.dispatch(msg);
+                });
             }
-            Widget::Paragraph(txt) => {
-                let buffer = TextBuffer::new(None::<&TextTagTable>);
-                let text_view = TextView::new_with_buffer(&buffer);
-                buffer.set_text(&txt);
-                GtkWidget::Paragraph(text_view)
-            }
-            Widget::TextInput => {
-                let value = find_value(AttribKey::Value, &attrs)
-                    .map(|v| v.to_string())
-                    .unwrap_or(String::new());
+            GtkWidget::TextInput(entry)
+        }
+        Widget::Checkbox => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
 
-                let buffer = EntryBuffer::new(Some(&*value));
-                let entry = Entry::new_with_buffer(&buffer);
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
 
-                if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
-                    let cb_clone = cb.clone();
-                    let program_clone = Rc::clone(&program);
-                    entry.connect_property_text_notify(move |entry| {
-                        let input_event = InputEvent::new(entry.get_buffer().get_text());
-                        let msg = cb_clone.emit(input_event);
-                        println!("got msg: {:?}", msg);
-                        program_clone.dispatch(msg);
-                    });
-                }
-                GtkWidget::TextInput(entry)
-            }
-            Widget::Checkbox => {
-                let label = find_value(AttribKey::Label, &attrs)
-                    .map(|v| v.to_string())
-                    .unwrap_or(String::new());
+            let cb = CheckButton::new_with_label(&label);
+            cb.set_property("active", &value);
+            GtkWidget::Checkbox(cb)
+        }
+        Widget::Radio => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
 
-                let value = find_value(AttribKey::Value, &attrs)
-                    .map(|v| v.as_bool())
-                    .flatten()
-                    .unwrap_or(false);
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+            let rb = RadioButton::new_with_label(&label);
+            rb.set_property("active", &value);
+            GtkWidget::Radio(rb)
+        }
+        Widget::Image => {
+            let empty = vec![];
+            let bytes = find_value(AttribKey::Data, &attrs)
+                .map(|v| v.as_bytes())
+                .flatten()
+                .unwrap_or(&empty);
+            let image = Image::new();
+            let mime = util::image_mime_type(&bytes).expect("unsupported have mime type");
+            let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
+            pixbuf_loader
+                .write(&bytes)
+                .expect("Unable to write svg data into pixbuf_loader");
 
-                let cb = CheckButton::new_with_label(&label);
-                cb.set_property("active", &value);
-                GtkWidget::Checkbox(cb)
-            }
-            Widget::Radio => {
-                let label = find_value(AttribKey::Label, &attrs)
-                    .map(|v| v.to_string())
-                    .unwrap_or(String::new());
+            pixbuf_loader.close().expect("error creating pixbuf");
 
-                let value = find_value(AttribKey::Value, &attrs)
-                    .map(|v| v.as_bool())
-                    .flatten()
-                    .unwrap_or(false);
-                let rb = RadioButton::new_with_label(&label);
-                rb.set_property("active", &value);
-                GtkWidget::Radio(rb)
-            }
-            Widget::Image => {
-                let empty = vec![];
-                let bytes = find_value(AttribKey::Data, &attrs)
-                    .map(|v| v.as_bytes())
-                    .flatten()
-                    .unwrap_or(&empty);
-                let image = Image::new();
-                let mime = util::image_mime_type(&bytes).expect("unsupported have mime type");
-                let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
-                pixbuf_loader
-                    .write(&bytes)
-                    .expect("Unable to write svg data into pixbuf_loader");
+            let pixbuf = pixbuf_loader.get_pixbuf();
 
-                pixbuf_loader.close().expect("error creating pixbuf");
+            image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            GtkWidget::Image(image)
+        }
+        Widget::Svg => {
+            let empty = vec![];
+            let bytes = find_value(AttribKey::Data, &attrs)
+                .map(|v| v.as_bytes())
+                .flatten()
+                .unwrap_or(&empty);
+            let image = Image::new();
+            let pixbuf_loader =
+                PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
+            pixbuf_loader
+                .write(bytes)
+                .expect("Unable to write svg data into pixbuf_loader");
 
-                let pixbuf = pixbuf_loader.get_pixbuf();
+            pixbuf_loader.close().expect("error creating pixbuf");
 
-                image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-                GtkWidget::Image(image)
-            }
-            Widget::Svg => {
-                let empty = vec![];
-                let bytes = find_value(AttribKey::Data, &attrs)
-                    .map(|v| v.as_bytes())
-                    .flatten()
-                    .unwrap_or(&empty);
-                let image = Image::new();
-                let pixbuf_loader =
-                    PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
-                pixbuf_loader
-                    .write(bytes)
-                    .expect("Unable to write svg data into pixbuf_loader");
+            let pixbuf = pixbuf_loader.get_pixbuf();
 
-                pixbuf_loader.close().expect("error creating pixbuf");
+            image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            GtkWidget::Image(image)
+        }
+        Widget::TextArea => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
 
-                let pixbuf = pixbuf_loader.get_pixbuf();
-
-                image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-                GtkWidget::Image(image)
-            }
-            Widget::TextArea => {
-                let value = find_value(AttribKey::Value, &attrs)
-                    .map(|v| v.to_string())
-                    .unwrap_or(String::new());
-
-                let buffer = TextBuffer::new(None::<&TextTagTable>);
-                buffer.set_text(&value);
-                let text_view = TextView::new_with_buffer(&buffer);
-                GtkWidget::TextView(text_view)
-            }
+            let buffer = TextBuffer::new(None::<&TextTagTable>);
+            buffer.set_text(&value);
+            let text_view = TextView::new_with_buffer(&buffer);
+            GtkWidget::TextView(text_view)
         }
     }
 }
@@ -295,7 +304,7 @@ where
     }
 }
 
-enum GtkWidget {
+pub(crate) enum GtkWidget {
     GBox(gtk::Box),
     Button(Button),
     Paragraph(TextView),
