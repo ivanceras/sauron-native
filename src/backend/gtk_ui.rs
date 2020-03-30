@@ -17,17 +17,10 @@ use sauron_vdom::{
     AttribValue,
 };
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+use super::Dispatch;
 
 mod apply_patches;
 
-/// This trait is used in the DomUpdater to call the dispatch
-/// method when an event occured
-///
-/// The Program will implement Dispatch instead of sending it to the
-/// DomUpdater, this will simplify the amount of generics being defined.
-pub trait Dispatch<MSG> {
-    fn dispatch(self: &Rc<Self>, msg: MSG);
-}
 
 pub struct GtkBackend<APP, MSG>
 where
