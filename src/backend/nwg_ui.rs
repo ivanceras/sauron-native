@@ -10,9 +10,10 @@ use nwg::{
         style::{Dimension, FlexDirection},
     },
     Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder, ImageFrame, Label,
-    RadioButton, TextInput, Window,
+    RadioButton, TextInput, Window, TextBox, RichTextBox,
 };
-use sauron_vdom::Dispatch;
+use super::Dispatch;
+
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 
 pub struct NwgBackend<APP, MSG>
@@ -120,8 +121,9 @@ where
 enum NwgWidget {
     Box(FlexboxLayout),
     Button(Button),
-    Text(Label),
+    Paragraph(RichTextBox),
     TextInput(TextInput),
+    TextArea(TextBox),
     Checkbox(CheckBox),
     Radio(RadioButton),
     Image(ImageFrame, Bitmap),
@@ -132,8 +134,9 @@ impl fmt::Debug for NwgWidget {
         match self {
             NwgWidget::Box(w) => write!(f, "FlexboxLayout"),
             NwgWidget::Button(w) => write!(f, "{}", w.class_name()),
-            NwgWidget::Text(w) => write!(f, "{}", w.class_name()),
+            NwgWidget::Paragraph(w) => write!(f, "{}", w.class_name()),
             NwgWidget::TextInput(w) => write!(f, "{}", w.class_name()),
+            NwgWidget::TextArea(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Checkbox(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Radio(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Image(w, _) => write!(f, "{}", w.class_name()),
@@ -214,17 +217,23 @@ impl NwgWidget {
                         }
                         NwgWidget::Button(child) => {
                             builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
+                                width: Dimension::Points(20.0),
+                                height: Dimension::Points(20.0),
                             });
                         }
-                        NwgWidget::Text(child) => {
+                        NwgWidget::Paragraph(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
                             });
                         }
                         NwgWidget::TextInput(child) => {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Points(20.0),
+                            });
+                        }
+                        NwgWidget::TextArea(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
                                 height: Dimension::Points(20.0),
@@ -269,40 +278,35 @@ impl NwgWidget {
             }
             Widget::Button => {
                 println!("button..");
-                let txt: String =
-                    if let Some(attr) = attrs.iter().find(|attr| attr.name == AttribKey::Value) {
-                        if let Some(value) = attr.get_value() {
-                            value.to_string()
-                        } else {
-                            "btn1".to_string()
-                        }
-                    } else {
-                        "Btn1".to_string()
-                    };
+                let label = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
 
                 let mut btn = Button::default();
 
                 Button::builder()
-                    .size((280, 60))
-                    .text(&txt)
+                    .size((280, 20))
+                    .text(&label)
                     .parent(window)
                     .build(&mut btn)
                     .expect("must build button");
 
                 NwgWidget::Button(btn)
             }
-            Widget::Text(txt) => {
-                println!("text..");
-                let mut label = Label::default();
+            Widget::Paragraph => {
+                let txt = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+                let mut rtb = RichTextBox::default();
 
-                Label::builder()
-                    .size((280, 60))
+                RichTextBox::builder()
+                    .size((280, 20))
                     .text(&txt)
                     .parent(window)
-                    .build(&mut label)
-                    .expect("must build label");
+                    .build(&mut rtb)
+                    .expect("must build rich textbox");
 
-                NwgWidget::Text(label)
+                NwgWidget::Paragraph(rtb)
             }
             Widget::TextInput => {
                 println!("textinput..");
@@ -313,13 +317,30 @@ impl NwgWidget {
                 let mut text_input = TextInput::default();
 
                 TextInput::builder()
-                    .size((280, 60))
+                    .size((280, 20))
                     .text(&value)
                     .parent(window)
                     .build(&mut text_input)
-                    .expect("must build label");
+                    .expect("must build text input");
 
                 NwgWidget::TextInput(text_input)
+            }
+            Widget::TextArea => {
+                println!("textinput..");
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let mut text_box = TextBox::default();
+
+                TextBox::builder()
+                    .size((280, 60))
+                    .text(&value)
+                    .parent(window)
+                    .build(&mut text_box)
+                    .expect("must build textbox");
+
+                NwgWidget::TextArea(text_box)
             }
 
             Widget::Checkbox => {
@@ -364,7 +385,13 @@ impl NwgWidget {
 
                 NwgWidget::Radio(radio)
             }
-            Widget::Image(blob) => {
+            Widget::Image => {
+                let empty = vec![];
+                let blob = find_value(AttribKey::Data, &attrs)
+                    .map(|v| v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
+
                 let img = image::load_from_memory(&blob).expect("should load");
                 let (width, height) = img.dimensions();
                 let mut bytes: Vec<u8> = vec![];
@@ -391,8 +418,13 @@ impl NwgWidget {
 
                 NwgWidget::Image(image_frame, bitmap)
             }
-            Widget::Svg(svg) => {
-                let rtree = resvg::usvg::Tree::from_str(&svg, &resvg::usvg::Options::default())
+            Widget::Svg => {
+                let empty = vec![];
+                let bytes = find_value(AttribKey::Data, &attrs)
+                    .map(|v| v.as_bytes())
+                    .flatten()
+                    .unwrap_or(&empty);
+                let rtree = resvg::usvg::Tree::from_data(&bytes, &resvg::usvg::Options::default())
                     .expect("must be parse into tree");
                 let svg_size = rtree.svg_node().size;
                 let (width, height) = (svg_size.width() as u32, svg_size.height() as u32);
