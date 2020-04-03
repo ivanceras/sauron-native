@@ -106,9 +106,12 @@ where
                 }
                 Box::new(btn)
             }
-            Widget::Paragraph(txt) => {
-                let input = TextInput::new(txt);
-                Box::new(input)
+            Widget::Paragraph => {
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+                let textarea = TextArea::new(value);
+                Box::new(textarea)
             }
             Widget::TextInput => {
                 let value = find_value(AttribKey::Value, &attrs)

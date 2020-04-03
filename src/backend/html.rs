@@ -25,7 +25,7 @@ where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    program: Rc<Program<HtmlApp<APP, MSG>, MSG>>,
+    program: Program<HtmlApp<APP, MSG>, MSG>,
 }
 
 impl<APP, MSG> HtmlApp<APP, MSG>
