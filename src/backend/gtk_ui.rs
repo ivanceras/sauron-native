@@ -32,12 +32,26 @@ where
     application: Application,
     _phantom_msg: PhantomData<MSG>,
 }
+
+impl<APP,MSG> Clone for GtkBackend<APP,MSG> {
+
+    fn clone(&self) -> Self {
+        GtkBackend{
+            app: Rc::clone(&self.app),
+            current_vdom: Rc::clone(&self.current_vdom),
+            root_node: Rc::clone(&self.root_node),
+            application: self.application.clone(),
+            _phantom_msg: PhantomData,
+        }
+    }
+}
+
 impl<APP, MSG> GtkBackend<APP, MSG>
 where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn new(app: APP) -> Rc<Self> {
+    fn new(app: APP) -> Self {
         let current_vdom = app.view();
         let root_vdom = app.view();
 
@@ -53,10 +67,9 @@ where
                 .expect("Failed to start app"),
             _phantom_msg: PhantomData,
         };
-        let rc_backend = Rc::new(backend);
-        let root_widget = Self::from_node_tree(&rc_backend, root_vdom);
-        *rc_backend.root_node.borrow_mut() = Some(root_widget);
-        rc_backend
+        let root_widget = Self::from_node_tree(&backend, root_vdom);
+        *backend.root_node.borrow_mut() = Some(root_widget);
+        backend
     }
 
     fn root_container(&self) -> Rc<Container> {
@@ -74,7 +87,7 @@ where
         }
     }
 
-    fn dispatch_inner(self: &Rc<Self>, msg: MSG)
+    fn dispatch_inner(&self, msg: MSG)
     where
         MSG: Debug,
     {
@@ -90,12 +103,12 @@ where
         *self.current_vdom.borrow_mut() = new_view;
     }
 
-    fn create_app(mut self: &Rc<Self>)
+    fn create_app(&self)
     where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
     {
-        let self_clone = Rc::clone(&self);
+        let self_clone = self.clone();
         self.application.connect_activate(move |uiapp| {
             let win = ApplicationWindow::new(uiapp);
             let rc_win = Rc::new(win);
@@ -108,7 +121,7 @@ where
         self.application.run(&[]);
     }
 
-    fn attach_root_widget(self: &Rc<Self>, window: &Rc<ApplicationWindow>)
+    fn attach_root_widget(&self, window: &Rc<ApplicationWindow>)
     where
         APP: Component<MSG> + 'static,
         MSG: Clone + Debug + 'static,
@@ -120,10 +133,10 @@ where
         }
     }
 
-    fn from_node_tree<DSP>(program: &Rc<DSP>, widget_node: crate::Node<MSG>) -> GtkWidget
+    fn from_node_tree<DSP>(program: &DSP, widget_node: crate::Node<MSG>) -> GtkWidget
     where
         MSG: Debug + 'static,
-        DSP: Dispatch<MSG> + 'static,
+        DSP: Clone + Dispatch<MSG> + 'static,
     {
         match widget_node {
             crate::Node::Element(element) => {
@@ -141,10 +154,10 @@ where
     }
 }
 
-pub(crate) fn from_node<MSG,DSP>(program: &Rc<DSP>, widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
+pub(crate) fn from_node<MSG,DSP>(program: &DSP, widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
 where
     MSG: Debug + 'static,
-    DSP: Dispatch<MSG> + 'static,
+    DSP: Clone + Dispatch<MSG> + 'static,
 {
     match widget {
         Widget::Vbox => {
@@ -160,7 +173,7 @@ where
             let btn = Button::new_with_label(&label);
             if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
                 let cb_clone = cb.clone();
-                let program_clone = Rc::clone(&program);
+                let program_clone = program.clone();
                 btn.connect_clicked(move |_| {
                     let mouse_event = MouseEvent::default();
                     let msg = cb_clone.emit(mouse_event);
@@ -191,7 +204,7 @@ where
 
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 let cb_clone = cb.clone();
-                let program_clone = Rc::clone(&program);
+                let program_clone = program.clone();
                 entry.connect_property_text_notify(move |entry| {
                     let input_event = InputEvent::new(entry.get_buffer().get_text());
                     let msg = cb_clone.emit(input_event);
@@ -279,7 +292,7 @@ where
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 println!("textarea has a callback..");
                 let cb_clone = cb.clone();
-                let program_clone = Rc::clone(&program);
+                let program_clone = program.clone();
                 buffer.connect_changed(move |buffer| {
                     let buffer_text = buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
                     if let Some(buffer_text) = buffer_text{
@@ -302,7 +315,7 @@ where
     APP: Component<MSG> + 'static,
     MSG: Clone + Debug + 'static,
 {
-    fn init(app: APP) -> Rc<Self> {
+    fn init(app: APP) -> Self {
         let mut rc_app = GtkBackend::new(app);
         rc_app.create_app();
         rc_app
@@ -314,7 +327,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(self: &Rc<Self>, msg: MSG) {
+    fn dispatch(&self, msg: MSG) {
         self.dispatch_inner(msg);
     }
 }

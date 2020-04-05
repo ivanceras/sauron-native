@@ -187,14 +187,13 @@ where
     APP: Component<MSG> + 'static,
     MSG: Debug + 'static,
 {
-    fn init(app: APP) -> Rc<Self> {
+    fn init(app: APP) -> Self {
         let backend = TitikBackend {
             app: Rc::new(RefCell::new(app)),
             _phantom_msg: PhantomData,
         };
-        let rc_backend = Rc::new(backend);
-        rc_backend.start_draw_loop();
-        rc_backend
+        backend.start_draw_loop();
+        backend
     }
 }
 

@@ -5,7 +5,7 @@ use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 /// This is passed into the event listener and the dispatch program
 /// will be called after the event is triggered.
 pub struct Program<APP, MSG, B> {
-    backend: Rc<B>,
+    backend: B,
     _phantom_data: PhantomData<MSG>,
     _phantom_app: PhantomData<APP>,
 }

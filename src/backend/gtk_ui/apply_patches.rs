@@ -7,10 +7,10 @@ use std::{
     rc::Rc,
 };
 
-pub fn apply_patches<MSG, DSP>(program: &Rc<DSP>, container: &Container, patches: &Vec<Patch<MSG>>)
+pub fn apply_patches<MSG, DSP>(program: &DSP, container: &Container, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
-    DSP: Dispatch<MSG> + 'static,
+    DSP: Clone + Dispatch<MSG> + 'static,
 {
     println!("patches: {:#?}", patches);
     let nodes_to_patch = find_nodes(container, patches);

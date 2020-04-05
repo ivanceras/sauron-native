@@ -20,9 +20,9 @@ where
     MSG: 'static,
     APP: Component<MSG> + 'static,
 {
-    fn init(app: APP) -> Rc<Self>;
+    fn init(app: APP) -> Self;
 
-    fn start_render(self: &Rc<Self>) {
+    fn start_render(&self) {
         // html backend don't use render loop
         //
         // this is useful for tui backend
@@ -35,5 +35,5 @@ where
 /// The Program will implement Dispatch instead of sending it to the
 /// DomUpdater, this will simplify the amount of generics being defined.
 pub trait Dispatch<MSG> {
-    fn dispatch(self: &Rc<Self>, msg: MSG);
+    fn dispatch(&self, msg: MSG);
 }

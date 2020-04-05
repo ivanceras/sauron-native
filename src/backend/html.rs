@@ -63,13 +63,12 @@ where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn init(app: APP) -> Rc<Self> {
+    fn init(app: APP) -> Self {
         console_log::init_with_level(log::Level::Trace);
         log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
         let program = sauron::Program::mount_to_body(html_app);
-        let backend = HtmlBackend { program };
-        Rc::new(backend)
+        HtmlBackend { program }
     }
 }
 
