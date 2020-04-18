@@ -17,6 +17,8 @@ mod control;
 pub enum Widget {
     Vbox,
     Hbox,
+    Vpane,
+    Hpane,
     Button,
     Paragraph,
     TextInput,
@@ -39,8 +41,16 @@ pub fn column<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node
     widget(Widget::Vbox, attrs, children)
 }
 
+
 pub fn row<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Hbox, attrs, children)
+}
+
+pub fn vpane<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+    widget(Widget::Vpane, attrs, children)
+}
+pub fn hpane<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+    widget(Widget::Hpane, attrs, children)
 }
 
 pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {

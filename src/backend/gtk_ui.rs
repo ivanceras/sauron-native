@@ -18,6 +18,7 @@ use sauron_vdom::{
 };
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 use super::Dispatch;
+use log::*;
 
 mod apply_patches;
 
@@ -31,6 +32,18 @@ where
     root_node: Rc<RefCell<Option<GtkWidget>>>,
     application: Application,
     _phantom_msg: PhantomData<MSG>,
+}
+
+pub(crate) enum GtkWidget {
+    GBox(gtk::Box),
+    Paned(Paned),
+    Button(Button),
+    Paragraph(TextView),
+    TextInput(Entry),
+    Checkbox(CheckButton),
+    Radio(RadioButton),
+    Image(Image),
+    TextView(TextView),
 }
 
 impl<APP,MSG> Clone for GtkBackend<APP,MSG> {
@@ -87,21 +100,6 @@ where
         }
     }
 
-    fn dispatch_inner(&self, msg: MSG)
-    where
-        MSG: Debug,
-    {
-        println!("dispatching : {:?}", msg);
-        self.app.borrow_mut().update(msg);
-        let new_view = self.app.borrow().view();
-        {
-            let current_vdom = self.current_vdom.borrow();
-            let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
-            //println!("diff: {:#?}", diff);
-            apply_patches::apply_patches(self, &self.root_container(), &diff);
-        }
-        *self.current_vdom.borrow_mut() = new_view;
-    }
 
     fn create_app(&self)
     where
@@ -149,7 +147,10 @@ where
                 gtk_widget.add_children(children);
                 gtk_widget
             }
-            crate::Node::Text(txt) => Button::new_with_label(&txt.text).into(),
+            crate::Node::Text(txt) => {
+                let btn = Button::new_with_label(&txt.text);
+                GtkWidget::Button(btn)
+            }
         }
     }
 }
@@ -160,11 +161,25 @@ where
     DSP: Clone + Dispatch<MSG> + 'static,
 {
     match widget {
+        // vbox can have many children
         Widget::Vbox => {
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
-            vbox.into()
+            GtkWidget::GBox(vbox)
         }
-        Widget::Hbox => gtk::Box::new(Orientation::Horizontal, 0).into(),
+        // hbox can have many children
+        Widget::Hbox => {
+            let hbox = gtk::Box::new(Orientation::Horizontal, 0);
+            GtkWidget::GBox(hbox)
+        }
+        // paned has only 2 children
+        Widget::Hpane => {
+            let hpane = Paned::new(Orientation::Horizontal);
+            GtkWidget::Paned(hpane)
+        }
+        Widget::Vpane => {
+            let vpane = Paned::new(Orientation::Vertical);
+            GtkWidget::Paned(vpane)
+        }
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
@@ -180,7 +195,7 @@ where
                     program_clone.dispatch(msg);
                 });
             }
-            btn.into()
+            GtkWidget::Button(btn)
         }
         Widget::Paragraph => {
             let buffer = TextBuffer::new(None::<&TextTagTable>);
@@ -327,26 +342,30 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(&self, msg: MSG) {
-        self.dispatch_inner(msg);
+    fn dispatch(&self, msg: MSG) 
+    where
+        MSG: Debug,
+    {
+        self.app.borrow_mut().update(msg);
+        let new_view = self.app.borrow().view();
+        {
+            let current_vdom = self.current_vdom.borrow();
+            let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
+            apply_patches::apply_patches(self, &self.root_container(), &diff);
+        }
+        *self.current_vdom.borrow_mut() = new_view;
     }
 }
 
-pub(crate) enum GtkWidget {
-    GBox(gtk::Box),
-    Button(Button),
-    Paragraph(TextView),
-    TextInput(Entry),
-    Checkbox(CheckButton),
-    Radio(RadioButton),
-    Image(Image),
-    TextView(TextView),
-}
 impl GtkWidget {
     fn as_container(&self) -> Option<&Container> {
         match self {
             GtkWidget::GBox(gbox) => {
                 let container: &Container = gbox.upcast_ref();
+                Some(container)
+            }
+            GtkWidget::Paned(paned) => {
+                let container: &Container = paned.upcast_ref();
                 Some(container)
             }
             _ => None,
@@ -361,6 +380,10 @@ impl GtkWidget {
             }
             GtkWidget::GBox(cbox) => {
                 let widget: &gtk::Widget = cbox.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::Paned(paned) => {
+                let widget: &gtk::Widget = paned.upcast_ref();
                 Some(widget)
             }
             GtkWidget::Paragraph(text_view) => {
@@ -391,25 +414,33 @@ impl GtkWidget {
     }
 
     fn add_children(&self, children: Vec<GtkWidget>) {
-        if let Some(container) = self.as_container() {
-            for child in children {
-                if let Some(child_widget) = child.as_widget() {
-                    container.add(child_widget);
-                }else{
-                    println!("was not able to add child widget: {:?}", child.as_widget());
+        match self{
+            GtkWidget::Paned(paned) => {
+                if children.len() != 2 {
+                    warn!("pane should have 2 children");
+                }
+                if children.len() > 2 {
+                    warn!("pane children excess of 2 is ignored");
+                }
+                if let Some(child1) = children.get(0).map(|c|c.as_widget()).flatten(){
+                    paned.pack1(child1, true, true);
+                    child1.set_size_request(200,-1);
+                }
+                if let Some(child2) = children.get(1).map(|c|c.as_widget()).flatten(){
+                    paned.pack2(child2, true, true);
+                    child2.set_size_request(100,-1);
                 }
             }
+            GtkWidget::GBox(container) => {
+                for child in children {
+                    if let Some(child_widget) = child.as_widget() {
+                        container.add(child_widget);
+                    }else{
+                        println!("was not able to add child widget: {:?}", child.as_widget());
+                    }
+                }
+            }
+            _ => (),
         }
-    }
-}
-impl From<Button> for GtkWidget {
-    fn from(btn: Button) -> Self {
-        GtkWidget::Button(btn)
-    }
-}
-
-impl From<gtk::Box> for GtkWidget {
-    fn from(gbox: gtk::Box) -> Self {
-        GtkWidget::GBox(gbox)
     }
 }

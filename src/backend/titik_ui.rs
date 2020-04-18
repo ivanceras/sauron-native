@@ -86,6 +86,17 @@ where
                 hbox.horizontal();
                 Box::new(hbox)
             }
+            //TOD: make a draggable pane for titik
+            Widget::Vpane => {
+                let mut vbox = FlexBox::new();
+                vbox.vertical();
+                Box::new(vbox)
+            }
+            Widget::Hpane => {
+                let mut hbox = FlexBox::new();
+                hbox.horizontal();
+                Box::new(hbox)
+            }
             Widget::Button => {
                 let label = find_value(AttribKey::Label, &attrs)
                     .map(|v| v.to_string())

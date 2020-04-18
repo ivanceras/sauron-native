@@ -8,9 +8,13 @@ pub use html::HtmlBackend;
 
 #[cfg(feature = "with-titik")]
 pub mod titik_ui;
+#[cfg(feature = "with-titik")]
+pub use titik_ui::TitikBackend;
 
 #[cfg(feature = "with-gtk")]
 pub mod gtk_ui;
+#[cfg(feature = "with-gtk")]
+pub use gtk_ui::GtkBackend;
 
 #[cfg(feature = "with-nwg")]
 pub mod nwg_ui;
