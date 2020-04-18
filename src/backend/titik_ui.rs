@@ -6,7 +6,6 @@ use crate::{
     AttribKey, Attribute, Backend, Component, Node,
 };
 use image::{GenericImageView, ImageBuffer, RgbaImage};
-use titik::Dispatch;
 use std::{
     cell::RefCell,
     fmt::Debug,
@@ -17,6 +16,7 @@ use std::{
     thread,
     time::Duration,
 };
+use titik::Dispatch;
 use titik::{
     crossterm,
     crossterm::{
@@ -29,10 +29,8 @@ use titik::{
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
-    TextInput, Widget as Control,
-    TextArea,
-    Renderer,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, Renderer,
+    SvgImage, TextArea, TextInput, Widget as Control,
 };
 
 pub struct TitikBackend<APP, MSG> {
@@ -52,7 +50,6 @@ where
         let mut renderer = Renderer::new(&mut stdout, Some(self), root_node);
         renderer.run();
     }
-
 
     fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget<MSG>>
     where
@@ -162,7 +159,7 @@ where
             Widget::Image => {
                 let empty = vec![];
                 let bytes = find_value(AttribKey::Data, &attrs)
-                    .map(|v|v.as_bytes())
+                    .map(|v| v.as_bytes())
                     .flatten()
                     .unwrap_or(&empty);
                 let image = image::load_from_memory(&bytes).expect("should load");
@@ -176,7 +173,7 @@ where
             Widget::Svg => {
                 let empty = vec![];
                 let bytes = find_value(AttribKey::Data, &attrs)
-                    .map(|v|v.as_bytes())
+                    .map(|v| v.as_bytes())
                     .flatten()
                     .unwrap_or(&empty);
                 let svg = String::from_utf8(bytes.to_vec()).unwrap_or(String::new());

@@ -1,6 +1,6 @@
+use crate::builder::attr;
 use crate::{event::on, Attribute, Callback, Event, Value};
 use std::fmt;
-use crate::builder::attr;
 
 /// TODO: replace the &'static str attribute key as an enum
 /// enumerating all the properties of our widget abstraction
@@ -55,7 +55,7 @@ where
 }
 
 macro_rules! declare_attr {
-    ( 
+    (
         $(
             $(#[$attr:meta])*
             $fname:ident => $att_key:tt;
@@ -64,7 +64,7 @@ macro_rules! declare_attr {
 
         $(
             $(#[$attr])*
-            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG> 
+            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
                 where V:Into<Value>,
             {
                 attr(AttribKey::$att_key, v)
@@ -74,7 +74,7 @@ macro_rules! declare_attr {
 }
 
 macro_rules! declare_event_attr {
-    ( 
+    (
         $(
             $(#[$attr:meta])*
             $fname:ident => $att_key:tt;
@@ -83,7 +83,7 @@ macro_rules! declare_event_attr {
 
         $(
             $(#[$attr])*
-            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG> 
+            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
                 where V:Into<Callback<Event,MSG>>,
             {
                 on(AttribKey::$att_key, v)
@@ -92,8 +92,8 @@ macro_rules! declare_event_attr {
     }
 }
 
-declare_attr!{
-    /// value attribute, used in text_input, textarea 
+declare_attr! {
+    /// value attribute, used in text_input, textarea
     value => Value;
     /// data attribute, used in image, svg
     data => Data;
@@ -105,8 +105,7 @@ declare_attr!{
     width => Width;
 }
 
-declare_event_attr!{
+declare_event_attr! {
     on_input => InputEvent;
     on_click => ClickEvent;
 }
-

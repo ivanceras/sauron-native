@@ -67,7 +67,8 @@ cfg-if = "0.1.7"
 
 [features]
 with-html = ["sauron", "web-sys", "wasm-bindgen", "console_log"]
-with-gtk = ["gtk", "gio", "glib", "gdk-pixbuf"]
+#v3_22 is needed for set_monospace
+with-gtk = ["gtk/v3_22", "gio", "glib", "gdk-pixbuf"]
 with-nwg = ["native-windows-gui", "resvg"]
 with-titik = ["titik"]
 

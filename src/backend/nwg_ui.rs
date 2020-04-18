@@ -1,3 +1,4 @@
+use super::Dispatch;
 use crate::{
     widget::attribute::{find_callback, find_value},
     AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
@@ -10,9 +11,8 @@ use nwg::{
         style::{Dimension, FlexDirection},
     },
     Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder, ImageFrame, Label,
-    RadioButton, TextInput, Window, TextBox, RichTextBox,
+    RadioButton, RichTextBox, TextBox, TextInput, Window,
 };
-use super::Dispatch;
 
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -295,8 +295,8 @@ impl NwgWidget {
             }
             Widget::Paragraph => {
                 let txt = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
                 let mut rtb = RichTextBox::default();
 
                 RichTextBox::builder()

@@ -41,7 +41,6 @@ pub fn column<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node
     widget(Widget::Vbox, attrs, children)
 }
 
-
 pub fn row<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Hbox, attrs, children)
 }
@@ -58,7 +57,11 @@ pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 }
 
 pub fn paragraph<MSG>(txt: &str) -> Node<MSG> {
-    widget(Widget::Paragraph, vec![attribute::value(txt.to_string())], vec![])
+    widget(
+        Widget::Paragraph,
+        vec![attribute::value(txt.to_string())],
+        vec![],
+    )
 }
 
 pub fn text_input<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {

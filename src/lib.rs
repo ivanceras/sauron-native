@@ -21,7 +21,6 @@ pub use program::Program;
 pub use sauron_vdom::{builder, Callback, Event, Value};
 pub use widget::Widget;
 
-
 pub type Node<MSG> = sauron_vdom::Node<Widget, AttribKey, Event, MSG>;
 pub type Element<MSG> = sauron_vdom::Element<Widget, AttribKey, Event, MSG>;
 pub type Patch<'a, MSG> = sauron_vdom::Patch<'a, Widget, AttribKey, Event, MSG>;

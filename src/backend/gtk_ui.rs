@@ -1,3 +1,4 @@
+use super::Dispatch;
 use crate::{
     util,
     widget::attribute::{find_callback, find_value},
@@ -9,19 +10,18 @@ use glib::Value;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
     EntryBuffer, Image, IsA, Label, Orientation, Paned, RadioButton, StyleContext, TextBuffer,
-    TextBufferExt, TextTagTable, TextView, WidgetExt, Window, WindowPosition, WindowType,
+    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt, Window, WindowPosition,
+    WindowType,
 };
 use image::ImageFormat;
+use log::*;
 use sauron_vdom::{
     event::{InputEvent, MouseEvent},
     AttribValue,
 };
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
-use super::Dispatch;
-use log::*;
 
 mod apply_patches;
-
 
 pub struct GtkBackend<APP, MSG>
 where
@@ -46,10 +46,9 @@ pub(crate) enum GtkWidget {
     TextView(TextView),
 }
 
-impl<APP,MSG> Clone for GtkBackend<APP,MSG> {
-
+impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
     fn clone(&self) -> Self {
-        GtkBackend{
+        GtkBackend {
             app: Rc::clone(&self.app),
             current_vdom: Rc::clone(&self.current_vdom),
             root_node: Rc::clone(&self.root_node),
@@ -93,13 +92,16 @@ where
                     let container: &Container = gbox.upcast_ref();
                     Rc::new(container.clone())
                 }
+                GtkWidget::Paned(paned) => {
+                    let container: &Container = paned.upcast_ref();
+                    Rc::new(container.clone())
+                }
                 _ => panic!("expecting it to be a container"),
             }
         } else {
             panic!("must have a root widget");
         }
     }
-
 
     fn create_app(&self)
     where
@@ -155,7 +157,11 @@ where
     }
 }
 
-pub(crate) fn from_node<MSG,DSP>(program: &DSP, widget: &Widget, attrs: &Vec<Attribute<MSG>>) -> GtkWidget
+pub(crate) fn from_node<MSG, DSP>(
+    program: &DSP,
+    widget: &Widget,
+    attrs: &Vec<Attribute<MSG>>,
+) -> GtkWidget
 where
     MSG: Debug + 'static,
     DSP: Clone + Dispatch<MSG> + 'static,
@@ -223,7 +229,6 @@ where
                 entry.connect_property_text_notify(move |entry| {
                     let input_event = InputEvent::new(entry.get_buffer().get_text());
                     let msg = cb_clone.emit(input_event);
-                    println!("got msg: {:?}", msg);
                     program_clone.dispatch(msg);
                 });
             }
@@ -309,17 +314,18 @@ where
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
                 buffer.connect_changed(move |buffer| {
-                    let buffer_text = buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
-                    if let Some(buffer_text) = buffer_text{
+                    let buffer_text =
+                        buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
+                    if let Some(buffer_text) = buffer_text {
                         let input_event = InputEvent::new(buffer_text.to_string());
                         let msg = cb_clone.emit(input_event);
-                        println!("got msg: {:?}", msg);
                         program_clone.dispatch(msg);
                     }
                 });
             }
 
             let text_view = TextView::new_with_buffer(&buffer);
+            text_view.set_monospace(true);
             GtkWidget::TextView(text_view)
         }
     }
@@ -342,7 +348,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(&self, msg: MSG) 
+    fn dispatch(&self, msg: MSG)
     where
         MSG: Debug,
     {
@@ -414,7 +420,7 @@ impl GtkWidget {
     }
 
     fn add_children(&self, children: Vec<GtkWidget>) {
-        match self{
+        match self {
             GtkWidget::Paned(paned) => {
                 if children.len() != 2 {
                     warn!("pane should have 2 children");
@@ -422,20 +428,20 @@ impl GtkWidget {
                 if children.len() > 2 {
                     warn!("pane children excess of 2 is ignored");
                 }
-                if let Some(child1) = children.get(0).map(|c|c.as_widget()).flatten(){
+                if let Some(child1) = children.get(0).map(|c| c.as_widget()).flatten() {
                     paned.pack1(child1, true, true);
-                    child1.set_size_request(200,-1);
+                    child1.set_size_request(200, -1);
                 }
-                if let Some(child2) = children.get(1).map(|c|c.as_widget()).flatten(){
+                if let Some(child2) = children.get(1).map(|c| c.as_widget()).flatten() {
                     paned.pack2(child2, true, true);
-                    child2.set_size_request(100,-1);
+                    child2.set_size_request(100, -1);
                 }
             }
             GtkWidget::GBox(container) => {
                 for child in children {
                     if let Some(child_widget) = child.as_widget() {
                         container.add(child_widget);
-                    }else{
+                    } else {
                         println!("was not able to add child widget: {:?}", child.as_widget());
                     }
                 }

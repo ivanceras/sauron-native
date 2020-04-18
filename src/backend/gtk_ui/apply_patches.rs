@@ -1,52 +1,28 @@
 use super::{Dispatch, GtkBackend};
-use crate::{AttribKey, Patch};
-use gtk::{prelude::*, Button, Container, ContainerExt, TextView, Widget};
+use crate::{AttribKey, Attribute, Patch};
+use gtk::{prelude::*, Button, Container, ContainerExt, Image, TextView, Widget};
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     rc::Rc,
 };
+use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 
 pub fn apply_patches<MSG, DSP>(program: &DSP, container: &Container, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
-    println!("patches: {:#?}", patches);
     let nodes_to_patch = find_nodes(container, patches);
-    println!("nodes to patch: {:?}", nodes_to_patch);
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-        println!("trying to get patch_node_idx: {}", patch_node_idx);
         let widget = nodes_to_patch
             .get(&patch_node_idx)
             .expect("must have a node to patch");
         match patch {
             Patch::AddAttributes(_node_idx, attrs) => {
-                for att in attrs {
-                    println!("att: {:?}", att);
-                    //TODO: actuall set the property of the widget
-                    match att.name {
-                        AttribKey::Label => {
-                            if let Some(button) = widget.downcast_ref::<Button>() {
-                                if let Some(value) = att.get_value() {
-                                    button.set_label(&value.to_string());
-                                }
-                            }
-                        }
-                        AttribKey::Value => {
-                            if let Some(text_view) = widget.downcast_ref::<TextView>() {
-                                if let Some(value) = att.get_value() {
-                                    if let Some(buffer) = text_view.get_buffer() {
-                                        buffer.set_text(&value.to_string());
-                                    }
-                                }
-                            }
-                        }
-                        _ => (),
-                    }
-                }
+                set_widget_attributes::<MSG>(widget, attrs);
             }
             Patch::AppendChildren(_node_idx, nodes) => {
                 if let Some(container) = widget.downcast_ref::<Container>() {
@@ -62,7 +38,6 @@ where
                 }
             }
             Patch::TruncateChildren(_node_idx, num_children_remaining) => {
-                println!("Truncating children {}", num_children_remaining);
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
                     for i in *num_children_remaining..children.len() {
@@ -72,6 +47,61 @@ where
             }
             _ => {}
         }
+    }
+}
+
+fn set_widget_attributes<MSG: 'static>(widget: &Widget, attrs: &Vec<Attribute<MSG>>) {
+    if let Some(button) = widget.downcast_ref::<Button>() {
+        for att in attrs {
+            if let Some(value) = att.get_value() {
+                match att.name {
+                    AttribKey::Label => button.set_label(&value.to_string()),
+                    _ => (),
+                }
+            }
+        }
+    } else if let Some(text_view) = widget.downcast_ref::<TextView>() {
+        for att in attrs {
+            if let Some(value) = att.get_value() {
+                match att.name {
+                    AttribKey::Value => {
+                        if let Some(buffer) = text_view.get_buffer() {
+                            buffer.set_text(&value.to_string());
+                        }
+                    }
+                    _ => (),
+                }
+            }
+        }
+    } else if let Some(image) = widget.downcast_ref::<Image>() {
+        for att in attrs {
+            if let Some(value) = att.get_value() {
+                match att.name {
+                    AttribKey::Data => {
+                        if let Some(bytes) = value.as_bytes() {
+                            if bytes.starts_with(b"<svg") {
+                                println!("this is an svg image");
+
+                                let pixbuf_loader =
+                                    PixbufLoader::new_with_mime_type("image/svg+xml")
+                                        .expect("error loader");
+                                pixbuf_loader
+                                    .write(bytes)
+                                    .expect("Unable to write svg data into pixbuf_loader");
+                                pixbuf_loader.close().expect("error creating pixbuf");
+                                let pixbuf = pixbuf_loader.get_pixbuf();
+                                image.set_from_pixbuf(Some(
+                                    &pixbuf.expect("error in pixbuf_loader"),
+                                ));
+                            }
+                        }
+                    }
+                    _ => (),
+                }
+            }
+        }
+    } else {
+        println!("todo for other widgets");
     }
 }
 
@@ -90,18 +120,17 @@ fn find_nodes_recursive(
     cur_node_idx: &mut usize,
     nodes_to_find: &HashSet<usize>,
 ) -> HashMap<usize, Widget> {
-    println!("nodes to find: {:?}", nodes_to_find);
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
-    println!("cur_node_idx: {} {:?}", cur_node_idx, root_node);
+
+    let is_gbox = root_node.downcast_ref::<gtk::Box>().is_some();
+    let is_paned = root_node.downcast_ref::<gtk::Paned>().is_some();
     // prevent other container other than gtk::Box to be traverse otherwise widget such as textarea or textinput will
     // be traverse
-    if root_node.downcast_ref::<gtk::Box>().is_some() {
+    if is_gbox || is_paned {
         let children = root_node.get_children();
         let child_node_count = children.len();
-        println!("children node count: {}", child_node_count);
 
         for child in children {
-            println!("this child is a {:?}", child);
             *cur_node_idx += 1;
             if nodes_to_find.get(&cur_node_idx).is_some() {
                 let widget: Widget = child.clone().upcast();
