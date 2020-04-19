@@ -89,6 +89,18 @@ where
             vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
             vec![],
         ),
+        //TODO: vpane and hpane should be draggable
+        Widget::Vpane => div(
+            vec![styles(vec![
+                ("display", "flex"),
+                ("flex-direction", "column"),
+            ])],
+            vec![],
+        ),
+        Widget::Hpane => div(
+            vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
+            vec![],
+        ),
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())

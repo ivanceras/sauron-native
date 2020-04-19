@@ -8,10 +8,10 @@ use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
-    prelude::*, Application, ApplicationWindow, Button, CheckButton, Container, CssProvider, Entry,
-    EntryBuffer, Image, IsA, Label, Orientation, Paned, RadioButton, StyleContext, TextBuffer,
-    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt, Window, WindowPosition,
-    WindowType,
+    prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
+    CssProvider, Entry, EntryBuffer, Image, IsA, Label, Orientation, Paned, RadioButton,
+    ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt,
+    WidgetExt, Window, WindowPosition, WindowType,
 };
 use image::ImageFormat;
 use log::*;
@@ -42,8 +42,8 @@ pub(crate) enum GtkWidget {
     TextInput(Entry),
     Checkbox(CheckButton),
     Radio(RadioButton),
-    Image(Image),
-    TextView(TextView),
+    Image(ScrolledWindow),
+    TextView(ScrolledWindow),
 }
 
 impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
@@ -279,7 +279,9 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-            GtkWidget::Image(image)
+            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+            scroll_view.add(&image);
+            GtkWidget::Image(scroll_view)
         }
         Widget::Svg => {
             let empty = vec![];
@@ -299,7 +301,9 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-            GtkWidget::Image(image)
+            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+            scroll_view.add(&image);
+            GtkWidget::Image(scroll_view)
         }
         Widget::TextArea => {
             let value = find_value(AttribKey::Value, &attrs)
@@ -326,7 +330,10 @@ where
 
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
-            GtkWidget::TextView(text_view)
+
+            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+            scroll_view.add(&text_view);
+            GtkWidget::TextView(scroll_view)
         }
     }
 }

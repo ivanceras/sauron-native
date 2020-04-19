@@ -1,12 +1,12 @@
 use super::{Dispatch, GtkBackend};
 use crate::{AttribKey, Attribute, Patch};
-use gtk::{prelude::*, Button, Container, ContainerExt, Image, TextView, Widget};
+use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
+use gtk::{prelude::*, Button, Container, ContainerExt, Image, TextView, Widget, ScrolledWindow, Viewport};
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     rc::Rc,
 };
-use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 
 pub fn apply_patches<MSG, DSP>(program: &DSP, container: &Container, patches: &Vec<Patch<MSG>>)
 where
@@ -21,10 +21,10 @@ where
             .get(&patch_node_idx)
             .expect("must have a node to patch");
         match patch {
-            Patch::AddAttributes(_node_idx, attrs) => {
-                set_widget_attributes::<MSG>(widget, attrs);
+            Patch::AddAttributes(tag, _node_idx, attrs) => {
+                set_widget_attributes::<MSG>(tag, widget, attrs);
             }
-            Patch::AppendChildren(_node_idx, nodes) => {
+            Patch::AppendChildren(tag, _node_idx, nodes) => {
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     for node in nodes {
                         if let Some(element) = node.as_element_ref() {
@@ -37,7 +37,7 @@ where
                     }
                 }
             }
-            Patch::TruncateChildren(_node_idx, num_children_remaining) => {
+            Patch::TruncateChildren(tag, _node_idx, num_children_remaining) => {
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
                     for i in *num_children_remaining..children.len() {
@@ -50,58 +50,75 @@ where
     }
 }
 
-fn set_widget_attributes<MSG: 'static>(widget: &Widget, attrs: &Vec<Attribute<MSG>>) {
-    if let Some(button) = widget.downcast_ref::<Button>() {
-        for att in attrs {
-            if let Some(value) = att.get_value() {
-                match att.name {
-                    AttribKey::Label => button.set_label(&value.to_string()),
-                    _ => (),
-                }
-            }
-        }
-    } else if let Some(text_view) = widget.downcast_ref::<TextView>() {
-        for att in attrs {
-            if let Some(value) = att.get_value() {
-                match att.name {
-                    AttribKey::Value => {
-                        if let Some(buffer) = text_view.get_buffer() {
-                            buffer.set_text(&value.to_string());
-                        }
+fn set_widget_attributes<MSG: 'static>(
+    tag: &crate::Widget,
+    widget: &Widget,
+    attrs: &Vec<Attribute<MSG>>,
+) {
+    match tag {
+        crate::Widget::Button => {
+            let button = widget.downcast_ref::<Button>().expect("must be a button");
+            for att in attrs {
+                if let Some(value) = att.get_value() {
+                    match att.name {
+                        AttribKey::Label => button.set_label(&value.to_string()),
+                        _ => (),
                     }
-                    _ => (),
                 }
             }
         }
-    } else if let Some(image) = widget.downcast_ref::<Image>() {
-        for att in attrs {
-            if let Some(value) = att.get_value() {
-                match att.name {
-                    AttribKey::Data => {
-                        if let Some(bytes) = value.as_bytes() {
-                            if bytes.starts_with(b"<svg") {
-                                println!("this is an svg image");
-
-                                let pixbuf_loader =
-                                    PixbufLoader::new_with_mime_type("image/svg+xml")
-                                        .expect("error loader");
-                                pixbuf_loader
-                                    .write(bytes)
-                                    .expect("Unable to write svg data into pixbuf_loader");
-                                pixbuf_loader.close().expect("error creating pixbuf");
-                                let pixbuf = pixbuf_loader.get_pixbuf();
-                                image.set_from_pixbuf(Some(
-                                    &pixbuf.expect("error in pixbuf_loader"),
-                                ));
+        crate::Widget::TextArea => {
+            let scrolled_window = widget.downcast_ref::<ScrolledWindow>().expect("must be a scrolled window").get_children();
+            let child = scrolled_window.get(0).expect("must have 1 child");
+            let text_view = child
+                .downcast_ref::<TextView>()
+                .expect("must be a text_view");
+            for att in attrs {
+                if let Some(value) = att.get_value() {
+                    match att.name {
+                        AttribKey::Value => {
+                            if let Some(buffer) = text_view.get_buffer() {
+                                buffer.set_text(&value.to_string());
                             }
                         }
+                        _ => (),
                     }
-                    _ => (),
                 }
             }
         }
-    } else {
-        println!("todo for other widgets");
+        // Svg<ScrolledWindow<Image>>
+        crate::Widget::Svg => {
+            let scrolled_window = widget.downcast_ref::<ScrolledWindow>().expect("must be a scrolled window").get_children();
+            let child = scrolled_window.get(0).expect("must have 1 child");
+            let view_port = child.downcast_ref::<Viewport>().expect("must be a viewport").get_children();
+            let vp_child = view_port.get(0).expect("must have 1 child");
+            let image = vp_child.downcast_ref::<Image>().expect("must be an image");
+            for att in attrs {
+                if let Some(value) = att.get_value() {
+                    match att.name {
+                        AttribKey::Data => {
+                            if let Some(bytes) = value.as_bytes() {
+                                    let pixbuf_loader =
+                                        PixbufLoader::new_with_mime_type("image/svg+xml")
+                                            .expect("error loader");
+                                    pixbuf_loader
+                                        .write(bytes)
+                                        .expect("Unable to write svg data into pixbuf_loader");
+                                    pixbuf_loader.close().expect("error creating pixbuf");
+                                    let pixbuf = pixbuf_loader.get_pixbuf();
+                                    image.set_from_pixbuf(Some(
+                                        &pixbuf.expect("error in pixbuf_loader"),
+                                    ));
+                            }
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+        _ => {
+            println!("todo for other widgets");
+        }
     }
 }
 
