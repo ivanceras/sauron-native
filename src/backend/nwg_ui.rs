@@ -28,7 +28,7 @@ where
 }
 
 impl<APP, MSG> NwgBackend<APP, MSG> {
-    fn new(app: APP) -> Rc<Self>
+    fn new(app: APP) -> Self
     where
         MSG: Debug + 'static,
         APP: Component<MSG> + 'static,
@@ -53,7 +53,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
 
         let root_widget: Option<NwgWidget> = None;
 
-        let backend = NwgBackend {
+        let mut backend = NwgBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
@@ -62,19 +62,18 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         };
 
         println!("3 new");
-        let rc_backend = Rc::new(backend);
         println!("3.1 new");
         let (root_widget, children_widgets) =
-            NwgWidget::from_node_tree(&*rc_backend.window, &rc_backend, root_vdom);
+            NwgWidget::from_node_tree(&backend.window, &backend, root_vdom);
         println!("3.5 new");
-        *rc_backend.root_node.borrow_mut() = Some(root_widget);
+        *backend.root_node.borrow_mut() = Some(root_widget);
         println!("3.6 new");
 
-        let events_window = rc_backend.window.clone();
+        let events_window = backend.window.clone();
 
         println!("4 new");
         let handler = nwg::full_bind_event_handler(
-            &rc_backend.window.handle,
+            &backend.window.handle,
             move |evt, _evt_data, handle| {
                 use nwg::Event;
 
@@ -93,7 +92,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         nwg::unbind_event_handler(&handler);
         println!("last part new");
 
-        rc_backend
+        backend
     }
 }
 
@@ -102,11 +101,9 @@ where
     APP: Component<MSG> + 'static,
     MSG: Clone + Debug + 'static,
 {
-    fn init(app: APP) -> Rc<Self> {
+    fn init(app: APP) -> Self {
         println!("init app..");
-        let mut rc_app = NwgBackend::new(app);
-        //rc_app.create_app();
-        rc_app
+        NwgBackend::new(app)
     }
 }
 
@@ -115,7 +112,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(self: &Rc<Self>, msg: MSG) {}
+    fn dispatch(&self, msg: MSG) {}
 }
 
 enum NwgWidget {
@@ -154,7 +151,7 @@ impl NwgWidget {
 
     fn from_node_tree<MSG, DSP>(
         window: &Window,
-        program: &Rc<DSP>,
+        program: &DSP,
         widget_node: crate::Node<MSG>,
     ) -> (Self, Vec<Self>)
     where
@@ -185,7 +182,7 @@ impl NwgWidget {
 
     fn from_node<MSG, DSP>(
         window: &Window,
-        program: &Rc<DSP>,
+        program: &DSP,
         widget: Widget,
         children: &Vec<Self>,
         attrs: Vec<Attribute<MSG>>,
@@ -271,6 +268,30 @@ impl NwgWidget {
                 let mut builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Row);
+
+                builder.build(&mut box_layout);
+
+                NwgWidget::Box(box_layout)
+            }
+            Widget::Hpane => {
+                println!("hpane");
+                let mut box_layout = FlexboxLayout::default();
+
+                let mut builder = FlexboxLayout::builder()
+                    .parent(window)
+                    .flex_direction(FlexDirection::Row);
+
+                builder.build(&mut box_layout);
+
+                NwgWidget::Box(box_layout)
+            }
+            Widget::Vpane => {
+                println!("hpane");
+                let mut box_layout = FlexboxLayout::default();
+
+                let mut builder = FlexboxLayout::builder()
+                    .parent(window)
+                    .flex_direction(FlexDirection::Column);
 
                 builder.build(&mut box_layout);
 
