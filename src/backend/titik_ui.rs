@@ -35,6 +35,7 @@ use titik::{
 
 pub struct TitikBackend<APP, MSG> {
     app: Rc<RefCell<APP>>,
+	renderer: Rc<RefCell<Renderer<MSG>>>,
     _phantom_msg: PhantomData<MSG>,
 }
 
@@ -43,13 +44,6 @@ where
     APP: Component<MSG> + 'static,
     MSG: Debug + 'static,
 {
-    fn start_draw_loop(&self) {
-        let mut stdout = io::stdout();
-        let vdom = self.app.borrow().view();
-        let root_node = Self::from_node_tree(vdom);
-        let mut renderer = Renderer::new(&mut stdout, Some(self), root_node);
-        renderer.run();
-    }
 
     fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget<MSG>>
     where
@@ -203,11 +197,18 @@ where
     MSG: Debug + 'static,
 {
     fn init(app: APP) -> Self {
-        let backend = TitikBackend {
+
+        let mut stdout = io::stdout();
+        let vdom = app.view();
+        let root_node = Self::from_node_tree(vdom);
+        let renderer = Renderer::new(root_node);
+
+        let mut backend = TitikBackend {
             app: Rc::new(RefCell::new(app)),
+			renderer: Rc::new(RefCell::new(renderer)),
             _phantom_msg: PhantomData,
         };
-        backend.start_draw_loop();
+        backend.renderer.borrow_mut().run(&mut stdout, Some(&backend));
         backend
     }
 }
@@ -219,5 +220,8 @@ where
 {
     fn dispatch(&self, msg: MSG) {
         println!("dispatching..");
+		let new_view = self.app.borrow().view();
+		let root_node = Self::from_node_tree(new_view);
+		self.renderer.try_borrow_mut().expect("borrow here..").set_root_node(root_node);
     }
 }
