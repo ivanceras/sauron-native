@@ -1,19 +1,19 @@
-## WIP: Sauron-native
-a rust UI library that conquers all platforms ranging from desktop to mobile devices.
-An attempt to create a truly native, truly cross platform UI for your rust applications.
+## WIP: Sauron Native
+A rust UI library that conquers all platforms ranging from desktop to mobile devices.
+An attempt to create a truly native, cross platform UI for your Rust applications.
 
-One UI to rule them all
+One UI to rule them all.
 
-Sauron native extends the [sauron](https://github.com/ivanceras/sauron) web framework
+Sauron Native extends the [Sauron](https://github.com/ivanceras/sauron) web framework
 which is heavily inspired by [The Elm Architecture](https://guide.elm-lang.org/architecture/).
 Sauron native can target multiple GUI backends.
 
-## Currently supported backend
-- gtk
-- html
+## Currently supported backends
+- GTK
+- HTML
 - tui
 
-## Screenshot
+## Screenshots
 
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-gtk.png)
 
@@ -26,7 +26,7 @@ Sauron native can target multiple GUI backends.
 
 ![](https://raw.githubusercontent.com/ivanceras/sauron-native/master/assets/sauron-native-tui.png)
 
-## Running the example
+## Running the examples
 
 ```bash
 git submodule init
@@ -38,10 +38,10 @@ cd examples/cross_widget
 ./start_web.sh
 ```
 
-## TODO General
+## TODO (General)
 - Depracate itui, in favor of titik which is much simpler to maintain
 
-## TODO widgets
+## TODO (widgets)
 - [X] button
 - [x] checkbox
 - [X] column ( vbox )
@@ -56,11 +56,10 @@ cd examples/cross_widget
 - [x] text
 - [X] text_input (textbox)
 
-## TODO platforms
+## TODO (platforms)
 - [X] Linux (gtk)
 - [X] Windows ([native-windows-gui](https://github.com/gabdube/native-windows-gu))
 - [ ] Mac ([appki-rs](https://github.com/ryanmcgrath/appkit-rs))
-
 - [X] Browser(html)
 - [X] TUI
 
