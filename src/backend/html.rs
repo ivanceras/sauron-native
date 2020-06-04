@@ -233,6 +233,7 @@ where
                 vec![],
             )
         }
+        Widget::Scroll => div(vec![], vec![]),
     }
 }
 
