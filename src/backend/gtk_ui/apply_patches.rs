@@ -1,7 +1,9 @@
 use super::{Dispatch, GtkBackend};
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
-use gtk::{prelude::*, Button, Container, ContainerExt, Image, TextView, Widget, ScrolledWindow, Viewport};
+use gtk::{
+    prelude::*, Button, Container, ContainerExt, Image, ScrolledWindow, TextView, Viewport, Widget,
+};
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
@@ -68,11 +70,9 @@ fn set_widget_attributes<MSG: 'static>(
             }
         }
         crate::Widget::TextArea => {
-            let scrolled_window = widget.downcast_ref::<ScrolledWindow>().expect("must be a scrolled window").get_children();
-            let child = scrolled_window.get(0).expect("must have 1 child");
-            let text_view = child
+            let text_view = widget
                 .downcast_ref::<TextView>()
-                .expect("must be a text_view");
+                .unwrap_or_else(|| panic!("must be a text_view, found: {:?}", widget));
             for att in attrs {
                 if let Some(value) = att.get_value() {
                     match att.name {
@@ -86,29 +86,26 @@ fn set_widget_attributes<MSG: 'static>(
                 }
             }
         }
-        // Svg<ScrolledWindow<Image>>
         crate::Widget::Svg => {
-            let scrolled_window = widget.downcast_ref::<ScrolledWindow>().expect("must be a scrolled window").get_children();
-            let child = scrolled_window.get(0).expect("must have 1 child");
-            let view_port = child.downcast_ref::<Viewport>().expect("must be a viewport").get_children();
-            let vp_child = view_port.get(0).expect("must have 1 child");
-            let image = vp_child.downcast_ref::<Image>().expect("must be an image");
+            let image = widget
+                .downcast_ref::<Image>()
+                .unwrap_or_else(|| panic!("must be an image {:?}", widget));
             for att in attrs {
                 if let Some(value) = att.get_value() {
                     match att.name {
                         AttribKey::Data => {
                             if let Some(bytes) = value.as_bytes() {
-                                    let pixbuf_loader =
-                                        PixbufLoader::new_with_mime_type("image/svg+xml")
-                                            .expect("error loader");
-                                    pixbuf_loader
-                                        .write(bytes)
-                                        .expect("Unable to write svg data into pixbuf_loader");
-                                    pixbuf_loader.close().expect("error creating pixbuf");
-                                    let pixbuf = pixbuf_loader.get_pixbuf();
-                                    image.set_from_pixbuf(Some(
-                                        &pixbuf.expect("error in pixbuf_loader"),
-                                    ));
+                                let pixbuf_loader =
+                                    PixbufLoader::new_with_mime_type("image/svg+xml")
+                                        .expect("error loader");
+                                pixbuf_loader
+                                    .write(bytes)
+                                    .expect("Unable to write svg data into pixbuf_loader");
+                                pixbuf_loader.close().expect("error creating pixbuf");
+                                let pixbuf = pixbuf_loader.get_pixbuf();
+                                image.set_from_pixbuf(Some(
+                                    &pixbuf.expect("error in pixbuf_loader"),
+                                ));
                             }
                         }
                         _ => (),
@@ -141,8 +138,33 @@ fn find_nodes_recursive(
 
     let is_gbox = root_node.downcast_ref::<gtk::Box>().is_some();
     let is_paned = root_node.downcast_ref::<gtk::Paned>().is_some();
+    // Note: ScrolledWindow has a viewport
+    let is_scrolled_window = root_node.downcast_ref::<gtk::ScrolledWindow>().is_some();
     // prevent other container other than gtk::Box to be traverse otherwise widget such as textarea or textinput will
     // be traverse
+    if is_scrolled_window {
+        let view_port = root_node.get_children();
+        let view_port_cont = view_port
+            .get(0)
+            .expect("must have 1 children")
+            .downcast_ref::<Container>()
+            .expect("must be a container");
+        let children = view_port_cont.get_children();
+        let child_node_count = children.len();
+
+        for child in children {
+            *cur_node_idx += 1;
+            if nodes_to_find.get(&cur_node_idx).is_some() {
+                let widget: Widget = child.clone().upcast();
+                nodes_to_patch.insert(*cur_node_idx, widget);
+            }
+            if let Some(container) = child.downcast_ref::<Container>() {
+                let child_nodes_to_patch =
+                    find_nodes_recursive(container, cur_node_idx, nodes_to_find);
+                nodes_to_patch.extend(child_nodes_to_patch);
+            }
+        }
+    }
     if is_gbox || is_paned {
         let children = root_node.get_children();
         let child_node_count = children.len();

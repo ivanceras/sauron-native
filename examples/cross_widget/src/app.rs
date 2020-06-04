@@ -94,11 +94,17 @@ impl Component<Msg> for App {
                         }
                     }),
                 ]),
-                row(
+                hpane(
                     vec![],
                     vec![
-                        image(vec![data(include_bytes!("../horse.jpg").to_vec())]),
-                        svg(vec![data(include_bytes!("../tiger.svg").to_vec())]),
+                        scroll(
+                            vec![],
+                            vec![image(vec![data(include_bytes!("../horse.jpg").to_vec())])],
+                        ),
+                        scroll(
+                            vec![],
+                            vec![svg(vec![data(include_bytes!("../tiger.svg").to_vec())])],
+                        ),
                     ],
                 ),
                 textarea(vec![

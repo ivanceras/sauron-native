@@ -42,8 +42,9 @@ pub(crate) enum GtkWidget {
     TextInput(Entry),
     Checkbox(CheckButton),
     Radio(RadioButton),
-    Image(ScrolledWindow),
-    TextView(ScrolledWindow),
+    Image(Image),
+    TextView(TextView),
+    ScrollView(ScrolledWindow),
 }
 
 impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
@@ -279,9 +280,7 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
-            scroll_view.add(&image);
-            GtkWidget::Image(scroll_view)
+            GtkWidget::Image(image)
         }
         Widget::Svg => {
             let empty = vec![];
@@ -301,9 +300,7 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
-            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
-            scroll_view.add(&image);
-            GtkWidget::Image(scroll_view)
+            GtkWidget::Image(image)
         }
         Widget::TextArea => {
             let value = find_value(AttribKey::Value, &attrs)
@@ -331,9 +328,11 @@ where
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
 
+            GtkWidget::TextView(text_view)
+        }
+        Widget::Scroll => {
             let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
-            scroll_view.add(&text_view);
-            GtkWidget::TextView(scroll_view)
+            GtkWidget::ScrollView(scroll_view)
         }
     }
 }
@@ -381,6 +380,10 @@ impl GtkWidget {
                 let container: &Container = paned.upcast_ref();
                 Some(container)
             }
+            GtkWidget::ScrollView(scroll_view) => {
+                let container: &Container = scroll_view.upcast_ref();
+                Some(container)
+            }
             _ => None,
         }
     }
@@ -423,6 +426,10 @@ impl GtkWidget {
                 let widget: &gtk::Widget = text_view.upcast_ref();
                 Some(widget)
             }
+            GtkWidget::ScrollView(scroll_view) => {
+                let widget: &gtk::Widget = scroll_view.upcast_ref();
+                Some(widget)
+            }
         }
     }
 
@@ -437,11 +444,20 @@ impl GtkWidget {
                 }
                 if let Some(child1) = children.get(0).map(|c| c.as_widget()).flatten() {
                     paned.pack1(child1, true, true);
-                    child1.set_size_request(200, -1);
+                    child1.set_size_request(200, 200); //set the size accdg to the child
                 }
                 if let Some(child2) = children.get(1).map(|c| c.as_widget()).flatten() {
                     paned.pack2(child2, true, true);
-                    child2.set_size_request(100, -1);
+                    child2.set_size_request(100, 200);
+                }
+            }
+            GtkWidget::ScrollView(container) => {
+                for child in children {
+                    if let Some(child_widget) = child.as_widget() {
+                        container.add(child_widget);
+                    } else {
+                        println!("was not able to add child widget: {:?}", child.as_widget());
+                    }
                 }
             }
             GtkWidget::GBox(container) => {
