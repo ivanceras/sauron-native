@@ -28,6 +28,7 @@ pub enum Widget {
     Svg,
     TextArea,
     Scroll,
+    Overlay,
 }
 
 pub fn widget<MSG>(
@@ -56,6 +57,10 @@ pub fn hpane<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<
 /// horizontal scrollable
 pub fn scroll<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Scroll, attrs, children)
+}
+
+pub fn overlay<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+    widget(Widget::Overlay, attrs, children)
 }
 
 pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {

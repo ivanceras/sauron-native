@@ -9,7 +9,7 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
-    CssProvider, Entry, EntryBuffer, Image, IsA, Label, Orientation, Paned, RadioButton,
+    CssProvider, Entry, EntryBuffer, Image, IsA, Label, Orientation, Overlay, Paned, RadioButton,
     ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt,
     WidgetExt, Window, WindowPosition, WindowType,
 };
@@ -46,6 +46,7 @@ pub(crate) enum GtkWidget {
     Image(Image),
     TextView(TextView),
     ScrollView(ScrolledWindow),
+    Overlay(Overlay),
 }
 
 impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
@@ -417,6 +418,10 @@ where
             let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
             GtkWidget::ScrollView(scroll_view)
         }
+        Widget::Overlay => {
+            let overlay = Overlay::new();
+            GtkWidget::Overlay(overlay)
+        }
     }
 }
 
@@ -467,6 +472,10 @@ impl GtkWidget {
                 let container: &Container = scroll_view.upcast_ref();
                 Some(container)
             }
+            GtkWidget::Overlay(overlay) => {
+                let container: &Container = overlay.upcast_ref();
+                Some(container)
+            }
             _ => None,
         }
     }
@@ -513,6 +522,10 @@ impl GtkWidget {
                 let widget: &gtk::Widget = scroll_view.upcast_ref();
                 Some(widget)
             }
+            GtkWidget::Overlay(overlay) => {
+                let widget: &gtk::Widget = overlay.upcast_ref();
+                Some(widget)
+            }
         }
     }
 
@@ -527,17 +540,24 @@ impl GtkWidget {
                 }
                 if let Some(child1) = children.get(0).map(|c| c.as_widget()).flatten() {
                     paned.pack1(child1, true, true);
-                    //child1.set_size_request(200, 200); //set the size accdg to the child
                 }
                 if let Some(child2) = children.get(1).map(|c| c.as_widget()).flatten() {
                     paned.pack2(child2, true, true);
-                    //child2.set_size_request(800, 200);
                 }
             }
             GtkWidget::ScrollView(container) => {
                 for child in children {
                     if let Some(child_widget) = child.as_widget() {
                         container.add(child_widget);
+                    } else {
+                        println!("was not able to add child widget: {:?}", child.as_widget());
+                    }
+                }
+            }
+            GtkWidget::Overlay(container) => {
+                for child in children {
+                    if let Some(child_widget) = child.as_widget() {
+                        container.add_overlay(child_widget);
                     } else {
                         println!("was not able to add child widget: {:?}", child.as_widget());
                     }

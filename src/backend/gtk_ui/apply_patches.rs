@@ -137,6 +137,7 @@ fn find_nodes_recursive(
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
 
     let is_gbox = node.downcast_ref::<gtk::Box>().is_some();
+    let is_overlay = node.downcast_ref::<gtk::Overlay>().is_some();
     let is_paned = node.downcast_ref::<gtk::Paned>().is_some();
     // Note: ScrolledWindow has a viewport
     let is_scrolled_window = node.downcast_ref::<gtk::ScrolledWindow>().is_some();
@@ -175,7 +176,7 @@ fn find_nodes_recursive(
             }
         }
     }
-    if is_gbox || is_paned {
+    if is_gbox || is_paned || is_overlay {
         let children = node.get_children();
         let child_node_count = children.len();
 

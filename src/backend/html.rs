@@ -106,6 +106,10 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
 
+            let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
+                .map(|v| v.as_bytes().map(|v| v.to_vec()))
+                .flatten();
+
             let attributes = attrs
                 .into_iter()
                 .filter_map(|att| match att.name {
@@ -115,7 +119,30 @@ where
                     _ => None,
                 })
                 .collect();
-            input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
+
+            button(
+                vec![],
+                vec![if let Some(svg_image_data) = svg_image_data {
+                    img(
+                        vec![
+                            styles([
+                                ("width", "100%"),
+                                ("height", "auto"),
+                                ("max-width", "800px"),
+                            ]),
+                            src(format!(
+                                "data:image/svg+xml;base64,{}",
+                                base64::encode(&svg_image_data)
+                            )),
+                        ],
+                        vec![],
+                    )
+                } else {
+                    text("")
+                }],
+            )
+            .add_attributes(attributes)
+            //input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
         }
         Widget::Paragraph => {
             let txt_value = find_value(AttribKey::Value, &attrs)
@@ -151,7 +178,14 @@ where
                     _ => None,
                 })
                 .collect();
-            textarea(vec![value(&txt_value)], vec![text(txt_value)]).add_attributes(attributes)
+            textarea(
+                vec![
+                    value(&txt_value),
+                    styles([("width", "100%"), ("height", "100%")]),
+                ],
+                vec![text(txt_value)],
+            )
+            .add_attributes(attributes)
         }
         Widget::Checkbox => {
             let cb_label = find_value(AttribKey::Label, &attrs)
@@ -197,18 +231,11 @@ where
 
             let mime_type = util::image_mime_type(bytes).expect("unsupported image");
             img(
-                vec![
-                    styles([
-                        ("width", "100%"),
-                        ("height", "auto"),
-                        ("max-width", "800px"),
-                    ]),
-                    src(format!(
-                        "data:{};base64,{}",
-                        mime_type,
-                        base64::encode(bytes)
-                    )),
-                ],
+                vec![src(format!(
+                    "data:{};base64,{}",
+                    mime_type,
+                    base64::encode(bytes)
+                ))],
                 vec![],
             )
         }
@@ -219,17 +246,10 @@ where
                 .flatten()
                 .unwrap_or(&empty);
             img(
-                vec![
-                    styles([
-                        ("width", "100%"),
-                        ("height", "auto"),
-                        ("max-width", "800px"),
-                    ]),
-                    src(format!(
-                        "data:image/svg+xml;base64,{}",
-                        base64::encode(bytes)
-                    )),
-                ],
+                vec![src(format!(
+                    "data:image/svg+xml;base64,{}",
+                    base64::encode(bytes)
+                ))],
                 vec![],
             )
         }
