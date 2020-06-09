@@ -22,6 +22,7 @@ use sauron_vdom::{
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 mod apply_patches;
+mod images;
 
 pub struct GtkBackend<APP, MSG>
 where
@@ -170,29 +171,76 @@ where
     match widget {
         // vbox can have many children
         Widget::Vbox => {
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
+            vbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(vbox)
         }
         // hbox can have many children
         Widget::Hbox => {
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
             let hbox = gtk::Box::new(Orientation::Horizontal, 0);
+            hbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(hbox)
         }
         // paned has only 2 children
         Widget::Hpane => {
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
             let hpane = Paned::new(Orientation::Horizontal);
+            hpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
             let vpane = Paned::new(Orientation::Vertical);
+            vpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(vpane)
         }
         Widget::Button => {
-            let label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
+            println!("it's a button");
+            let label = find_value(AttribKey::Label, &attrs).map(|v| v.to_string());
 
-            let btn = Button::new_with_label(&label);
+            let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
+                .map(|v| v.as_bytes())
+                .flatten();
+            let btn = Button::new();
+            if let Some(label) = label {
+                btn.set_label(&label);
+            }
             if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
@@ -201,6 +249,11 @@ where
                     let msg = cb_clone.emit(mouse_event);
                     program_clone.dispatch(msg);
                 });
+            }
+            if let Some(svg_image_data) = svg_image_data {
+                println!("got an svg image here..");
+                let svg_image: Image = images::svg_image(&svg_image_data);
+                btn.set_image(Some(&svg_image));
             }
             GtkWidget::Button(btn)
         }
@@ -280,6 +333,17 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+            image.set_size_request(width as i32, height as i32);
             GtkWidget::Image(image)
         }
         Widget::Svg => {
@@ -300,6 +364,16 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+            image.set_size_request(width as i32, height as i32);
             GtkWidget::Image(image)
         }
         Widget::TextArea => {
@@ -311,7 +385,6 @@ where
             buffer.set_text(&value);
 
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
-                println!("textarea has a callback..");
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
                 buffer.connect_changed(move |buffer| {
@@ -327,7 +400,17 @@ where
 
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
 
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            text_view.set_size_request(width as i32, height as i32);
             GtkWidget::TextView(text_view)
         }
         Widget::Scroll => {
@@ -444,11 +527,11 @@ impl GtkWidget {
                 }
                 if let Some(child1) = children.get(0).map(|c| c.as_widget()).flatten() {
                     paned.pack1(child1, true, true);
-                    child1.set_size_request(200, 200); //set the size accdg to the child
+                    //child1.set_size_request(200, 200); //set the size accdg to the child
                 }
                 if let Some(child2) = children.get(1).map(|c| c.as_widget()).flatten() {
                     paned.pack2(child2, true, true);
-                    child2.set_size_request(100, 200);
+                    //child2.set_size_request(800, 200);
                 }
             }
             GtkWidget::ScrollView(container) => {
@@ -463,6 +546,7 @@ impl GtkWidget {
             GtkWidget::GBox(container) => {
                 for child in children {
                     if let Some(child_widget) = child.as_widget() {
+                        //container.pack_start(child_widget, false, false, 0);
                         container.add(child_widget);
                     } else {
                         println!("was not able to add child widget: {:?}", child.as_widget());

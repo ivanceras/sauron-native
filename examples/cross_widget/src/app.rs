@@ -86,13 +86,7 @@ impl Component<Msg> for App {
                 }),
                 text_input(vec![
                     value(self.events.join("\n")),
-                    on_input(|event: Event| match event {
-                        Event::InputEvent(input) => Msg::ChangeText(input.value),
-                        _ => {
-                            trace!("This is unexpected: {:#?}", event);
-                            panic!();
-                        }
-                    }),
+                    on_input(|input| Msg::ChangeText(input.value)),
                 ]),
                 hpane(
                     vec![],
@@ -118,13 +112,7 @@ impl Component<Msg> for App {
                     This is a paragraph line 6\n\
                         ",
                     ),
-                    on_input(|event: Event| match event {
-                        Event::InputEvent(input) => Msg::ParagraphChanged(input.value),
-                        _ => {
-                            trace!("This is unexpected: {:#?}", event);
-                            panic!();
-                        }
-                    }),
+                    on_input(|input| Msg::ParagraphChanged(input.value)),
                     height(7.0),
                 ]),
                 textarea(vec![value(&self.paragraph_text)]),

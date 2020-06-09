@@ -1,4 +1,5 @@
 use crate::builder::attr;
+use crate::event::{InputEvent, MouseEvent};
 use crate::{event::on, Attribute, Callback, Event, Value};
 use std::fmt;
 
@@ -21,6 +22,8 @@ pub enum AttribKey {
     Data,
     Height,
     Width,
+    /// svg image data attribute used in button
+    SvgImage,
 }
 
 impl fmt::Display for AttribKey {
@@ -103,9 +106,31 @@ declare_attr! {
     height => Height;
     /// width attribute, used in most widgets
     width => Width;
+    /// svg_image attribute, used in buttons
+    svg_image => SvgImage;
 }
 
 declare_event_attr! {
-    on_input => InputEvent;
-    on_click => ClickEvent;
+    //on_input => InputEvent;
+    //on_click => ClickEvent;
+}
+
+pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::ClickEvent, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_input<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(InputEvent) -> MSG + 'static,
+{
+    on(AttribKey::InputEvent, move |ev: Event| match ev {
+        Event::InputEvent(input) => func(input),
+        _ => unreachable!(),
+    })
 }

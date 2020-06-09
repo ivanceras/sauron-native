@@ -119,38 +119,48 @@ fn set_widget_attributes<MSG: 'static>(
     }
 }
 
-fn find_nodes<MSG>(root_node: &Container, patches: &[Patch<MSG>]) -> HashMap<usize, Widget> {
+fn find_nodes<MSG>(node: &Container, patches: &[Patch<MSG>]) -> HashMap<usize, Widget> {
     let mut nodes_to_find = HashSet::new();
     let mut cur_node_idx = 0;
 
     for patch in patches {
         nodes_to_find.insert(patch.node_idx());
     }
-    find_nodes_recursive(root_node, &mut cur_node_idx, &nodes_to_find)
+    find_nodes_recursive(node, &mut cur_node_idx, &nodes_to_find)
 }
 
 fn find_nodes_recursive(
-    root_node: &Container,
+    node: &Container,
     cur_node_idx: &mut usize,
     nodes_to_find: &HashSet<usize>,
 ) -> HashMap<usize, Widget> {
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
 
-    let is_gbox = root_node.downcast_ref::<gtk::Box>().is_some();
-    let is_paned = root_node.downcast_ref::<gtk::Paned>().is_some();
+    let is_gbox = node.downcast_ref::<gtk::Box>().is_some();
+    let is_paned = node.downcast_ref::<gtk::Paned>().is_some();
     // Note: ScrolledWindow has a viewport
-    let is_scrolled_window = root_node.downcast_ref::<gtk::ScrolledWindow>().is_some();
+    let is_scrolled_window = node.downcast_ref::<gtk::ScrolledWindow>().is_some();
     // prevent other container other than gtk::Box to be traverse otherwise widget such as textarea or textinput will
     // be traverse
     if is_scrolled_window {
-        let view_port = root_node.get_children();
-        let view_port_cont = view_port
+        let root_node_children = node.get_children();
+        assert_eq!(root_node_children.len(), 1);
+        let view_port_child = root_node_children
+            .get(0)
+            .expect("scroll window must have 1 child");
+        let is_view_port = view_port_child.downcast_ref::<gtk::Viewport>().is_some();
+        //NOTE: if the child widget is a text area, there is no viewport
+        //if the child widget is an image, then there is viewport.. geez.
+        let view_port = root_node_children
             .get(0)
             .expect("must have 1 children")
             .downcast_ref::<Container>()
             .expect("must be a container");
-        let children = view_port_cont.get_children();
-        let child_node_count = children.len();
+        let children = if is_view_port {
+            view_port.get_children()
+        } else {
+            root_node_children
+        };
 
         for child in children {
             *cur_node_idx += 1;
@@ -166,7 +176,7 @@ fn find_nodes_recursive(
         }
     }
     if is_gbox || is_paned {
-        let children = root_node.get_children();
+        let children = node.get_children();
         let child_node_count = children.len();
 
         for child in children {

@@ -4,7 +4,8 @@
 //#![feature(bindings_after_at)]
 
 pub mod event {
-    pub use sauron_vdom::{builder::on, event::InputEvent, Event};
+    pub use sauron_vdom::event::{InputEvent, MouseEvent};
+    pub use sauron_vdom::{builder::on, Event};
 }
 use std::fmt;
 use widget::attribute::AttribKey;
