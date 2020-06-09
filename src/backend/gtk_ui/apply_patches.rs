@@ -2,7 +2,8 @@ use super::{Dispatch, GtkBackend};
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
-    prelude::*, Button, Container, ContainerExt, Image, ScrolledWindow, TextView, Viewport, Widget,
+    prelude::*, Button, Container, ContainerExt, Image, Label, ScrolledWindow, TextView, Viewport,
+    Widget,
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -33,6 +34,7 @@ where
                             let child =
                                 super::from_node(program, &element.tag, &node.get_attributes());
                             let widget = child.as_widget().expect("must be a widget");
+                            println!("appending children: {:?}", widget);
                             container.add(widget);
                             widget.show();
                         }
@@ -43,6 +45,7 @@ where
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
                     for i in *num_children_remaining..children.len() {
+                        println!("truncating children: {:?}", children[i]);
                         container.remove(&children[i]);
                     }
                 }
@@ -81,6 +84,10 @@ fn set_widget_attributes<MSG: 'static>(
                                 buffer.set_text(&value.to_string());
                             }
                         }
+                        AttribKey::Editable => {
+                            let editable = value.as_bool().unwrap_or(false);
+                            text_view.set_editable(editable);
+                        }
                         _ => (),
                     }
                 }
@@ -108,6 +115,19 @@ fn set_widget_attributes<MSG: 'static>(
                                 ));
                             }
                         }
+                        _ => (),
+                    }
+                }
+            }
+        }
+        crate::Widget::Label => {
+            let label = widget
+                .downcast_ref::<Label>()
+                .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
+            for att in attrs {
+                if let Some(value) = att.get_value() {
+                    match att.name {
+                        AttribKey::Value => label.set_text(&value.to_string()),
                         _ => (),
                     }
                 }

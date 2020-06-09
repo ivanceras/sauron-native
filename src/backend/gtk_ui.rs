@@ -9,7 +9,7 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
-    CssProvider, Entry, EntryBuffer, Image, IsA, Label, Orientation, Overlay, Paned, RadioButton,
+    CssProvider, Entry, EntryBuffer, Image, Label, Orientation, Overlay, Paned, RadioButton,
     ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt,
     WidgetExt, Window, WindowPosition, WindowType,
 };
@@ -39,6 +39,7 @@ pub(crate) enum GtkWidget {
     GBox(gtk::Box),
     Paned(Paned),
     Button(Button),
+    Label(Label),
     Paragraph(TextView),
     TextInput(Entry),
     Checkbox(CheckButton),
@@ -78,8 +79,11 @@ where
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
-            application: Application::new("ivanceras.github.io.gtk", ApplicationFlags::FLAGS_NONE)
-                .expect("Failed to start app"),
+            application: Application::new(
+                Some("ivanceras.github.io.gtk"),
+                ApplicationFlags::FLAGS_NONE,
+            )
+            .expect("Failed to start app"),
             _phantom_msg: PhantomData,
         };
         let root_widget = Self::from_node_tree(&backend, root_vdom);
@@ -246,6 +250,7 @@ where
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
                 btn.connect_clicked(move |_| {
+                    println!("btn is clicked..");
                     let mouse_event = MouseEvent::default();
                     let msg = cb_clone.emit(mouse_event);
                     program_clone.dispatch(msg);
@@ -288,6 +293,15 @@ where
                 });
             }
             GtkWidget::TextInput(entry)
+        }
+        Widget::Label => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let label = Label::new(Some(&*value));
+
+            GtkWidget::Label(label)
         }
         Widget::Checkbox => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -382,6 +396,11 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
 
+            let editable = find_value(AttribKey::Editable, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+
             let buffer = TextBuffer::new(None::<&TextTagTable>);
             buffer.set_text(&value);
 
@@ -401,6 +420,8 @@ where
 
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
+            text_view.set_editable(editable);
+
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -486,6 +507,10 @@ impl GtkWidget {
                 let widget: &gtk::Widget = btn.upcast_ref();
                 Some(widget)
             }
+            GtkWidget::Label(label) => {
+                let widget: &gtk::Widget = label.upcast_ref();
+                Some(widget)
+            }
             GtkWidget::GBox(cbox) => {
                 let widget: &gtk::Widget = cbox.upcast_ref();
                 Some(widget)
@@ -555,12 +580,17 @@ impl GtkWidget {
                 }
             }
             GtkWidget::Overlay(container) => {
+                let mut index = 0;
                 for child in children {
                     if let Some(child_widget) = child.as_widget() {
                         container.add_overlay(child_widget);
+                        let c_index = container.get_child_index(child_widget);
+                        assert_eq!(c_index, index);
+                    //container.reorder_overlay(child_widget, index);
                     } else {
                         println!("was not able to add child widget: {:?}", child.as_widget());
                     }
+                    index += 1;
                 }
             }
             GtkWidget::GBox(container) => {

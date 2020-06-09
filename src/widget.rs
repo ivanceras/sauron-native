@@ -1,10 +1,8 @@
 use crate::{AttribKey, Attribute, Node};
-use control::{Button, Checkbox, TextInput};
 use sauron_vdom::{builder::element, Callback, Event};
 use std::fmt::Debug;
 
 pub mod attribute;
-mod control;
 
 /// TODO: Each widget variant will need to have more details
 ///  such as attributes, that will be converted to their
@@ -20,6 +18,7 @@ pub enum Widget {
     Vpane,
     Hpane,
     Button,
+    Label,
     Paragraph,
     TextInput,
     Checkbox,
@@ -97,4 +96,8 @@ pub fn svg<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
 
 pub fn textarea<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
     widget(Widget::TextArea, attrs, vec![])
+}
+
+pub fn text_label<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {
+    widget(Widget::Label, attrs, vec![])
 }

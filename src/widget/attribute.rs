@@ -15,15 +15,19 @@ pub enum AttribKey {
     Checked,
     /// Alignment Enum, used in hbox and vbox
     Alignment,
-    ClickEvent,
-    InputEvent,
     Key,
+    /// whether or not the control is editable, used in text_view
+    Editable,
     /// data, used in image blobs and svg
     Data,
     Height,
     Width,
     /// svg image data attribute used in button
     SvgImage,
+
+    /// Events
+    ClickEvent,
+    InputEvent,
 }
 
 impl fmt::Display for AttribKey {
@@ -76,6 +80,7 @@ macro_rules! declare_attr {
     }
 }
 
+/*
 macro_rules! declare_event_attr {
     (
         $(
@@ -94,6 +99,7 @@ macro_rules! declare_event_attr {
         )*
     }
 }
+*/
 
 declare_attr! {
     /// value attribute, used in text_input, textarea
@@ -108,12 +114,16 @@ declare_attr! {
     width => Width;
     /// svg_image attribute, used in buttons
     svg_image => SvgImage;
+    /// editable attribute
+    editable => Editable;
 }
 
+/*
 declare_event_attr! {
-    //on_input => InputEvent;
-    //on_click => ClickEvent;
+    on_input => InputEvent;
+    on_click => ClickEvent;
 }
+*/
 
 pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>
 where
