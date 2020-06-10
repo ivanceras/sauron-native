@@ -101,6 +101,14 @@ where
             vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
             vec![],
         ),
+        //TODO: use position absolute, etc
+        Widget::Overlay => div(vec![], vec![]),
+        Widget::Label => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            label(vec![], vec![text(value)])
+        }
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())

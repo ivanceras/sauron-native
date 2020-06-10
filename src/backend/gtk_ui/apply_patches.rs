@@ -2,8 +2,8 @@ use super::{Dispatch, GtkBackend};
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
-    prelude::*, Button, Container, ContainerExt, Image, Label, ScrolledWindow, TextView, Viewport,
-    Widget,
+    prelude::*, Button, Container, ContainerExt, Image, Label, Overlay, ScrolledWindow, TextView,
+    Viewport, Widget,
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -28,13 +28,27 @@ where
                 set_widget_attributes::<MSG>(tag, widget, attrs);
             }
             Patch::AppendChildren(tag, _node_idx, nodes) => {
-                if let Some(container) = widget.downcast_ref::<Container>() {
+                println!("appending children..");
+                if let Some(overlay) = widget.downcast_ref::<Overlay>() {
                     for node in nodes {
                         if let Some(element) = node.as_element_ref() {
                             let child =
                                 super::from_node(program, &element.tag, &node.get_attributes());
                             let widget = child.as_widget().expect("must be a widget");
                             println!("appending children: {:?}", widget);
+                            //Note: overlay have different behavior when adding child widget
+                            overlay.add_overlay(widget);
+                            widget.show();
+                        }
+                    }
+                } else if let Some(container) = widget.downcast_ref::<Container>() {
+                    for node in nodes {
+                        if let Some(element) = node.as_element_ref() {
+                            let child =
+                                super::from_node(program, &element.tag, &node.get_attributes());
+                            let widget = child.as_widget().expect("must be a widget");
+                            println!("appending children: {:?}", widget);
+                            //Note: overlay have different behavior when adding child widget
                             container.add(widget);
                             widget.show();
                         }
@@ -42,6 +56,7 @@ where
                 }
             }
             Patch::TruncateChildren(tag, _node_idx, num_children_remaining) => {
+                println!("truncating children..");
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
                     for i in *num_children_remaining..children.len() {
@@ -50,7 +65,20 @@ where
                     }
                 }
             }
-            _ => {}
+            Patch::Replace(tag, _node_idx, new_node) => {
+                container.remove(widget);
+                if let Some(new_element) = new_node.as_element_ref() {
+                    let new_widget =
+                        super::from_node(program, &new_element.tag, &new_node.get_attributes());
+                    let new_widget = new_widget.as_widget().expect("must be a widget");
+                    container.add(new_widget);
+                    new_widget.show();
+                }
+            }
+            _ => {
+                println!("container: {:?}", container);
+                println!("todo for: {:?}", patch);
+            }
         }
     }
 }
