@@ -27,6 +27,7 @@ pub enum AttribKey {
 
     /// Events
     ClickEvent,
+    MouseDown,
     InputEvent,
 }
 
@@ -130,6 +131,16 @@ where
     F: Fn(MouseEvent) -> MSG + 'static,
 {
     on(AttribKey::ClickEvent, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_mousedown<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::MouseDown, move |ev: Event| match ev {
         Event::MouseEvent(me) => func(me),
         _ => unreachable!(),
     })

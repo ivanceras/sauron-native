@@ -9,9 +9,9 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
-    CssProvider, Entry, EntryBuffer, Image, Label, Orientation, Overlay, Paned, RadioButton,
-    ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt,
-    WidgetExt, Window, WindowPosition, WindowType,
+    CssProvider, Entry, EntryBuffer, EventBox, Image, Label, Orientation, Overlay, Paned,
+    RadioButton, ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView,
+    TextViewExt, WidgetExt, Window, WindowPosition, WindowType,
 };
 use image::ImageFormat;
 use log::*;
@@ -39,7 +39,7 @@ pub(crate) enum GtkWidget {
     GBox(gtk::Box),
     Paned(Paned),
     Button(Button),
-    Label(Label),
+    Label(EventBox),
     Paragraph(TextView),
     TextInput(Entry),
     Checkbox(CheckButton),
@@ -256,6 +256,7 @@ where
                     program_clone.dispatch(msg);
                 });
             }
+
             if let Some(svg_image_data) = svg_image_data {
                 println!("got an svg image here..");
                 let svg_image: Image = images::svg_image(&svg_image_data);
@@ -301,7 +302,24 @@ where
 
             let label = Label::new(Some(&*value));
 
-            GtkWidget::Label(label)
+            let event_box = EventBox::new();
+            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
+                println!("label has some mouse down");
+                let cb_clone = cb.clone();
+                let program_clone = program.clone();
+                event_box.connect_button_press_event(move |_view, event| {
+                    println!("label is button pressed");
+                    let (x, y) = event.get_position();
+                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                    let msg = cb_clone.emit(mouse_event);
+                    program_clone.dispatch(msg);
+                    Inhibit(false)
+                });
+            }
+            event_box.add(&label);
+            label.show();
+            event_box.show();
+            GtkWidget::Label(event_box)
         }
         Widget::Checkbox => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -384,6 +402,20 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
+            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
+                println!("textview has some mouse down");
+                let cb_clone = cb.clone();
+                let program_clone = program.clone();
+                image.connect_button_press_event(move |_view, event| {
+                    println!("textview is button pressed");
+                    let (x, y) = event.get_position();
+                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                    let msg = cb_clone.emit(mouse_event);
+                    program_clone.dispatch(msg);
+                    Inhibit(false)
+                });
+            }
+
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -421,6 +453,8 @@ where
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
             text_view.set_editable(editable);
+            text_view.set_can_focus(false);
+            text_view.set_focus_on_click(false);
 
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
@@ -432,6 +466,23 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
+            // inhibit selection
+            text_view.connect_selection_notify_event(move |_self, data| Inhibit(false));
+
+            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
+                println!("textview has some mouse down");
+                let cb_clone = cb.clone();
+                let program_clone = program.clone();
+                text_view.connect_button_press_event(move |_view, event| {
+                    println!("textview is button pressed");
+                    let (x, y) = event.get_position();
+                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                    let msg = cb_clone.emit(mouse_event);
+                    program_clone.dispatch(msg);
+                    Inhibit(false)
+                });
+            }
+
             text_view.set_size_request(width as i32, height as i32);
             GtkWidget::TextView(text_view)
         }
@@ -441,6 +492,7 @@ where
         }
         Widget::Overlay => {
             let overlay = Overlay::new();
+            overlay.show_all();
             GtkWidget::Overlay(overlay)
         }
     }

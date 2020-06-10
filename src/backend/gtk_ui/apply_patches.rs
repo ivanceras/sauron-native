@@ -2,8 +2,8 @@ use super::{Dispatch, GtkBackend};
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
-    prelude::*, Button, Container, ContainerExt, Image, Label, Overlay, ScrolledWindow, TextView,
-    Viewport, Widget,
+    prelude::*, Button, Container, ContainerExt, EventBox, Image, Label, Overlay, ScrolledWindow,
+    TextView, Viewport, Widget,
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -32,20 +32,24 @@ where
                 if let Some(overlay) = widget.downcast_ref::<Overlay>() {
                     for node in nodes {
                         if let Some(element) = node.as_element_ref() {
-                            let child =
-                                super::from_node(program, &element.tag, &node.get_attributes());
+                            let child = super::from_node(program, &element.tag, &element.attrs);
                             let widget = child.as_widget().expect("must be a widget");
-                            println!("appending children: {:?}", widget);
+                            println!("appending children in overlay: {:?}", widget);
+                            println!("attibute count: {}", &element.attributes().len());
+                            println!("children count before: {}", overlay.get_children().len());
                             //Note: overlay have different behavior when adding child widget
                             overlay.add_overlay(widget);
+                            println!("children count after: {}", overlay.get_children().len());
+                            overlay.set_child_index(widget, -1);
+                            println!("widget child index: {}", overlay.get_child_index(widget));
                             widget.show();
+                            overlay.show_all();
                         }
                     }
                 } else if let Some(container) = widget.downcast_ref::<Container>() {
                     for node in nodes {
                         if let Some(element) = node.as_element_ref() {
-                            let child =
-                                super::from_node(program, &element.tag, &node.get_attributes());
+                            let child = super::from_node(program, &element.tag, &element.attrs);
                             let widget = child.as_widget().expect("must be a widget");
                             println!("appending children: {:?}", widget);
                             //Note: overlay have different behavior when adding child widget
@@ -66,6 +70,7 @@ where
                 }
             }
             Patch::Replace(tag, _node_idx, new_node) => {
+                println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
                     let new_widget =
@@ -149,7 +154,12 @@ fn set_widget_attributes<MSG: 'static>(
             }
         }
         crate::Widget::Label => {
-            let label = widget
+            let event_box = widget
+                .downcast_ref::<EventBox>()
+                .unwrap_or_else(|| panic!("must be an eventbox, found: {:?}", widget));
+            let event_box_children = event_box.get_children();
+            let child1 = event_box_children.get(0).expect("must have one child");
+            let label = child1
                 .downcast_ref::<Label>()
                 .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
             for att in attrs {
@@ -187,6 +197,7 @@ fn find_nodes_recursive(
     let is_gbox = node.downcast_ref::<gtk::Box>().is_some();
     let is_overlay = node.downcast_ref::<gtk::Overlay>().is_some();
     let is_paned = node.downcast_ref::<gtk::Paned>().is_some();
+    let is_event_box = node.downcast_ref::<gtk::EventBox>().is_some();
     // Note: ScrolledWindow has a viewport
     let is_scrolled_window = node.downcast_ref::<gtk::ScrolledWindow>().is_some();
     // prevent other container other than gtk::Box to be traverse otherwise widget such as textarea or textinput will
@@ -224,14 +235,15 @@ fn find_nodes_recursive(
             }
         }
     }
-    if is_gbox || is_paned || is_overlay {
+    if (is_gbox || is_paned || is_overlay) && !is_event_box {
         let children = node.get_children();
+
         let child_node_count = children.len();
 
         for child in children {
             *cur_node_idx += 1;
             if nodes_to_find.get(&cur_node_idx).is_some() {
-                let widget: Widget = child.clone().upcast();
+                let widget = child.clone().upcast();
                 nodes_to_patch.insert(*cur_node_idx, widget);
             }
             if let Some(container) = child.downcast_ref::<Container>() {
