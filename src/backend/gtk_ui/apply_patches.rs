@@ -11,12 +11,12 @@ use std::{
     rc::Rc,
 };
 
-pub fn apply_patches<MSG, DSP>(program: &DSP, container: &Container, patches: &Vec<Patch<MSG>>)
+pub fn apply_patches<MSG, DSP>(program: &DSP, root_container: &Container, patches: &Vec<Patch<MSG>>)
 where
     MSG: Debug,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
-    let nodes_to_patch = find_nodes(container, patches);
+    let nodes_to_patch = find_nodes(root_container, patches);
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
@@ -66,17 +66,17 @@ where
                 }
             }
             Patch::Replace(tag, _node_idx, new_node) => {
-                container.remove(widget);
+                root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
                     let new_widget =
                         super::from_node(program, &new_element.tag, &new_node.get_attributes());
                     let new_widget = new_widget.as_widget().expect("must be a widget");
-                    container.add(new_widget);
+                    root_container.add(new_widget);
                     new_widget.show();
                 }
             }
             _ => {
-                println!("container: {:?}", container);
+                println!("container: {:?}", root_container);
                 println!("todo for: {:?}", patch);
             }
         }
