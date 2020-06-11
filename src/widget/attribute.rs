@@ -3,8 +3,28 @@ use crate::event::{InputEvent, MouseEvent};
 use crate::{event::on, Attribute, Callback, Event, Value};
 use std::fmt;
 
-/// TODO: replace the &'static str attribute key as an enum
-/// enumerating all the properties of our widget abstraction
+/// declare an attribute to be used as a function call
+macro_rules! declare_attr {
+    (
+        $(
+            $(#[$attr:meta])*
+            $fname:ident => $att_key:tt;
+        )*
+    ) => {
+
+        $(
+            $(#[$attr])*
+            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
+                where V:Into<Value>,
+            {
+                attr(AttribKey::$att_key, v)
+            }
+        )*
+    }
+}
+
+/// These are attribute keys used in sauron-native, which will be translated to their
+/// corresponding backends
 #[derive(Clone, PartialEq, PartialOrd, Debug, Eq, Ord)]
 pub enum AttribKey {
     /// String, used in text_input
@@ -28,79 +48,10 @@ pub enum AttribKey {
     /// Events
     ClickEvent,
     MouseDown,
+    MouseUp,
+    MouseMove,
     InputEvent,
 }
-
-impl fmt::Display for AttribKey {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_value())
-        .flatten()
-}
-
-pub fn find_callback<MSG>(
-    key: AttribKey,
-    attrs: &Vec<Attribute<MSG>>,
-) -> Option<&Callback<Event, MSG>>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_callback())
-        .flatten()
-}
-
-macro_rules! declare_attr {
-    (
-        $(
-            $(#[$attr:meta])*
-            $fname:ident => $att_key:tt;
-        )*
-    ) => {
-
-        $(
-            $(#[$attr])*
-            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
-                where V:Into<Value>,
-            {
-                attr(AttribKey::$att_key, v)
-            }
-        )*
-    }
-}
-
-/*
-macro_rules! declare_event_attr {
-    (
-        $(
-            $(#[$attr:meta])*
-            $fname:ident => $att_key:tt;
-        )*
-    ) => {
-
-        $(
-            $(#[$attr])*
-            pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
-                where V:Into<Callback<Event,MSG>>,
-            {
-                on(AttribKey::$att_key, v)
-            }
-        )*
-    }
-}
-*/
 
 declare_attr! {
     /// value attribute, used in text_input, textarea
@@ -119,12 +70,38 @@ declare_attr! {
     editable => Editable;
 }
 
-/*
-declare_event_attr! {
-    on_input => InputEvent;
-    on_click => ClickEvent;
+impl fmt::Display for AttribKey {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
-*/
+
+/// find the value of the attribute key from a Vec of attributes
+pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
+where
+    MSG: 'static,
+{
+    attrs
+        .iter()
+        .find(|att| att.name == key)
+        .map(|att| att.get_value())
+        .flatten()
+}
+
+/// find the callback of the attribute key from a Vec of attributes
+pub fn find_callback<MSG>(
+    key: AttribKey,
+    attrs: &Vec<Attribute<MSG>>,
+) -> Option<&Callback<Event, MSG>>
+where
+    MSG: 'static,
+{
+    attrs
+        .iter()
+        .find(|att| att.name == key)
+        .map(|att| att.get_callback())
+        .flatten()
+}
 
 pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>
 where
@@ -141,6 +118,26 @@ where
     F: Fn(MouseEvent) -> MSG + 'static,
 {
     on(AttribKey::MouseDown, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_mouseup<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::MouseUp, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_mousemove<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::MouseMove, move |ev: Event| match ev {
         Event::MouseEvent(me) => func(me),
         _ => unreachable!(),
     })
