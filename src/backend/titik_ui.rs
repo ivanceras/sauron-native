@@ -7,6 +7,7 @@ use crate::{
 };
 use image::{GenericImageView, ImageBuffer, RgbaImage};
 use std::{
+    cell::Cell,
     cell::RefCell,
     fmt::Debug,
     io::{self, Stdout, Write},
@@ -29,13 +30,16 @@ use titik::{
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, Renderer,
-    SvgImage, TextArea, TextInput, Widget as Control,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
+    TextArea, TextInput, Widget as Control,
 };
 
-pub struct TitikBackend<APP, MSG> {
+pub struct TitikBackend<APP, MSG>
+where
+    MSG: 'static,
+{
     app: Rc<RefCell<APP>>,
-    renderer: Rc<RefCell<Renderer<MSG>>>,
+    current_dom: Rc<RefCell<Node<MSG>>>,
     _phantom_msg: PhantomData<MSG>,
 }
 
@@ -186,6 +190,24 @@ where
                 textarea.set_size(width, height);
                 Box::new(textarea)
             }
+            Widget::Label => {
+                let value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+                let height = find_value(AttribKey::Height, &attrs)
+                    .map(|v| v.as_f64().map(|v| v as f32))
+                    .flatten();
+                let width = find_value(AttribKey::Width, &attrs)
+                    .map(|v| v.as_f64().map(|v| v as f32))
+                    .flatten();
+                let mut textarea = TextArea::new(value);
+                textarea.set_size(width, height);
+                Box::new(textarea)
+            }
+            Widget::Overlay => {
+                let mut flex = FlexBox::new();
+                Box::new(flex)
+            }
             Widget::Scroll => {
                 let mut flex = FlexBox::new();
                 Box::new(flex)
@@ -202,18 +224,17 @@ where
     fn init(app: APP) -> Self {
         let mut stdout = io::stdout();
         let vdom = app.view();
-        let mut root_node = Self::from_node_tree(vdom);
-        let renderer = Renderer::new();
+        let current_dom = app.view();
+        let mut root_node = Rc::new(RefCell::new(Self::from_node_tree(vdom)));
 
         let mut backend = TitikBackend {
             app: Rc::new(RefCell::new(app)),
-            renderer: Rc::new(RefCell::new(renderer)),
+            current_dom: Rc::new(RefCell::new(current_dom)),
             _phantom_msg: PhantomData,
         };
-        backend
-            .renderer
-            .borrow_mut()
-            .run(&mut stdout, Some(&backend), root_node.as_mut());
+        {
+            titik::renderer::render(&mut stdout, &backend, root_node);
+        }
         backend
     }
 }
@@ -223,8 +244,11 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(&self, msg: MSG) {
-        println!("dispatching..");
+    fn dispatch(&self, msg: MSG) -> Box<dyn Control<MSG>> {
+        eprintln!("dispatching...");
+        self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
+        let mut new_node = Self::from_node_tree(new_view);
+        new_node
     }
 }

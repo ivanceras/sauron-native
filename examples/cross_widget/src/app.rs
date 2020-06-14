@@ -43,7 +43,10 @@ impl App {
 impl Component<Msg> for App {
     fn update(&mut self, msg: Msg) {
         match msg {
-            Msg::Click => self.click_count += 1,
+            Msg::Click => {
+                self.click_count += 1;
+                eprintln!("button is clicked");
+            }
             Msg::Decrement => self.click_count -= 1,
             Msg::ChangeText(txt) => {
                 self.text = txt;
@@ -88,6 +91,7 @@ impl Component<Msg> for App {
                     value(self.events.join("\n")),
                     on_input(|input| Msg::ChangeText(input.value)),
                 ]),
+                /*
                 hpane(
                     vec![],
                     vec![
@@ -101,6 +105,7 @@ impl Component<Msg> for App {
                         ),
                     ],
                 ),
+                */
                 textarea(vec![
                     value(
                         "This is a paragraph\n\
