@@ -34,6 +34,8 @@ use titik::{
     TextArea, TextInput, Widget as Control,
 };
 
+mod apply_patches;
+
 pub struct TitikBackend<APP, MSG>
 where
     MSG: 'static,
@@ -188,6 +190,10 @@ where
                     .flatten();
                 let mut textarea = TextArea::new(value);
                 textarea.set_size(width, height);
+                if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
+                    eprintln!("textarea has an input event");
+                    textarea.on_input = vec![cb.clone()];
+                }
                 Box::new(textarea)
             }
             Widget::Label => {
@@ -210,6 +216,7 @@ where
             }
             Widget::Scroll => {
                 let mut flex = FlexBox::new();
+                flex.horizontal();
                 Box::new(flex)
             }
         }
@@ -233,7 +240,7 @@ where
             _phantom_msg: PhantomData,
         };
         {
-            titik::renderer::render(&mut stdout, &backend, root_node);
+            titik::renderer::render(&mut stdout, Some(&backend), root_node);
         }
         backend
     }
@@ -244,11 +251,21 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(&self, msg: MSG) -> Box<dyn Control<MSG>> {
+    /// TODO: store the current dom and apply patch to the new node
+    fn dispatch(&self, msg: MSG, root_node: &mut Box<dyn Control<MSG>>) {
         eprintln!("dispatching...");
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
+        let current_view = self.app.borrow().view();
+
+        {
+            let previous_dom = self.current_dom.borrow();
+            let diff = sauron_vdom::diff_with_key(&previous_dom, &new_view, &AttribKey::Key);
+            eprintln!("diff: {:#?}", diff);
+            apply_patches::apply_patches(&self, root_node, &diff);
+        }
+
         let mut new_node = Self::from_node_tree(new_view);
-        new_node
+        *self.current_dom.borrow_mut() = current_view;
     }
 }

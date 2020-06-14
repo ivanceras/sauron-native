@@ -106,9 +106,12 @@ impl Component<Msg> for App {
                     ],
                 ),
                 */
-                textarea(vec![
-                    value(
-                        "This is a paragraph\n\
+                row(
+                    vec![],
+                    vec![
+                        textarea(vec![
+                            value(
+                                "This is a paragraph\n\
                     This is a paragraph line 1\n\
                     This is a paragraph line 2\n\
                     This is a paragraph line 3\n\
@@ -116,11 +119,13 @@ impl Component<Msg> for App {
                     This is a paragraph line 5\n\
                     This is a paragraph line 6\n\
                         ",
-                    ),
-                    on_input(|input| Msg::ParagraphChanged(input.value)),
-                    height(7.0),
-                ]),
-                textarea(vec![value(&self.paragraph_text)]),
+                            ),
+                            on_input(|input| Msg::ParagraphChanged(input.value)),
+                            height(7.0),
+                        ]),
+                        textarea(vec![value("This is another text area")]),
+                    ],
+                ),
             ],
         )
     }

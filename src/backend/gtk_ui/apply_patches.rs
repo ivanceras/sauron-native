@@ -187,6 +187,8 @@ fn find_nodes<MSG>(node: &Container, patches: &[Patch<MSG>]) -> HashMap<usize, W
     find_nodes_recursive(node, &mut cur_node_idx, &nodes_to_find)
 }
 
+// TODO: simplify this code, use the Patch widget to get the hint on the traversal behavior (ie:
+// textare is not traversed, eventbox in label is not traversed.
 fn find_nodes_recursive(
     node: &Container,
     cur_node_idx: &mut usize,

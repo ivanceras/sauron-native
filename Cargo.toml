@@ -75,6 +75,7 @@ with-titik = ["titik"]
 [workspace]
 members = [
     "examples/cross_widget",
+    "examples/simple",
 ]
 
 
