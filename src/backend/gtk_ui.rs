@@ -1,7 +1,7 @@
 use super::Dispatch;
 use crate::{
     util,
-    widget::attribute::{find_callback, find_value},
+    widget::attribute::{find_callback, find_value, util::is_scrollable},
     AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
 };
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
@@ -213,6 +213,11 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
+            let position = find_value(AttribKey::Position, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(width / 2.0);
+
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -220,7 +225,7 @@ where
 
             let hpane = Paned::new(Orientation::Horizontal);
             hpane.set_size_request(width as i32, height as i32);
-            //hpane.set_position(width as i32);
+            hpane.set_position(position as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
@@ -431,12 +436,6 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
-            let is_scrollable = find_value(AttribKey::Scrollable, &attrs)
-                .map(|v| v.as_bool())
-                .flatten()
-                .unwrap_or(false);
-            println!("is scrollable: {}", is_scrollable);
-
             if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
                 println!("textview has some mouse down");
                 let cb_clone = cb.clone();
@@ -456,7 +455,7 @@ where
                 .flatten()
                 .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
-            if is_scrollable {
+            if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
                 scroll.add(&image);
                 GtkWidget::ImageScrollable(scroll)
@@ -480,7 +479,6 @@ where
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
-                //buffer.connect_changed(move |buffer| {
                 buffer.connect_end_user_action(move |buffer| {
                     let buffer_text =
                         buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
@@ -491,14 +489,6 @@ where
                     }
                 });
             }
-
-            buffer.connect_begin_user_action(move |buffer| {
-                println!("in begin user action...");
-            });
-
-            buffer.connect_end_user_action(move |buffer| {
-                println!("in end user action...");
-            });
 
             let text_view = TextView::new_with_buffer(&buffer);
             text_view.set_monospace(true);
@@ -513,9 +503,6 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
-
-            // inhibit selection
-            text_view.connect_selection_notify_event(move |_self, data| Inhibit(false));
 
             if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
                 println!("textview has some mouse down");
@@ -533,11 +520,7 @@ where
 
             text_view.set_size_request(width as i32, height as i32);
 
-            let is_scrollable = find_value(AttribKey::Scrollable, &attrs)
-                .map(|v| v.as_bool())
-                .flatten()
-                .unwrap_or(false);
-            if is_scrollable {
+            if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
                 scroll.set_size_request(width as i32, height as i32);
                 scroll.add(&text_view);

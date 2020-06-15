@@ -2,6 +2,9 @@ use crate::builder::attr;
 use crate::event::{InputEvent, MouseEvent};
 use crate::{event::on, Attribute, Callback, Event, Value};
 use std::fmt;
+pub use util::{find_callback, find_value};
+
+pub mod util;
 
 /// declare an attribute to be used as a function call
 macro_rules! declare_attr {
@@ -53,6 +56,8 @@ pub enum AttribKey {
     InputEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
+    /// position of the Hpane, Vpane
+    Position,
 }
 
 declare_attr! {
@@ -72,39 +77,13 @@ declare_attr! {
     editable => Editable;
     /// scrollable attribute
     scrollable => Scrollable;
+    position => Position;
 }
 
 impl fmt::Display for AttribKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
-}
-
-/// find the value of the attribute key from a Vec of attributes
-pub fn find_value<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&sauron_vdom::Value>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_value())
-        .flatten()
-}
-
-/// find the callback of the attribute key from a Vec of attributes
-pub fn find_callback<MSG>(
-    key: AttribKey,
-    attrs: &Vec<Attribute<MSG>>,
-) -> Option<&Callback<Event, MSG>>
-where
-    MSG: 'static,
-{
-    attrs
-        .iter()
-        .find(|att| att.name == key)
-        .map(|att| att.get_callback())
-        .flatten()
 }
 
 pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>

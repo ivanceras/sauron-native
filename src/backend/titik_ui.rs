@@ -205,11 +205,6 @@ where
                 let mut flex = FlexBox::new();
                 Box::new(flex)
             }
-            Widget::Scroll => {
-                let mut flex = FlexBox::new();
-                flex.horizontal();
-                Box::new(flex)
-            }
         }
     }
 }

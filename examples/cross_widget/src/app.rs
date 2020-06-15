@@ -63,10 +63,10 @@ impl Component<Msg> for App {
             vec![
                 column(
                     vec![],
-                    vec![
-                        paragraph(&self.debug.join("\n")),
-                        button(vec![on_click(|_| Msg::Decrement), label(&self.text)]),
-                    ],
+                    vec![button(vec![
+                        on_click(|_| Msg::Decrement),
+                        label(&self.text),
+                    ])],
                 ),
                 button(vec![
                     on_click(|_| Msg::Click),
@@ -91,33 +91,25 @@ impl Component<Msg> for App {
                     value(self.events.join("\n")),
                     on_input(|input| Msg::ChangeText(input.value)),
                 ]),
-                /*
                 hpane(
                     vec![],
                     vec![
-                        scroll(
-                            vec![],
-                            vec![image(vec![data(include_bytes!("../horse.jpg").to_vec())])],
-                        ),
-                        scroll(
-                            vec![],
-                            vec![svg(vec![data(include_bytes!("../tiger.svg").to_vec())])],
-                        ),
+                        image(vec![data(include_bytes!("../horse.jpg").to_vec())]),
+                        svg(vec![data(include_bytes!("../tiger.svg").to_vec())]),
                     ],
                 ),
-                */
                 row(
                     vec![],
                     vec![
                         textarea(vec![
                             value(
                                 "This is a paragraph\n\
-                    This is a paragraph line 1\n\
-                    This is a paragraph line 2\n\
-                    This is a paragraph line 3\n\
-                    This is a paragraph line 4\n\
-                    This is a paragraph line 5\n\
-                    This is a paragraph line 6\n\
+                                This is a paragraph line 1\n\
+                                This is a paragraph line 2\n\
+                                This is a paragraph line 3\n\
+                                This is a paragraph line 4\n\
+                                This is a paragraph line 5\n\
+                                This is a paragraph line 6\n\
                         ",
                             ),
                             on_input(|input| Msg::ParagraphChanged(input.value)),

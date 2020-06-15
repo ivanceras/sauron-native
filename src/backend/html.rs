@@ -150,7 +150,6 @@ where
                 }],
             )
             .add_attributes(attributes)
-            //input(vec![r#type("button"), value(label)], vec![]).add_attributes(attributes)
         }
         Widget::Paragraph => {
             let txt_value = find_value(AttribKey::Value, &attrs)
@@ -261,7 +260,6 @@ where
                 vec![],
             )
         }
-        Widget::Scroll => div(vec![], vec![]),
     }
 }
 

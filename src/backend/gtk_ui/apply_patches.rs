@@ -1,5 +1,6 @@
 use super::{Dispatch, GtkBackend};
 use crate::widget::attribute::find_value;
+use crate::widget::attribute::util::is_scrollable;
 use crate::Node;
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
@@ -297,12 +298,4 @@ fn find_nodes_recursive<MSG>(
         _ => println!("todo for: {:?}", tag),
     }
     nodes_to_patch
-}
-
-//TODO: make a unify attribute utility functions
-fn is_scrollable<MSG: 'static>(attrs: &[Attribute<MSG>]) -> bool {
-    find_value(AttribKey::Scrollable, attrs)
-        .map(|v| v.as_bool())
-        .flatten()
-        .unwrap_or(false)
 }
