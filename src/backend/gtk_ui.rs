@@ -45,8 +45,9 @@ pub(crate) enum GtkWidget {
     Checkbox(CheckButton),
     Radio(RadioButton),
     Image(Image),
+    ImageScrollable(ScrolledWindow),
     TextView(TextView),
-    ScrollView(ScrolledWindow),
+    TextViewScrollable(ScrolledWindow),
     Overlay(Overlay),
 }
 
@@ -219,6 +220,7 @@ where
 
             let hpane = Paned::new(Orientation::Horizontal);
             hpane.set_size_request(width as i32, height as i32);
+            //hpane.set_position(width as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
@@ -429,6 +431,12 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
+            let is_scrollable = find_value(AttribKey::Scrollable, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+            println!("is scrollable: {}", is_scrollable);
+
             if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
                 println!("textview has some mouse down");
                 let cb_clone = cb.clone();
@@ -448,7 +456,13 @@ where
                 .flatten()
                 .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
-            GtkWidget::Image(image)
+            if is_scrollable {
+                let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+                scroll.add(&image);
+                GtkWidget::ImageScrollable(scroll)
+            } else {
+                GtkWidget::Image(image)
+            }
         }
         Widget::TextArea => {
             let value = find_value(AttribKey::Value, &attrs)
@@ -518,14 +532,33 @@ where
             }
 
             text_view.set_size_request(width as i32, height as i32);
-            GtkWidget::TextView(text_view)
-        }
-        Widget::Scroll => {
-            let scroll_view = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
-            GtkWidget::ScrollView(scroll_view)
+
+            let is_scrollable = find_value(AttribKey::Scrollable, &attrs)
+                .map(|v| v.as_bool())
+                .flatten()
+                .unwrap_or(false);
+            if is_scrollable {
+                let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+                scroll.set_size_request(width as i32, height as i32);
+                scroll.add(&text_view);
+                GtkWidget::TextViewScrollable(scroll)
+            } else {
+                GtkWidget::TextView(text_view)
+            }
         }
         Widget::Overlay => {
             let overlay = Overlay::new();
+
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64())
+                .flatten()
+                .unwrap_or(20.0);
+            overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)
         }
@@ -558,7 +591,7 @@ where
         {
             let current_vdom = self.current_vdom.borrow();
             let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
-            apply_patches::apply_patches(self, &self.root_container(), &diff);
+            apply_patches::apply_patches(self, &current_vdom, &self.root_container(), &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
     }
@@ -573,10 +606,6 @@ impl GtkWidget {
             }
             GtkWidget::Paned(paned) => {
                 let container: &Container = paned.upcast_ref();
-                Some(container)
-            }
-            GtkWidget::ScrollView(scroll_view) => {
-                let container: &Container = scroll_view.upcast_ref();
                 Some(container)
             }
             GtkWidget::Overlay(overlay) => {
@@ -625,12 +654,16 @@ impl GtkWidget {
                 let widget: &gtk::Widget = image.upcast_ref();
                 Some(widget)
             }
+            GtkWidget::ImageScrollable(scroll) => {
+                let widget: &gtk::Widget = scroll.upcast_ref();
+                Some(widget)
+            }
             GtkWidget::TextView(text_view) => {
                 let widget: &gtk::Widget = text_view.upcast_ref();
                 Some(widget)
             }
-            GtkWidget::ScrollView(scroll_view) => {
-                let widget: &gtk::Widget = scroll_view.upcast_ref();
+            GtkWidget::TextViewScrollable(scroll) => {
+                let widget: &gtk::Widget = scroll.upcast_ref();
                 Some(widget)
             }
             GtkWidget::Overlay(overlay) => {
@@ -656,15 +689,6 @@ impl GtkWidget {
                     paned.pack2(child2, true, true);
                 }
             }
-            GtkWidget::ScrollView(container) => {
-                for child in children {
-                    if let Some(child_widget) = child.as_widget() {
-                        container.add(child_widget);
-                    } else {
-                        println!("was not able to add child widget: {:?}", child.as_widget());
-                    }
-                }
-            }
             GtkWidget::Overlay(container) => {
                 let mut index = 0;
                 for child in children {
@@ -672,7 +696,6 @@ impl GtkWidget {
                         container.add_overlay(child_widget);
                         let c_index = container.get_child_index(child_widget);
                         assert_eq!(c_index, index);
-                    //container.reorder_overlay(child_widget, index);
                     } else {
                         println!("was not able to add child widget: {:?}", child.as_widget());
                     }

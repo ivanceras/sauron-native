@@ -51,6 +51,8 @@ pub enum AttribKey {
     MouseUp,
     MouseMove,
     InputEvent,
+    /// whether or not a widget is scrollable, such as image, text_area
+    Scrollable,
 }
 
 declare_attr! {
@@ -68,6 +70,8 @@ declare_attr! {
     svg_image => SvgImage;
     /// editable attribute
     editable => Editable;
+    /// scrollable attribute
+    scrollable => Scrollable;
 }
 
 impl fmt::Display for AttribKey {
@@ -77,7 +81,7 @@ impl fmt::Display for AttribKey {
 }
 
 /// find the value of the attribute key from a Vec of attributes
-pub fn find_value<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&sauron_vdom::Value>
+pub fn find_value<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&sauron_vdom::Value>
 where
     MSG: 'static,
 {

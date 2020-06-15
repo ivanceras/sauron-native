@@ -1,4 +1,6 @@
 use super::{Dispatch, GtkBackend};
+use crate::widget::attribute::find_value;
+use crate::Node;
 use crate::{AttribKey, Attribute, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
@@ -11,12 +13,16 @@ use std::{
     rc::Rc,
 };
 
-pub fn apply_patches<MSG, DSP>(program: &DSP, root_container: &Container, patches: &Vec<Patch<MSG>>)
-where
+pub fn apply_patches<MSG, DSP>(
+    program: &DSP,
+    node: &Node<MSG>,
+    root_container: &Container,
+    patches: &Vec<Patch<MSG>>,
+) where
     MSG: Debug,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
-    let nodes_to_patch = find_nodes(root_container, patches);
+    let nodes_to_patch = find_nodes(node, root_container, patches);
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
@@ -28,33 +34,38 @@ where
                 set_widget_attributes::<MSG>(tag, widget, attrs);
             }
             Patch::AppendChildren(tag, _node_idx, nodes) => {
-                println!("appending children..");
-                if let Some(overlay) = widget.downcast_ref::<Overlay>() {
-                    for node in nodes {
-                        if let Some(element) = node.as_element_ref() {
-                            let child = super::from_node(program, &element.tag, &element.attrs);
-                            let widget = child.as_widget().expect("must be a widget");
-                            println!("appending children in overlay: {:?}", widget);
-                            println!("attibute count: {}", &element.attributes().len());
-                            println!("children count before: {}", overlay.get_children().len());
-                            //Note: overlay have different behavior when adding child widget
-                            overlay.add_overlay(widget);
-                            println!("children count after: {}", overlay.get_children().len());
-                            overlay.set_child_index(widget, -1);
-                            println!("widget child index: {}", overlay.get_child_index(widget));
-                            widget.show();
-                            overlay.show_all();
+                match tag {
+                    crate::Widget::Overlay => {
+                        eprintln!("appending children..");
+                        let overlay = widget
+                            .downcast_ref::<Overlay>()
+                            .expect("must be an overlay");
+                        for node in nodes {
+                            if let Some(element) = node.as_element_ref() {
+                                let child = super::from_node(program, &element.tag, &element.attrs);
+                                let widget = child.as_widget().expect("must be a widget");
+                                //Note: overlay have different behavior when adding child widget
+                                overlay.add_overlay(widget);
+                                overlay.set_child_index(widget, -1);
+                                widget.show();
+                                overlay.show_all();
+                            }
                         }
                     }
-                } else if let Some(container) = widget.downcast_ref::<Container>() {
-                    for node in nodes {
-                        if let Some(element) = node.as_element_ref() {
-                            let child = super::from_node(program, &element.tag, &element.attrs);
-                            let widget = child.as_widget().expect("must be a widget");
-                            println!("appending children: {:?}", widget);
-                            //Note: overlay have different behavior when adding child widget
-                            container.add(widget);
-                            widget.show();
+
+                    _ => {
+                        let container = widget
+                            .downcast_ref::<Container>()
+                            .expect("must be a container");
+                        for node in nodes {
+                            if let Some(element) = node.as_element_ref() {
+                                let child = super::from_node(program, &element.tag, &element.attrs);
+                                let widget = child.as_widget().expect("must be a widget");
+                                println!("appending children: {:?}", widget);
+                                //Note: overlay have different behavior when adding child widget
+                                container.add(widget);
+                                widget.show();
+                            }
                         }
                     }
                 }
@@ -177,83 +188,121 @@ fn set_widget_attributes<MSG: 'static>(
     }
 }
 
-fn find_nodes<MSG>(node: &Container, patches: &[Patch<MSG>]) -> HashMap<usize, Widget> {
-    let mut nodes_to_find = HashSet::new();
+fn find_nodes<MSG>(
+    node: &Node<MSG>,
+    container: &Container,
+    patches: &[Patch<MSG>],
+) -> HashMap<usize, Widget> {
+    let mut nodes_to_find: HashMap<usize, &crate::Widget> = HashMap::new();
     let mut cur_node_idx = 0;
 
     for patch in patches {
-        nodes_to_find.insert(patch.node_idx());
+        let tag = patch.tag().expect("must have a tag");
+        nodes_to_find.insert(patch.node_idx(), tag);
     }
-    find_nodes_recursive(node, &mut cur_node_idx, &nodes_to_find)
+    find_nodes_recursive(node, container, &mut cur_node_idx, &nodes_to_find)
 }
 
-// TODO: simplify this code, use the Patch widget to get the hint on the traversal behavior (ie:
-// textare is not traversed, eventbox in label is not traversed.
-fn find_nodes_recursive(
-    node: &Container,
+fn find_nodes_recursive<MSG>(
+    node: &Node<MSG>,
+    container: &Container,
     cur_node_idx: &mut usize,
-    nodes_to_find: &HashSet<usize>,
+    nodes_to_find: &HashMap<usize, &crate::Widget>,
 ) -> HashMap<usize, Widget> {
+    let tag = node.tag().expect("must have a tag");
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
+    println!("tag: {:?}", tag);
+    match tag {
+        crate::Widget::Hpane
+        | crate::Widget::Vbox
+        | crate::Widget::Hbox
+        | crate::Widget::Overlay => {
+            let node_children = node.get_children().expect("must have children");
+            let widget_children = container.get_children();
+            assert_eq!(node_children.len(), widget_children.len());
+            for (child_node, widget_child) in node_children.iter().zip(widget_children.iter()) {
+                *cur_node_idx += 1;
+                let child_tag = child_node.tag().expect("must have a child tag");
+                let attrs = child_node.get_attributes();
+                if let Some(patch_tag) = nodes_to_find.get(&cur_node_idx) {
+                    println!("got some: {:?}", tag);
+                    match child_tag {
+                        crate::Widget::TextArea => {
+                            if is_scrollable(&attrs) {
+                                // ScrolledWindow -> TextArea
+                                let scrolled_window = widget_child
+                                    .downcast_ref::<Container>()
+                                    .expect("must be a scrolled window container");
+                                let scrolled_window_children = scrolled_window.get_children();
+                                let text_area =
+                                    scrolled_window_children.get(0).expect("must have a child");
+                                let text_area: Widget = text_area.clone().upcast();
+                                nodes_to_patch.insert(*cur_node_idx, text_area);
+                            } else {
+                                let text_area: Widget = widget_child.clone().upcast();
+                                nodes_to_patch.insert(*cur_node_idx, text_area);
+                            }
+                        }
+                        crate::Widget::Svg => {
+                            if is_scrollable(&attrs) {
+                                // ScrolledWindow -> ViewPort -> Image
+                                let scrolled_window = widget_child
+                                    .downcast_ref::<Container>()
+                                    .expect("must be a scrolled window container");
 
-    let is_gbox = node.downcast_ref::<gtk::Box>().is_some();
-    let is_overlay = node.downcast_ref::<gtk::Overlay>().is_some();
-    let is_paned = node.downcast_ref::<gtk::Paned>().is_some();
-    let is_event_box = node.downcast_ref::<gtk::EventBox>().is_some();
-    // Note: ScrolledWindow has a viewport
-    let is_scrolled_window = node.downcast_ref::<gtk::ScrolledWindow>().is_some();
-    // prevent other container other than gtk::Box to be traverse otherwise widget such as textarea or textinput will
-    // be traverse
-    if is_scrolled_window {
-        let root_node_children = node.get_children();
-        assert_eq!(root_node_children.len(), 1);
-        let view_port_child = root_node_children
-            .get(0)
-            .expect("scroll window must have 1 child");
-        let is_view_port = view_port_child.downcast_ref::<gtk::Viewport>().is_some();
-        //NOTE: if the child widget is a text area, there is no viewport
-        //if the child widget is an image, then there is viewport.. geez.
-        let view_port = root_node_children
-            .get(0)
-            .expect("must have 1 children")
-            .downcast_ref::<Container>()
-            .expect("must be a container");
-        let children = if is_view_port {
-            view_port.get_children()
-        } else {
-            root_node_children
-        };
+                                let scrolled_window_children = scrolled_window.get_children();
+                                let view_port = scrolled_window_children
+                                    .get(0)
+                                    .expect("scrolled window must have a child");
+                                let view_port = view_port
+                                    .downcast_ref::<Container>()
+                                    .expect("must be a viewport container");
 
-        for child in children {
-            *cur_node_idx += 1;
-            if nodes_to_find.get(&cur_node_idx).is_some() {
-                let widget: Widget = child.clone().upcast();
-                nodes_to_patch.insert(*cur_node_idx, widget);
-            }
-            if let Some(container) = child.downcast_ref::<Container>() {
-                let child_nodes_to_patch =
-                    find_nodes_recursive(container, cur_node_idx, nodes_to_find);
-                nodes_to_patch.extend(child_nodes_to_patch);
+                                let view_port_children = view_port.get_children();
+                                let svg_image = view_port_children
+                                    .get(0)
+                                    .expect("view port must have svg image as child");
+                                let svg_image: Widget = svg_image.clone().upcast();
+                                nodes_to_patch.insert(*cur_node_idx, svg_image);
+                            } else {
+                                let svg_image: Widget = widget_child.clone().upcast();
+                                nodes_to_patch.insert(*cur_node_idx, svg_image);
+                            }
+                        }
+                        _ => {
+                            let widget: Widget = widget_child.clone().upcast();
+                            nodes_to_patch.insert(*cur_node_idx, widget);
+                        }
+                    }
+                }
+                println!("child tag: {:?}", child_tag);
+                match child_tag {
+                    crate::Widget::TextArea | crate::Widget::Svg => {
+                        println!("skipping leaf widgets that are containers..");
+                    }
+                    _ => {
+                        if let Some(container) = widget_child.downcast_ref::<Container>() {
+                            let child_nodes_to_patch = find_nodes_recursive(
+                                child_node,
+                                container,
+                                cur_node_idx,
+                                nodes_to_find,
+                            );
+                            nodes_to_patch.extend(child_nodes_to_patch);
+                        }
+                    }
+                }
             }
         }
-    }
-    if (is_gbox || is_paned || is_overlay) && !is_event_box {
-        let children = node.get_children();
-
-        let child_node_count = children.len();
-
-        for child in children {
-            *cur_node_idx += 1;
-            if nodes_to_find.get(&cur_node_idx).is_some() {
-                let widget = child.clone().upcast();
-                nodes_to_patch.insert(*cur_node_idx, widget);
-            }
-            if let Some(container) = child.downcast_ref::<Container>() {
-                let child_nodes_to_patch =
-                    find_nodes_recursive(container, cur_node_idx, nodes_to_find);
-                nodes_to_patch.extend(child_nodes_to_patch);
-            }
-        }
+        _ => println!("todo for: {:?}", tag),
     }
     nodes_to_patch
+}
+
+//TODO: make a unify attribute utility functions
+fn is_scrollable<MSG: 'static>(attrs: &[Attribute<MSG>]) -> bool {
+    find_value(AttribKey::Scrollable, attrs)
+        .map(|v| v.as_bool())
+        .flatten()
+        .unwrap_or(false)
 }
