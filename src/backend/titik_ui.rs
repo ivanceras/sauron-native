@@ -251,7 +251,8 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    /// TODO: store the current dom and apply patch to the new node
+    /// root_node is added as argument in this dispatch function so that they are in the same
+    /// borrow, otherwise an AlreadyBorrowedError will be invoke at runtime.
     fn dispatch(&self, msg: MSG, root_node: &mut Box<dyn Control<MSG>>) {
         eprintln!("dispatching...");
         self.app.borrow_mut().update(msg);
