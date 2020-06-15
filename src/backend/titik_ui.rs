@@ -100,16 +100,7 @@ where
 
                 let mut btn: Button<MSG> = Button::new(&label);
                 if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
-                    fn map_event_from_crossterm(
-                        event: crossterm::event::Event,
-                    ) -> sauron_vdom::Event {
-                        sauron_vdom::event::Event::MouseEvent(
-                            sauron_vdom::event::MouseEvent::click(1, 1),
-                        )
-                    }
-                    let cb = cb.clone();
-                    let cb2 = cb.reform(map_event_from_crossterm);
-                    btn.on_click = vec![cb2];
+                    btn.on_click = vec![cb.clone()];
                 }
                 Box::new(btn)
             }
@@ -253,7 +244,7 @@ where
 {
     /// root_node is added as argument in this dispatch function so that they are in the same
     /// borrow, otherwise an AlreadyBorrowedError will be invoke at runtime.
-    fn dispatch(&self, msg: MSG, root_node: &mut Box<dyn Control<MSG>>) {
+    fn dispatch(&self, msg: MSG, root_node: &mut Box<dyn titik::Widget<MSG>>) {
         eprintln!("dispatching...");
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();

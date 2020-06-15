@@ -6,18 +6,17 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use titik::TextArea;
-use titik::Widget as Control;
 
 pub fn apply_patches<MSG, DSP>(
     program: &DSP,
-    root_node: &mut Box<dyn Control<MSG>>,
+    root_node: &mut Box<dyn titik::Widget<MSG>>,
     patches: &[Patch<MSG>],
 ) where
     MSG: Debug,
 {
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-        let widget: &mut dyn Control<MSG> =
+        let widget: &mut dyn titik::Widget<MSG> =
             titik::find_widget_mut(root_node.as_mut(), patch_node_idx)
                 .expect("must have a node to patch");
         match patch {
@@ -33,7 +32,7 @@ pub fn apply_patches<MSG, DSP>(
 
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
-    widget: &mut dyn Control<MSG>,
+    widget: &mut dyn titik::Widget<MSG>,
     attrs: &[Attribute<MSG>],
 ) {
     match tag {
