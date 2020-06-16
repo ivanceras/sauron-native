@@ -27,6 +27,7 @@ pub enum Widget {
     Svg,
     TextArea,
     Overlay,
+    GroupBox,
 }
 
 pub fn widget<MSG>(
@@ -54,6 +55,10 @@ pub fn hpane<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<
 
 pub fn overlay<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
     widget(Widget::Overlay, attrs, children)
+}
+
+pub fn groupbox<MSG>(attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG> {
+    widget(Widget::GroupBox, attrs, children)
 }
 
 pub fn button<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG> {

@@ -32,8 +32,8 @@ use titik::{
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, Image, LayoutTree, Radio, SvgImage,
-    TextArea, TextInput, Widget as Control,
+    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, GroupBox, Image, LayoutTree, Radio,
+    SvgImage, TextArea, TextInput, Widget as Control,
 };
 
 mod apply_patches;
@@ -98,6 +98,14 @@ where
             let mut hbox = FlexBox::new();
             hbox.horizontal();
             Box::new(hbox)
+        }
+        Widget::GroupBox => {
+            let mut groupbox = GroupBox::new();
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+            groupbox.set_label(&label);
+            Box::new(groupbox)
         }
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)

@@ -96,17 +96,15 @@ impl Component<Msg> for App {
         column(
             vec![],
             vec![
-                button(vec![label("Target platform:")]),
-                column(
-                    vec![],
+                groupbox(
+                    vec![label("Target platform:")],
                     Platform::all()
                         .iter()
                         .map(|name| radio(vec![label(format!("{:?}", name))]))
                         .collect(),
                 ),
-                button(vec![label("Distribute as:")]),
-                column(
-                    vec![],
+                groupbox(
+                    vec![label("Distribute as:")],
                     DistributionMedium::all()
                         .iter()
                         .map(|name| checkbox(vec![label(format!("{:?}", name))]))
