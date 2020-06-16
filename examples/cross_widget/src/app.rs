@@ -109,7 +109,7 @@ impl Component<Msg> for App {
                     vec![],
                     DistributionMedium::all()
                         .iter()
-                        .map(|name| radio(vec![label(format!("{:?}", name))]))
+                        .map(|name| checkbox(vec![label(format!("{:?}", name))]))
                         .collect(),
                 ),
                 button(vec![
@@ -117,11 +117,12 @@ impl Component<Msg> for App {
                     label(format!("More buttons: current({})", self.click_count)),
                 ]),
                 button(vec![on_click(|_| Msg::Decrement), label("Less buttons")]),
-                row(vec![], {
+                row(
+                    vec![],
                     (0..self.click_count)
-                        .map(|x| button(vec![label("Hello".to_string())]))
-                        .collect()
-                }),
+                        .map(|x| button(vec![label(format!("Hello {}", x))]))
+                        .collect(),
+                ),
                 textarea(vec![value(
                     "This is a paragraph\n\
                                 This is a paragraph line 1\n\
