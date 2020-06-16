@@ -72,9 +72,8 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         let events_window = backend.window.clone();
 
         println!("4 new");
-        let handler = nwg::full_bind_event_handler(
-            &backend.window.handle,
-            move |evt, _evt_data, handle| {
+        let handler =
+            nwg::full_bind_event_handler(&backend.window.handle, move |evt, _evt_data, handle| {
                 use nwg::Event;
 
                 match evt {
@@ -86,8 +85,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
                     Event::OnButtonClick => {}
                     _ => {}
                 }
-            },
-        );
+            });
         nwg::dispatch_thread_events();
         nwg::unbind_event_handler(&handler);
         println!("last part new");
