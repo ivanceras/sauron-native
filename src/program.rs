@@ -12,7 +12,7 @@ pub struct Program<APP, MSG, B> {
 
 impl<APP, MSG, B> Program<APP, MSG, B>
 where
-    MSG: Clone + Debug + 'static,
+    MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
     B: Backend<APP, MSG>,
 {

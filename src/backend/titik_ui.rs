@@ -24,7 +24,9 @@ use titik::{
         event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent},
         terminal,
     },
-    find_layout, find_widget_mut, set_focused_node,
+    find_layout, find_widget_mut,
+    renderer::Renderer,
+    set_focused_node,
     stretch::{
         geometry::Size,
         number::Number,
@@ -132,9 +134,13 @@ where
                 .flatten()
                 .unwrap_or(false);
 
-            let mut cb = Checkbox::new(&label);
-            cb.set_checked(value);
-            Box::new(cb)
+            let mut checkbox = Checkbox::new(&label);
+            if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
+                eprintln!("checkbox has an input event");
+                checkbox.on_input = vec![cb.clone()];
+            }
+            checkbox.set_checked(value);
+            Box::new(checkbox)
         }
         Widget::Radio => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -228,9 +234,8 @@ where
             current_dom: Rc::new(RefCell::new(current_dom)),
             _phantom_msg: PhantomData,
         };
-        {
-            titik::renderer::render(&mut stdout, Some(&backend), root_node.as_mut());
-        }
+        let mut renderer = Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
+        renderer.run();
         backend
     }
 }

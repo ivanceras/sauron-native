@@ -35,6 +35,13 @@ pub fn apply_patches<MSG, DSP>(
                     assert!(added);
                 }
             }
+            Patch::TruncateChildren(tag, _node_idx, num_children_remaining) => {
+                eprintln!("truncating children..");
+                let children = widget.children().expect("must have children");
+                for i in *num_children_remaining..children.len() {
+                    widget.take_child(i);
+                }
+            }
             // todo for other patches here.
             _ => eprintln!("todo for: {:?}", patch),
         }

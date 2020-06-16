@@ -11,27 +11,63 @@ use std::{
 
 pub struct App {
     click_count: u32,
-    text: String,
-    paragraph_text: String,
+    platform: Option<Platform>,
+    distribution: Vec<DistributionMedium>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
+pub enum Platform {
+    Linux,
+    Mac,
+    Windows,
+    Android,
+    Ios,
+}
+
+impl Platform {
+    fn all() -> Vec<Self> {
+        vec![
+            Platform::Linux,
+            Platform::Mac,
+            Platform::Windows,
+            Platform::Android,
+            Platform::Ios,
+        ]
+    }
+}
+
+#[derive(Debug)]
+pub enum DistributionMedium {
+    NativeGui,
+    TextUi,
+    HtmlUi,
+}
+
+impl DistributionMedium {
+    fn all() -> Vec<Self> {
+        vec![
+            DistributionMedium::NativeGui,
+            DistributionMedium::TextUi,
+            DistributionMedium::HtmlUi,
+        ]
+    }
+}
+
+#[derive(Debug)]
 pub enum Msg {
     Click,
-    ChangeText(String),
     Decrement,
-    ParagraphChanged(String),
+    PlatformSelect(Platform),
+    DistributionSelect(DistributionMedium),
+    Nothing,
 }
 
 impl App {
     pub fn new() -> App {
         App {
             click_count: 4,
-            #[cfg(feature = "with-titik")]
-            text: String::from("Press CTRL-q / CTRL-c to exit"),
-            #[cfg(not(feature = "with-titik"))]
-            text: String::from("Some text"),
-            paragraph_text: String::from("paragraph text"),
+            platform: None,
+            distribution: vec![],
         }
     }
 }
@@ -48,12 +84,11 @@ impl Component<Msg> for App {
                     self.click_count -= 1;
                 }
             }
-            Msg::ChangeText(txt) => {
-                self.text = txt;
+            Msg::PlatformSelect(selection) => {
+                self.platform = Some(selection);
             }
-            Msg::ParagraphChanged(txt) => {
-                self.paragraph_text = txt;
-            }
+            Msg::DistributionSelect(medium) => {}
+            Msg::Nothing => {}
         }
     }
 
@@ -61,24 +96,34 @@ impl Component<Msg> for App {
         column(
             vec![],
             vec![
-                button(vec![on_click(|_| Msg::Decrement), label(&self.text)]),
+                button(vec![label("Target platform:")]),
+                column(
+                    vec![],
+                    Platform::all()
+                        .iter()
+                        .map(|name| radio(vec![label(format!("{:?}", name))]))
+                        .collect(),
+                ),
+                button(vec![label("Distribute as:")]),
+                column(
+                    vec![],
+                    DistributionMedium::all()
+                        .iter()
+                        .map(|name| radio(vec![label(format!("{:?}", name))]))
+                        .collect(),
+                ),
                 button(vec![
                     on_click(|_| Msg::Click),
-                    label(format!("Hello: {}", self.click_count)),
+                    label(format!("More buttons: current({})", self.click_count)),
                 ]),
-                checkbox(vec![label("Checkbox1"), value(true)]),
-                checkbox(vec![label("Checkbox2"), value(false)]),
-                checkbox(vec![label("Checkbox3"), value(false)]),
-                radio(vec![label("Radio1"), value(true)]),
-                radio(vec![label("Radio2"), value(false)]),
+                button(vec![on_click(|_| Msg::Decrement), label("Less buttons")]),
                 row(vec![], {
                     (0..self.click_count)
                         .map(|x| button(vec![label("Hello".to_string())]))
                         .collect()
                 }),
-                textarea(vec![
-                    value(
-                        "This is a paragraph\n\
+                textarea(vec![value(
+                    "This is a paragraph\n\
                                 This is a paragraph line 1\n\
                                 This is a paragraph line 2\n\
                                 This is a paragraph line 3\n\
@@ -86,11 +131,7 @@ impl Component<Msg> for App {
                                 This is a paragraph line 5\n\
                                 This is a paragraph line 6\n\
                         ",
-                    ),
-                    on_input(|input| Msg::ParagraphChanged(input.value)),
-                    height(7.0),
-                ]),
-                textarea(vec![value("This is another text area")]),
+                )]),
             ],
         )
     }

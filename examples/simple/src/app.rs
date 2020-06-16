@@ -63,7 +63,11 @@ impl Component<Msg> for App {
                 vec![
                     textarea(vec![
                         value(&self.text),
-                        on_input(|input| Msg::ParagraphChanged(input.value)),
+                        on_input(|input| {
+                            Msg::ParagraphChanged(
+                                input.value.as_str().expect("must be a string").to_owned(),
+                            )
+                        }),
                     ]),
                     button(vec![label("btn1")]),
                     button(vec![label("btn2")]),
