@@ -5,11 +5,12 @@ use crate::Widget;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
+use titik::Button;
 use titik::TextArea;
 
 pub fn apply_patches<MSG, DSP>(
     program: &DSP,
-    root_node: &mut Box<dyn titik::Widget<MSG>>,
+    root_node: &mut dyn titik::Widget<MSG>,
     patches: &[Patch<MSG>],
 ) where
     MSG: Debug,
@@ -17,15 +18,25 @@ pub fn apply_patches<MSG, DSP>(
     for patch in patches {
         let patch_node_idx = patch.node_idx();
         let widget: &mut dyn titik::Widget<MSG> =
-            titik::find_widget_mut(root_node.as_mut(), patch_node_idx)
-                .expect("must have a node to patch");
+            titik::find_widget_mut(root_node, patch_node_idx).expect("must have a node to patch");
         match patch {
             Patch::AddAttributes(tag, _node_idx, attrs) => {
                 eprintln!("setting attributes...");
                 set_widget_attributes::<MSG>(tag, widget, attrs);
             }
+            Patch::AppendChildren(tag, _node_idx, children) => {
+                eprintln!("adding children..");
+                for child in children {
+                    let child_element = child.as_element_ref().expect("must be an element");
+                    let child_widget = super::from_node(&child_element.tag, &child_element.attrs);
+                    eprintln!("added 1 {:?} to {:?}", child_widget, widget);
+                    let added = widget.add_child(child_widget);
+                    eprintln!("widget becomes: {:?}", widget);
+                    assert!(added);
+                }
+            }
             // todo for other patches here.
-            _ => println!("todo for: {:?}", patch),
+            _ => eprintln!("todo for: {:?}", patch),
         }
     }
 }
@@ -52,7 +63,23 @@ fn set_widget_attributes<MSG: 'static>(
                 }
             }
         }
-        //TODO for buttons here
-        _ => (),
+        Widget::Button => {
+            let btn: &mut Button<MSG> = widget
+                .as_any_mut()
+                .downcast_mut()
+                .expect("must be a button");
+
+            for att in attrs {
+                if let Some(value) = att.get_value() {
+                    match att.name {
+                        AttribKey::Label => {
+                            btn.set_label(&value.to_string());
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+        _ => eprintln!("todo for other widgets.. {:?}", tag),
     }
 }

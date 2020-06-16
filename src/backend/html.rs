@@ -53,7 +53,7 @@ where
 
     fn view(&self) -> sauron::Node<MSG> {
         let view = self.app.view();
-        let html_view = widget_tree_to_html_node(view);
+        let html_view = widget_tree_to_html_node(view, &mut 0);
         html_view
     }
 }
@@ -73,7 +73,11 @@ where
 }
 
 /// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(widget: &Widget, attrs: Vec<Attribute<MSG>>) -> sauron::Node<MSG>
+fn widget_to_html<MSG>(
+    widget: &Widget,
+    attrs: Vec<Attribute<MSG>>,
+    cur_node_idx: usize,
+) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
@@ -130,24 +134,27 @@ where
 
             button(
                 vec![],
-                vec![if let Some(svg_image_data) = svg_image_data {
-                    img(
-                        vec![
-                            styles([
-                                ("width", "100%"),
-                                ("height", "auto"),
-                                ("max-width", "800px"),
-                            ]),
-                            src(format!(
-                                "data:image/svg+xml;base64,{}",
-                                base64::encode(&svg_image_data)
-                            )),
-                        ],
-                        vec![],
-                    )
-                } else {
-                    text("")
-                }],
+                vec![
+                    text(label),
+                    if let Some(svg_image_data) = svg_image_data {
+                        img(
+                            vec![
+                                styles([
+                                    ("width", "100%"),
+                                    ("height", "auto"),
+                                    ("max-width", "800px"),
+                                ]),
+                                src(format!(
+                                    "data:image/svg+xml;base64,{}",
+                                    base64::encode(&svg_image_data)
+                                )),
+                            ],
+                            vec![],
+                        )
+                    } else {
+                        text("")
+                    },
+                ],
             )
             .add_attributes(attributes)
         }
@@ -203,12 +210,13 @@ where
                 .flatten()
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
+            let widget_id = format!("checkbox_{}", cur_node_idx);
 
             div(
                 vec![],
                 vec![
-                    input(vec![type_("checkbox")], vec![]).add_attributes(checked),
-                    label(vec![], vec![text(cb_label)]),
+                    input(vec![type_("checkbox"), id(&widget_id)], vec![]).add_attributes(checked),
+                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
                 ],
             )
         }
@@ -221,11 +229,12 @@ where
                 .flatten()
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
+            let widget_id = format!("radio_{}", cur_node_idx);
             div(
                 vec![],
                 vec![
-                    input(vec![type_("radio")], vec![]).add_attributes(checked),
-                    label(vec![], vec![text(cb_label)]),
+                    input(vec![type_("radio"), id(&widget_id)], vec![]).add_attributes(checked),
+                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
                 ],
             )
         }
@@ -264,24 +273,32 @@ where
 }
 
 /// converts widget virtual node tree into an html node tree
-pub fn widget_tree_to_html_node<MSG>(widget_node: crate::Node<MSG>) -> sauron::Node<MSG>
+pub fn widget_tree_to_html_node<MSG>(
+    widget_node: crate::Node<MSG>,
+    cur_node_idx: &mut usize,
+) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
     match widget_node {
         crate::Node::Element(widget) => {
             // convert the Widget tag to html node
-            let mut html_node: sauron::Node<MSG> = widget_to_html(&widget.tag, widget.attrs);
+            let mut html_node: sauron::Node<MSG> =
+                widget_to_html(&widget.tag, widget.attrs, *cur_node_idx);
             // cast the html node to element
-            if let Some(html_element) = html_node.as_element_mut() {
-                for widget_child in widget.children {
-                    // convert all widget child to an html child node
-                    let mut html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child);
-                    html_element.children.push(html_child);
-                }
+            let html_element = html_node.as_element_mut().expect("must be an element");
+            for widget_child in widget.children {
+                *cur_node_idx += 1;
+                // convert all widget child to an html child node
+                let mut html_child: sauron::Node<MSG> =
+                    widget_tree_to_html_node(widget_child, cur_node_idx);
+                html_element.children.push(html_child);
             }
             html_node
         }
-        crate::Node::Text(txt) => text(txt.text),
+        crate::Node::Text(txt) => {
+            *cur_node_idx += 1;
+            text(txt.text)
+        }
     }
 }

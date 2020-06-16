@@ -56,15 +56,17 @@ impl Component<Msg> for App {
     }
 
     fn view(&self) -> Node<Msg> {
-        hpane(
+        column(
             vec![],
-            vec![hpane(
+            vec![column(
                 vec![],
                 vec![
                     textarea(vec![
                         value(&self.text),
                         on_input(|input| Msg::ParagraphChanged(input.value)),
                     ]),
+                    button(vec![label("btn1")]),
+                    button(vec![label("btn2")]),
                     textarea(vec![value(&self.paragraph_text)]),
                 ],
             )],

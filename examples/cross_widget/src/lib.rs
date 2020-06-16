@@ -14,5 +14,5 @@ pub mod app;
 pub fn initialize(initial_state: &str) {
     console_log::init_with_level(Level::Debug);
     trace!("Initial state: {}", initial_state);
-    let program: Rc<Program<App, Msg, HtmlBackend<App, Msg>>> = Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, HtmlBackend<App, Msg>>> = Program::new(App::new());
 }

@@ -15,11 +15,11 @@ use app::{App, Msg};
 fn main() {
     pretty_env_logger::init();
     #[cfg(feature = "with-titik")]
-    let program: Rc<Program<App, Msg, TitikBackend<App, Msg>>> = Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, TitikBackend<App, Msg>>> = Program::new(App::new());
 
     #[cfg(feature = "with-gtk")]
-    let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new());
 
     #[cfg(feature = "with-nwg")]
-    let program: Rc<Program<App, Msg, NwgBackend<App, Msg>>> = Program::new(App::new(1));
+    let program: Rc<Program<App, Msg, NwgBackend<App, Msg>>> = Program::new(App::new());
 }
