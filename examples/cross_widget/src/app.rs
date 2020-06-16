@@ -15,7 +15,7 @@ pub struct App {
     distribution: Vec<DistributionMedium>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Platform {
     Linux,
     Mac,
@@ -36,7 +36,7 @@ impl Platform {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DistributionMedium {
     NativeGui,
     TextUi,
@@ -53,7 +53,7 @@ impl DistributionMedium {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Msg {
     Click,
     Decrement,

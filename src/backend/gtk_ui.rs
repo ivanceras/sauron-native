@@ -9,9 +9,9 @@ use gio::{prelude::*, ApplicationFlags};
 use glib::Value;
 use gtk::{
     prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
-    CssProvider, Entry, EntryBuffer, EventBox, Image, Label, Orientation, Overlay, Paned,
-    RadioButton, ScrolledWindow, StyleContext, TextBuffer, TextBufferExt, TextTagTable, TextView,
-    TextViewExt, WidgetExt, Window, WindowPosition, WindowType,
+    CssProvider, Entry, EntryBuffer, EventBox, Frame, Image, Label, Orientation, Overlay, Paned,
+    RadioButton, ScrolledWindow, SizeGroup, SizeGroupMode, StyleContext, TextBuffer, TextBufferExt,
+    TextTagTable, TextView, TextViewExt, WidgetExt, Window, WindowPosition, WindowType,
 };
 use image::ImageFormat;
 use log::*;
@@ -37,6 +37,7 @@ where
 
 pub(crate) enum GtkWidget {
     GBox(gtk::Box),
+    GroupBox(Frame),
     Paned(Paned),
     Button(Button),
     Label(EventBox),
@@ -205,6 +206,15 @@ where
             let hbox = gtk::Box::new(Orientation::Horizontal, 0);
             hbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(hbox)
+        }
+        Widget::GroupBox => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.as_str())
+                .flatten();
+            let frame = Frame::new(label);
+            let vbox = gtk::Box::new(Orientation::Vertical, 0);
+            frame.add(&vbox);
+            GtkWidget::GroupBox(frame)
         }
         // paned has only 2 children
         Widget::Hpane => {
@@ -613,6 +623,10 @@ impl GtkWidget {
                 let widget: &gtk::Widget = cbox.upcast_ref();
                 Some(widget)
             }
+            GtkWidget::GroupBox(group_box) => {
+                let widget: &gtk::Widget = group_box.upcast_ref();
+                Some(widget)
+            }
             GtkWidget::Paned(paned) => {
                 let widget: &gtk::Widget = paned.upcast_ref();
                 Some(widget)
@@ -686,6 +700,21 @@ impl GtkWidget {
                 }
             }
             GtkWidget::GBox(container) => {
+                for child in children {
+                    if let Some(child_widget) = child.as_widget() {
+                        //container.pack_start(child_widget, false, false, 0);
+                        container.add(child_widget);
+                    } else {
+                        println!("was not able to add child widget: {:?}", child.as_widget());
+                    }
+                }
+            }
+            GtkWidget::GroupBox(frame_container) => {
+                let frame_children = frame_container.get_children();
+                let gbox_widget = frame_children.get(0).expect("must have one child");
+                let container = gbox_widget
+                    .downcast_ref::<Container>()
+                    .expect("must be a container");
                 for child in children {
                     if let Some(child_widget) = child.as_widget() {
                         //container.pack_start(child_widget, false, false, 0);

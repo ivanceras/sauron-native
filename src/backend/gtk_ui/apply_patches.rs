@@ -217,9 +217,22 @@ fn find_nodes_recursive<MSG>(
         crate::Widget::Hpane
         | crate::Widget::Vbox
         | crate::Widget::Hbox
+        | crate::Widget::GroupBox
         | crate::Widget::Overlay => {
             let node_children = node.get_children().expect("must have children");
-            let widget_children = container.get_children();
+
+            //GroupBox(Frame(Box))
+            let widget_children = if *tag == crate::Widget::GroupBox {
+                let frame_children = container.get_children();
+                let gbox_widget = frame_children.get(0).expect("must have one child");
+                let container = gbox_widget
+                    .downcast_ref::<Container>()
+                    .expect("must be a container");
+                container.get_children()
+            } else {
+                container.get_children()
+            };
+
             assert_eq!(node_children.len(), widget_children.len());
             for (child_node, widget_child) in node_children.iter().zip(widget_children.iter()) {
                 *cur_node_idx += 1;
