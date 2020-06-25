@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 sauron = { version = "0.25", path = "../../../sauron" }
 sauron-native = { path = "../../"}
 wasm-bindgen = "0.2.40"
-titik = { path = "../../../titik", optional = true }
+titik = { version = "0.1.0", path = "../../../titik", optional = true }
 log = "0.4"
 console_log = { version = "0.1.2", optional = true }
 pretty_env_logger = "0.3.1"
