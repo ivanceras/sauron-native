@@ -14,8 +14,8 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.24", optional = true, path = "../sauron" }
-sauron_vdom = { version = "0.24", path = "../sauron/crates/sauron_vdom" }
+sauron = { version = "0.25", optional = true, path = "../sauron" }
+sauron_vdom = { version = "0.25", path = "../sauron/crates/sauron_vdom" }
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2.42", optional = true }
 gtk = { version = "0.8.0", optional = true }

@@ -7,8 +7,7 @@ use crate::{
 };
 use image::{GenericImageView, ImageBuffer, RgbaImage};
 use std::{
-    cell::Cell,
-    cell::RefCell,
+    cell::{Cell, RefCell},
     fmt::Debug,
     io::{self, Stdout, Write},
     marker::PhantomData,
@@ -17,23 +16,20 @@ use std::{
     thread,
     time::Duration,
 };
-use titik::Dispatch;
 use titik::{
     crossterm,
     crossterm::{
         event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent},
         terminal,
     },
-    find_layout, find_widget_mut,
     renderer::Renderer,
-    set_focused_node,
     stretch::{
         geometry::Size,
         number::Number,
         style::{Dimension, Style},
     },
-    widget_node_idx_at, Buffer, Button, Checkbox, FlexBox, GroupBox, Image, LayoutTree, Radio,
-    SvgImage, TextArea, TextInput, Widget as Control,
+    Buffer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image, LayoutTree, Radio, SvgImage,
+    TextArea, TextInput, Widget as Control,
 };
 
 mod apply_patches;
@@ -114,7 +110,7 @@ where
 
             let mut btn: Button<MSG> = Button::new(&label);
             if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
-                btn.on_click = vec![cb.clone()];
+                btn.add_click_listener(cb.clone());
             }
             Box::new(btn)
         }
@@ -145,7 +141,7 @@ where
             let mut checkbox = Checkbox::new(&label);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("checkbox has an input event");
-                checkbox.on_input = vec![cb.clone()];
+                checkbox.add_input_listener(cb.clone());
             }
             checkbox.set_checked(value);
             Box::new(checkbox)
@@ -201,7 +197,7 @@ where
             textarea.set_size(width, height);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("textarea has an input event");
-                textarea.on_input = vec![cb.clone()];
+                textarea.add_input_listener(cb.clone());
             }
             Box::new(textarea)
         }
