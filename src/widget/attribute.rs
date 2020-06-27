@@ -1,6 +1,10 @@
-use crate::builder::attr;
-use crate::event::{InputEvent, MouseEvent};
-use crate::{event::on, Attribute, Callback, Event, Value};
+//! Provides functions for attributes of sauron native widgets
+//!
+use crate::{
+    builder::attr,
+    event::{on, InputEvent, MouseEvent},
+    Attribute, Event, Value,
+};
 use std::fmt;
 pub use util::{find_callback, find_value};
 
@@ -16,6 +20,7 @@ macro_rules! declare_attr {
     ) => {
 
         $(
+            /// creates an attribute with the function name as the attribute key
             $(#[$attr])*
             pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
                 where V:Into<Value>,
@@ -38,21 +43,28 @@ pub enum AttribKey {
     Checked,
     /// Alignment Enum, used in hbox and vbox
     Alignment,
+    /// If the key differ in the diff, all of the subtree will be discarded
     Key,
     /// whether or not the control is editable, used in text_view
     Editable,
     /// data, used in image blobs and svg
     Data,
+    /// height of widget
     Height,
+    /// width of widgets
     Width,
     /// svg image data attribute used in button
     SvgImage,
 
     /// Events
     ClickEvent,
+    /// Mouse down event
     MouseDown,
+    /// Mouse up event
     MouseUp,
+    /// Mouse move event
     MouseMove,
+    /// Input event
     InputEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
@@ -86,6 +98,7 @@ impl fmt::Display for AttribKey {
     }
 }
 
+/// create an attribute which attach a callback to the on_click event
 pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>
 where
     F: Fn(MouseEvent) -> MSG + 'static,
@@ -96,6 +109,7 @@ where
     })
 }
 
+/// create an attribute which attach a callback to the on_mousedown event
 pub fn on_mousedown<F, MSG>(func: F) -> Attribute<MSG>
 where
     F: Fn(MouseEvent) -> MSG + 'static,
@@ -106,6 +120,7 @@ where
     })
 }
 
+/// create an attribute which attach a callback to the on_mouseup event
 pub fn on_mouseup<F, MSG>(func: F) -> Attribute<MSG>
 where
     F: Fn(MouseEvent) -> MSG + 'static,
@@ -116,6 +131,7 @@ where
     })
 }
 
+/// create an attribute which attach a callback to the on_mousemove event
 pub fn on_mousemove<F, MSG>(func: F) -> Attribute<MSG>
 where
     F: Fn(MouseEvent) -> MSG + 'static,
@@ -126,6 +142,7 @@ where
     })
 }
 
+/// create an attribute which attach a callback to the on_mousemove event
 pub fn on_input<F, MSG>(func: F) -> Attribute<MSG>
 where
     F: Fn(InputEvent) -> MSG + 'static,

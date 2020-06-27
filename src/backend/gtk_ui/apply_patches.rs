@@ -1,18 +1,10 @@
-use super::{Dispatch, GtkBackend};
-use crate::widget::attribute::find_value;
-use crate::widget::attribute::util::is_scrollable;
-use crate::Node;
-use crate::{AttribKey, Attribute, Patch};
+use super::Dispatch;
+use crate::{widget::attribute::util::is_scrollable, AttribKey, Attribute, Node, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
-    prelude::*, Button, Container, ContainerExt, EventBox, Image, Label, Overlay, ScrolledWindow,
-    TextView, Viewport, Widget,
+    prelude::*, Button, Container, ContainerExt, EventBox, Image, Label, Overlay, TextView, Widget,
 };
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-    rc::Rc,
-};
+use std::{collections::HashMap, fmt::Debug};
 
 pub fn apply_patches<MSG, DSP>(
     program: &DSP,
@@ -71,7 +63,7 @@ pub fn apply_patches<MSG, DSP>(
                     }
                 }
             }
-            Patch::TruncateChildren(tag, _node_idx, num_children_remaining) => {
+            Patch::TruncateChildren(_tag, _node_idx, num_children_remaining) => {
                 println!("truncating children..");
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
@@ -81,7 +73,7 @@ pub fn apply_patches<MSG, DSP>(
                     }
                 }
             }
-            Patch::Replace(tag, _node_idx, new_node) => {
+            Patch::Replace(_tag, _node_idx, new_node) => {
                 println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
@@ -238,7 +230,7 @@ fn find_nodes_recursive<MSG>(
                 *cur_node_idx += 1;
                 let child_tag = child_node.tag().expect("must have a child tag");
                 let attrs = child_node.get_attributes();
-                if let Some(patch_tag) = nodes_to_find.get(&cur_node_idx) {
+                if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
                     println!("got some: {:?}", tag);
                     match child_tag {
                         crate::Widget::TextArea => {

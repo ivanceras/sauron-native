@@ -1,5 +1,6 @@
-use crate::{Component, Node, Widget};
-use std::{fmt::Debug, rc::Rc};
+//!  sauron native supports multiple back-end
+//!
+use crate::Component;
 
 #[cfg(feature = "with-html")]
 pub mod html;
@@ -21,13 +22,17 @@ pub mod nwg_ui;
 #[cfg(feature = "with-nwg")]
 pub use nwg_ui::NwgBackend;
 
+/// All backend implementation must implement this trait
 pub trait Backend<APP, MSG>
 where
     MSG: 'static,
     APP: Component<MSG> + 'static,
 {
+    /// initialize the backend
     fn init(app: APP) -> Self;
 
+    /// start rendering the backend, used in titik where the
+    /// render is manually invoked.
     fn start_render(&self) {
         // html backend don't use render loop
         //
@@ -41,5 +46,6 @@ where
 /// The Program will implement Dispatch instead of sending it to the
 /// DomUpdater, this will simplify the amount of generics being defined.
 pub trait Dispatch<MSG> {
+    /// dispatch the msg which will subsequently change the application state
     fn dispatch(&self, msg: MSG);
 }

@@ -1,29 +1,25 @@
+//! gtk backend
 use super::Dispatch;
 use crate::{
     util,
     widget::attribute::{find_callback, find_value, util::is_scrollable},
-    AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
+    AttribKey, Attribute, Backend, Component, Node, Widget,
 };
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
-use glib::Value;
 use gtk::{
-    prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container,
-    CssProvider, Entry, EntryBuffer, EventBox, Frame, Image, Label, Orientation, Overlay, Paned,
-    RadioButton, ScrolledWindow, SizeGroup, SizeGroupMode, StyleContext, TextBuffer, TextBufferExt,
-    TextTagTable, TextView, TextViewExt, WidgetExt, Window, WindowPosition, WindowType,
+    prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container, Entry,
+    EntryBuffer, EventBox, Frame, Image, Label, Orientation, Overlay, Paned, RadioButton,
+    ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
 };
-use image::ImageFormat;
 use log::*;
-use sauron_vdom::{
-    event::{InputEvent, MouseEvent},
-    AttribValue,
-};
+use sauron_vdom::event::{InputEvent, MouseEvent};
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 mod apply_patches;
 mod images;
 
+/// backend using gtk
 pub struct GtkBackend<APP, MSG>
 where
     MSG: 'static,
@@ -77,7 +73,7 @@ where
             println!("failed to initialize GTK Application");
         }
         let root_widget: Option<GtkWidget> = None;
-        let mut backend = GtkBackend {
+        let backend = GtkBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
@@ -149,7 +145,7 @@ where
     {
         match widget_node {
             crate::Node::Element(element) => {
-                let mut gtk_widget = from_node(program, &element.tag, &element.attrs);
+                let gtk_widget = from_node(program, &element.tag, &element.attrs);
                 let mut children = vec![];
                 for child in element.children {
                     let gtk_child = Self::from_node_tree(program, child);
@@ -376,7 +372,8 @@ where
                 .unwrap_or(false);
 
             let cb = CheckButton::new_with_label(&label);
-            cb.set_property("active", &value);
+            cb.set_property("active", &value)
+                .expect("must be able to set property");
             GtkWidget::Checkbox(cb)
         }
         Widget::Radio => {
@@ -389,7 +386,8 @@ where
                 .flatten()
                 .unwrap_or(false);
             let rb = RadioButton::new_with_label(&label);
-            rb.set_property("active", &value);
+            rb.set_property("active", &value)
+                .expect("must be able to set property");
             GtkWidget::Radio(rb)
         }
         Widget::Image => {
@@ -564,7 +562,7 @@ where
     MSG: Clone + Debug + 'static,
 {
     fn init(app: APP) -> Self {
-        let mut rc_app = GtkBackend::new(app);
+        let rc_app = GtkBackend::new(app);
         rc_app.create_app();
         rc_app
     }
@@ -591,24 +589,6 @@ where
 }
 
 impl GtkWidget {
-    fn as_container(&self) -> Option<&Container> {
-        match self {
-            GtkWidget::GBox(gbox) => {
-                let container: &Container = gbox.upcast_ref();
-                Some(container)
-            }
-            GtkWidget::Paned(paned) => {
-                let container: &Container = paned.upcast_ref();
-                Some(container)
-            }
-            GtkWidget::Overlay(overlay) => {
-                let container: &Container = overlay.upcast_ref();
-                Some(container)
-            }
-            _ => None,
-        }
-    }
-
     fn as_widget(&self) -> Option<&gtk::Widget> {
         match self {
             GtkWidget::Button(btn) => {

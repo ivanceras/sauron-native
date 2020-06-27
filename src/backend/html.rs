@@ -1,16 +1,14 @@
+//! html backend where all the functionalities is offloaded into sauron
 use crate::{
     util, widget::attribute::find_value, AttribKey, Attribute, Backend, Component, Widget,
 };
-use image::ImageFormat;
 use sauron::{
-    html::{attributes::*, div, events::mapper, img, input, text},
+    html::{attributes::*, div, img, input, text},
     prelude::*,
-    Component as SauronComponent, DomUpdater, Program,
 };
-use sauron_vdom::Callback;
-use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
-use wasm_bindgen::JsCast;
+use std::{fmt::Debug, marker::PhantomData};
 
+/// holds the user application
 pub struct HtmlApp<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
@@ -20,12 +18,13 @@ where
     _phantom_data: PhantomData<MSG>,
 }
 
+/// html backend
 pub struct HtmlBackend<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    program: Program<HtmlApp<APP, MSG>, MSG>,
+    _phantom_app: PhantomData<(APP, MSG)>,
 }
 
 impl<APP, MSG> HtmlApp<APP, MSG>
@@ -64,11 +63,13 @@ where
     APP: Component<MSG> + 'static,
 {
     fn init(app: APP) -> Self {
-        console_log::init_with_level(log::Level::Trace);
+        console_log::init_with_level(log::Level::Trace).expect("must init");
         log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
-        let program = sauron::Program::mount_to_body(html_app);
-        HtmlBackend { program }
+        sauron::Program::mount_to_body(html_app);
+        HtmlBackend {
+            _phantom_app: PhantomData,
+        }
     }
 }
 
@@ -107,6 +108,7 @@ where
         ),
         //TODO: use position absolute, etc
         Widget::Overlay => div(vec![], vec![]),
+        Widget::GroupBox => div(vec![], vec![]),
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
@@ -290,7 +292,7 @@ where
             for widget_child in widget.children {
                 *cur_node_idx += 1;
                 // convert all widget child to an html child node
-                let mut html_child: sauron::Node<MSG> =
+                let html_child: sauron::Node<MSG> =
                     widget_tree_to_html_node(widget_child, cur_node_idx);
                 html_element.children.push(html_child);
             }

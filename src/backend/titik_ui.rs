@@ -1,3 +1,5 @@
+//! functionalities specific to titik ui
+//!
 use crate::{
     widget::{
         attribute::{find_callback, find_value},
@@ -5,35 +7,22 @@ use crate::{
     },
     AttribKey, Attribute, Backend, Component, Node,
 };
-use image::{GenericImageView, ImageBuffer, RgbaImage};
+use image::GenericImageView;
 use std::{
-    cell::{Cell, RefCell},
+    cell::RefCell,
     fmt::Debug,
-    io::{self, Stdout, Write},
+    io::{self},
     marker::PhantomData,
     rc::Rc,
-    sync::mpsc,
-    thread,
-    time::Duration,
 };
 use titik::{
-    crossterm,
-    crossterm::{
-        event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent},
-        terminal,
-    },
-    renderer::Renderer,
-    stretch::{
-        geometry::Size,
-        number::Number,
-        style::{Dimension, Style},
-    },
-    Buffer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image, LayoutTree, Radio, SvgImage,
+    renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image, Radio, SvgImage,
     TextArea, TextInput, Widget as Control,
 };
 
 mod apply_patches;
 
+/// Titik Backend
 pub struct TitikBackend<APP, MSG>
 where
     MSG: 'static,
@@ -61,7 +50,7 @@ where
                 }
                 control
             }
-            crate::Node::Text(txt) => unreachable!(),
+            crate::Node::Text(_txt) => unreachable!(),
         }
     }
 }
@@ -167,9 +156,7 @@ where
                 .flatten()
                 .unwrap_or(&empty);
             let image = image::load_from_memory(&bytes).expect("should load");
-            let (width, height) = image.dimensions();
             let mut img = Image::new(bytes.to_vec());
-            //TODO: get the image size, divide by 10
             let (width, height) = image.dimensions();
             img.set_size(Some(width as f32 / 10.0), Some(height as f32 / 10.0 / 2.0));
             Box::new(img)
@@ -216,7 +203,7 @@ where
             Box::new(textarea)
         }
         Widget::Overlay => {
-            let mut flex = FlexBox::new();
+            let flex = FlexBox::new();
             Box::new(flex)
         }
     }
@@ -233,13 +220,13 @@ where
         let current_dom = app.view();
         let mut root_node = Self::from_node_tree(vdom);
 
-        let mut backend = TitikBackend {
+        let backend = TitikBackend {
             app: Rc::new(RefCell::new(app)),
             current_dom: Rc::new(RefCell::new(current_dom)),
             _phantom_msg: PhantomData,
         };
         let mut renderer = Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
-        renderer.run();
+        renderer.run().expect("must run");
         backend
     }
 }
@@ -264,7 +251,6 @@ where
             apply_patches::apply_patches(&self, root_node, &diff);
         }
 
-        let mut new_node = Self::from_node_tree(new_view);
         *self.current_dom.borrow_mut() = current_view;
     }
 }

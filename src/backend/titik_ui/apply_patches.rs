@@ -1,15 +1,9 @@
-use crate::AttribKey;
-use crate::Attribute;
-use crate::Patch;
-use crate::Widget;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use crate::{AttribKey, Attribute, Patch, Widget};
 use std::fmt::Debug;
-use titik::Button;
-use titik::TextArea;
+use titik::{Button, TextArea};
 
 pub fn apply_patches<MSG, DSP>(
-    program: &DSP,
+    _program: &DSP,
     root_node: &mut dyn titik::Widget<MSG>,
     patches: &[Patch<MSG>],
 ) where
@@ -24,7 +18,7 @@ pub fn apply_patches<MSG, DSP>(
                 eprintln!("setting attributes...");
                 set_widget_attributes::<MSG>(tag, widget, attrs);
             }
-            Patch::AppendChildren(tag, _node_idx, children) => {
+            Patch::AppendChildren(_tag, _node_idx, children) => {
                 eprintln!("adding children..");
                 for child in children {
                     let child_element = child.as_element_ref().expect("must be an element");
@@ -35,7 +29,7 @@ pub fn apply_patches<MSG, DSP>(
                     assert!(added);
                 }
             }
-            Patch::TruncateChildren(tag, _node_idx, num_children_remaining) => {
+            Patch::TruncateChildren(_tag, _node_idx, num_children_remaining) => {
                 eprintln!("truncating children..");
                 let children = widget.children().expect("must have children");
                 for i in *num_children_remaining..children.len() {

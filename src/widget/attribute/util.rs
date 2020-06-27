@@ -1,5 +1,6 @@
-use crate::widget::attribute::AttribKey;
-use crate::{event::on, Attribute, Callback, Event, Value};
+//! utility functions for manipulating attributes
+//!
+use crate::{widget::attribute::AttribKey, Attribute, Callback, Event};
 
 /// find the value of the attribute key from a Vec of attributes
 pub fn find_value<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&sauron_vdom::Value>
