@@ -6,3 +6,5 @@ script:
 - cargo build
 - cargo test
 - cargo build --features "with-titik"
+- cargo build --features "with-gtk"
+- cargo build --features "with-html"
