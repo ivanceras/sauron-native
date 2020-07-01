@@ -239,7 +239,7 @@ where
     /// root_node is added as argument in this dispatch function so that they are in the same
     /// borrow, otherwise an AlreadyBorrowedError will be invoke at runtime.
     fn dispatch(&self, msg: MSG, root_node: &mut dyn titik::Widget<MSG>) {
-        eprintln!("dispatching...");
+        eprintln!("dispatching... {:?}", msg);
         self.app.borrow_mut().update(msg);
         let new_view = self.app.borrow().view();
         let current_view = self.app.borrow().view();

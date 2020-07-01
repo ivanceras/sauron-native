@@ -5,3 +5,4 @@ rust:
 script:
 - cargo build
 - cargo test
+- cargo build --features "with-titik"
