@@ -12,7 +12,7 @@ pub mod event {
         Event,
     };
 }
-use widget::attribute::AttribKey;
+pub use widget::attribute::AttribKey;
 
 pub mod backend;
 mod component;

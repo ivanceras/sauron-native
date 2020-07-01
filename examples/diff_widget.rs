@@ -1,6 +1,6 @@
 use sauron_native::{
     widget::{attribute::*, *},
-    AttribKey, Node, *,
+    AttribKey, Node,
 };
 use sauron_vdom::diff_with_key;
 
@@ -27,14 +27,14 @@ fn main() {
                 ],
             ),
             button(vec![label("Hello")]),
-            text("I'm a text kid!"),
-            text(
+            textarea(vec![value("I'm a text kid!")]),
+            textarea(vec![value(
                 "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
                     dog. Lorem ipsun\n
                     The shadows of mordor\n
                      ",
-            ),
+            )]),
         ],
     );
 
@@ -60,14 +60,14 @@ fn main() {
                 ],
             ),
             button(vec![label("Hello")]),
-            text("I'm a text kid!"),
-            text(
+            textarea(vec![value("I'm a text kid!")]),
+            textarea(vec![value(
                 "Hello, will this be a paragrapah\n
                     The quick brown fox jumps over the lazy\n
                     dog. Lorem ipsun\n
                     The shadows of mordor\n
                      ",
-            ),
+            )]),
         ],
     );
 
