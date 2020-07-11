@@ -63,7 +63,6 @@ where
     APP: Component<MSG> + 'static,
 {
     fn init(app: APP) -> Self {
-        console_log::init_with_level(log::Level::Trace).expect("must init");
         log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
         sauron::Program::mount_to_body(html_app);
@@ -73,26 +72,53 @@ where
     }
 }
 
-/// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(
-    widget: &Widget,
-    attrs: Vec<Attribute<MSG>>,
-    cur_node_idx: usize,
+/// converts widget virtual node tree into an html node tree
+pub fn widget_tree_to_html_node<MSG>(
+    widget_node: crate::Node<MSG>,
+    cur_node_idx: &mut usize,
 ) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
+    match widget_node {
+        crate::Node::Element(widget) => {
+            widget_to_html(&widget.tag, widget.attrs, widget.children, cur_node_idx)
+        }
+        crate::Node::Text(txt) => {
+            *cur_node_idx += 1;
+            text(txt.text)
+        }
+    }
+}
+
+/// convert Widget into an equivalent html node
+fn widget_to_html<MSG>(
+    widget: &Widget,
+    attrs: Vec<Attribute<MSG>>,
+    widget_children: Vec<crate::Node<MSG>>,
+    cur_node_idx: &mut usize,
+) -> sauron::Node<MSG>
+where
+    MSG: Clone + Debug + 'static,
+{
+    let mut html_children = vec![];
+    for widget_child in widget_children {
+        *cur_node_idx += 1;
+        // convert all widget child to an html child node
+        let html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child, cur_node_idx);
+        html_children.push(html_child);
+    }
     match widget {
         Widget::Vbox => div(
             vec![styles(vec![
                 ("display", "flex"),
                 ("flex-direction", "column"),
             ])],
-            vec![],
+            html_children,
         ),
         Widget::Hbox => div(
             vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
-            vec![],
+            html_children,
         ),
         //TODO: vpane and hpane should be draggable
         Widget::Vpane => div(
@@ -100,15 +126,20 @@ where
                 ("display", "flex"),
                 ("flex-direction", "column"),
             ])],
-            vec![],
+            html_children,
         ),
         Widget::Hpane => div(
             vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
-            vec![],
+            html_children,
         ),
-        //TODO: use position absolute, etc
-        Widget::Overlay => div(vec![], vec![]),
-        Widget::GroupBox => div(vec![], vec![]),
+        // the children in overlay will be all in absolute
+        Widget::Overlay => {
+            html_children.iter_mut().for_each(|child| {
+                child.add_attributes_ref_mut(vec![styles([("position", "absolute")])]);
+            });
+            div(vec![class("overlay")], vec![div(vec![], html_children)])
+        }
+        Widget::GroupBox => div(vec![], html_children),
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
@@ -270,37 +301,6 @@ where
                 ))],
                 vec![],
             )
-        }
-    }
-}
-
-/// converts widget virtual node tree into an html node tree
-pub fn widget_tree_to_html_node<MSG>(
-    widget_node: crate::Node<MSG>,
-    cur_node_idx: &mut usize,
-) -> sauron::Node<MSG>
-where
-    MSG: Clone + Debug + 'static,
-{
-    match widget_node {
-        crate::Node::Element(widget) => {
-            // convert the Widget tag to html node
-            let mut html_node: sauron::Node<MSG> =
-                widget_to_html(&widget.tag, widget.attrs, *cur_node_idx);
-            // cast the html node to element
-            let html_element = html_node.as_element_mut().expect("must be an element");
-            for widget_child in widget.children {
-                *cur_node_idx += 1;
-                // convert all widget child to an html child node
-                let html_child: sauron::Node<MSG> =
-                    widget_tree_to_html_node(widget_child, cur_node_idx);
-                html_element.children.push(html_child);
-            }
-            html_node
-        }
-        crate::Node::Text(txt) => {
-            *cur_node_idx += 1;
-            text(txt.text)
         }
     }
 }

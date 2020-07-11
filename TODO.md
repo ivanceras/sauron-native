@@ -12,3 +12,5 @@
 - Nwg backend
    - [ ] deal with nwg, flexboxlayout can not be nestabled
    - [ ] events need to propagate
+- Html backend
+   - [ ] Make adding children to specific widgets customizable
