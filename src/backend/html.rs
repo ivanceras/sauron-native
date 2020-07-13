@@ -122,29 +122,42 @@ where
         ),
         //TODO: vpane and hpane should be draggable
         Widget::Vpane => div(
-            vec![styles(vec![
-                ("display", "flex"),
-                ("flex-direction", "column"),
-            ])],
+            vec![
+                styles(vec![("display", "flex"), ("flex-direction", "column")]),
+                width("100%"),
+                height("100%"),
+            ],
             html_children,
         ),
-        Widget::Hpane => div(
-            vec![styles(vec![("display", "flex"), ("flex-direction", "row")])],
-            html_children,
-        ),
+        // hpane will split the 2 children with 50-50 width
+        // and a 100% height
+        Widget::Hpane => {
+            html_children.iter_mut().for_each(|child| {
+                child.add_attributes_ref_mut(vec![styles([("width", "50%"), ("height", "100%")])])
+            });
+            div(
+                vec![styles(vec![
+                    ("display", "flex"),
+                    ("flex-direction", "row"),
+                    //("width", "100%"),
+                    //("height", "100%"),
+                ])],
+                html_children,
+            )
+        }
         // the children in overlay will be all in absolute
         Widget::Overlay => {
             html_children.iter_mut().for_each(|child| {
                 child.add_attributes_ref_mut(vec![styles([("position", "absolute")])]);
             });
-            div(vec![class("overlay")], vec![div(vec![], html_children)])
+            div(vec![class("overlay")], html_children)
         }
         Widget::GroupBox => div(vec![], html_children),
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
-            label(vec![], vec![text(value)])
+            label(vec![styles([("user-select", "none")])], vec![text(value)])
         }
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -226,10 +239,7 @@ where
                 })
                 .collect();
             textarea(
-                vec![
-                    value(&txt_value),
-                    styles([("width", "100%"), ("height", "100%")]),
-                ],
+                vec![value(&txt_value), styles([("height", "100%")])],
                 vec![text(txt_value)],
             )
             .add_attributes(attributes)
@@ -279,13 +289,16 @@ where
                 .unwrap_or(&empty);
 
             let mime_type = util::image_mime_type(bytes).expect("unsupported image");
-            img(
-                vec![src(format!(
-                    "data:{};base64,{}",
-                    mime_type,
-                    base64::encode(bytes)
-                ))],
+            div(
                 vec![],
+                vec![img(
+                    vec![src(format!(
+                        "data:{};base64,{}",
+                        mime_type,
+                        base64::encode(bytes)
+                    ))],
+                    vec![],
+                )],
             )
         }
         Widget::Svg => {
@@ -294,12 +307,15 @@ where
                 .map(|v| v.as_bytes())
                 .flatten()
                 .unwrap_or(&empty);
-            img(
-                vec![src(format!(
-                    "data:image/svg+xml;base64,{}",
-                    base64::encode(bytes)
-                ))],
+            div(
                 vec![],
+                vec![img(
+                    vec![src(format!(
+                        "data:image/svg+xml;base64,{}",
+                        base64::encode(bytes)
+                    ))],
+                    vec![],
+                )],
             )
         }
     }

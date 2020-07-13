@@ -9,7 +9,7 @@ where
 {
     attrs
         .iter()
-        .find(|att| att.name == key)
+        .find(|att| *att.name() == key)
         .map(|att| att.get_value())
         .flatten()
 }
@@ -24,7 +24,7 @@ where
 {
     attrs
         .iter()
-        .find(|att| att.name == key)
+        .find(|att| *att.name() == key)
         .map(|att| att.get_callback())
         .flatten()
 }

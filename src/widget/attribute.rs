@@ -55,7 +55,8 @@ pub enum AttribKey {
     Width,
     /// svg image data attribute used in button
     SvgImage,
-
+    /// The style attribute
+    Style,
     /// Events
     ClickEvent,
     /// Mouse down event

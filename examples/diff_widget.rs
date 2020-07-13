@@ -71,6 +71,6 @@ fn main() {
         ],
     );
 
-    let changed = diff_with_key(&old, &new, &AttribKey::Key);
+    let changed = diff_with_key(&AttribKey::Style, &old, &new, &AttribKey::Key);
     println!("changed: {:#?}", changed);
 }

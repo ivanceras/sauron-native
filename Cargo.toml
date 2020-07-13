@@ -17,21 +17,21 @@ maintenance = { status = "actively-developed" }
 sauron = { version = "0.26", optional = true }
 sauron_vdom = { version = "0.26" }
 termion = { version = "1.5", optional= true }
-wasm-bindgen = { version = "0.2.42", optional = true }
-gtk = { version = "0.8.0", optional = true }
-gio = { version = "0.8.0", optional = true }
-glib = { version = "0.9.0", optional = true }
-gdk-pixbuf = { version = "0.8.0", optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+gtk = { version = "0.8", optional = true }
+gio = { version = "0.8", optional = true }
+glib = { version = "0.9", optional = true }
+gdk-pixbuf = { version = "0.8", optional = true }
 log = "0.4"
-base64 = "0.11.0"
-image = "0.23.0"
-console_log = { version = "0.1.2", optional = true }
+base64 = "0.11"
+image = "0.23"
+console_log = { version = "0.1", optional = true }
 native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", rev="3011830", optional = true , features = ["all"]}
-titik = { version = "0.2.0", optional = true }
-resvg = { version = "0.9.0", features = ["raqote-backend"], optional = true }
+titik = { version = "0.2", optional = true }
+resvg = { version = "0.9", features = ["raqote-backend"], optional = true }
 
 [dependencies.web-sys]
-version = "0.3.19"
+version = "0.3"
 optional = true
 features = [
     "Comment",
@@ -60,8 +60,8 @@ stderrlog = "0.4"
 rand = "0.6"
 failure = "0.1"
 structopt = "0.2"
-wasm-bindgen-test = "0.2.33"
-cfg-if = "0.1.7"
+wasm-bindgen-test = "0.2"
+cfg-if = "0.1"
 
 
 
@@ -79,3 +79,6 @@ members = [
 ]
 
 
+[patch.crates-io]
+sauron = { path = "../sauron" }
+sauron_vdom = { path = "../sauron/crates/sauron_vdom" }
