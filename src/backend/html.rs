@@ -170,7 +170,7 @@ where
 
             let attributes = attrs
                 .into_iter()
-                .filter_map(|att| match att.name {
+                .filter_map(|att| match att.name() {
                     AttribKey::ClickEvent => {
                         att.take_callback().map(|cb| onclick(move |ev| cb.emit(ev)))
                     }
@@ -216,7 +216,7 @@ where
                 .unwrap_or(String::new());
             let attributes = attrs
                 .into_iter()
-                .filter_map(|att| match att.name {
+                .filter_map(|att| match att.name() {
                     AttribKey::InputEvent => {
                         att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
                     }
@@ -231,7 +231,7 @@ where
                 .unwrap_or(String::new());
             let attributes = attrs
                 .into_iter()
-                .filter_map(|att| match att.name {
+                .filter_map(|att| match att.name() {
                     AttribKey::InputEvent => {
                         att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
                     }

@@ -55,7 +55,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .expect("must be a textarea");
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Value => {
                             text_area.set_value(&value.to_string());
                         }
@@ -72,7 +72,7 @@ fn set_widget_attributes<MSG: 'static>(
 
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Label => {
                             btn.set_label(&value.to_string());
                         }

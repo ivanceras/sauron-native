@@ -246,7 +246,12 @@ where
 
         {
             let previous_dom = self.current_dom.borrow();
-            let diff = sauron_vdom::diff_with_key(&previous_dom, &new_view, &AttribKey::Key);
+            let diff = sauron_vdom::diff_with_key(
+                &AttribKey::Style,
+                &previous_dom,
+                &new_view,
+                &AttribKey::Key,
+            );
             eprintln!("diff: {:#?}", diff);
             apply_patches::apply_patches(&self, root_node, &diff);
         }

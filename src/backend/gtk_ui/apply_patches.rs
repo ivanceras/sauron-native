@@ -102,7 +102,7 @@ fn set_widget_attributes<MSG: 'static>(
             let button = widget.downcast_ref::<Button>().expect("must be a button");
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Label => button.set_label(&value.to_string()),
                         _ => (),
                     }
@@ -115,7 +115,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .unwrap_or_else(|| panic!("must be a text_view, found: {:?}", widget));
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Value => {
                             if let Some(buffer) = text_view.get_buffer() {
                                 buffer.set_text(&value.to_string());
@@ -136,7 +136,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .unwrap_or_else(|| panic!("must be an image {:?}", widget));
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Data => {
                             if let Some(bytes) = value.as_bytes() {
                                 let pixbuf_loader =
@@ -168,7 +168,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
             for att in attrs {
                 if let Some(value) = att.get_value() {
-                    match att.name {
+                    match att.name() {
                         AttribKey::Value => label.set_text(&value.to_string()),
                         _ => (),
                     }

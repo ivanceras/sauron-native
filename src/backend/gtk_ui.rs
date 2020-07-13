@@ -581,7 +581,12 @@ where
         let new_view = self.app.borrow().view();
         {
             let current_vdom = self.current_vdom.borrow();
-            let diff = sauron_vdom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
+            let diff = sauron_vdom::diff_with_key(
+                &AttribKey::Style,
+                &current_vdom,
+                &new_view,
+                &AttribKey::Key,
+            );
             apply_patches::apply_patches(self, &current_vdom, &self.root_container(), &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
