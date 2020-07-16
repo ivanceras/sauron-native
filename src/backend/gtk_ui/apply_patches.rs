@@ -12,7 +12,7 @@ pub fn apply_patches<MSG, DSP>(
     root_container: &Container,
     patches: &Vec<Patch<MSG>>,
 ) where
-    MSG: Debug,
+    MSG: Debug + 'static,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
     let nodes_to_patch = find_nodes(node, root_container, patches);
@@ -24,7 +24,7 @@ pub fn apply_patches<MSG, DSP>(
             .expect("must have a node to patch");
         match patch {
             Patch::AddAttributes(tag, _node_idx, attrs) => {
-                set_widget_attributes::<MSG>(tag, widget, attrs);
+                set_widget_attributes(tag, widget, attrs);
             }
             Patch::AppendChildren(tag, _node_idx, nodes) => {
                 match tag {
@@ -77,8 +77,11 @@ pub fn apply_patches<MSG, DSP>(
                 println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
-                    let new_widget =
-                        super::from_node(program, &new_element.tag, &new_node.get_attributes());
+                    let new_widget = super::from_node(
+                        program,
+                        &new_element.tag,
+                        new_node.get_attributes().expect("must have aatibutes"),
+                    );
                     let new_widget = new_widget.as_widget().expect("must be a widget");
                     root_container.add(new_widget);
                     new_widget.show();
@@ -95,13 +98,13 @@ pub fn apply_patches<MSG, DSP>(
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
     widget: &Widget,
-    attrs: &Vec<Attribute<MSG>>,
+    attrs: &[&Attribute<MSG>],
 ) {
     match tag {
         crate::Widget::Button => {
             let button = widget.downcast_ref::<Button>().expect("must be a button");
             for att in attrs {
-                if let Some(value) = att.get_value() {
+                if let Some(value) = att.get_plain() {
                     match att.name() {
                         AttribKey::Label => button.set_label(&value.to_string()),
                         _ => (),
@@ -114,7 +117,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<TextView>()
                 .unwrap_or_else(|| panic!("must be a text_view, found: {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_value() {
+                if let Some(value) = att.get_plain() {
                     match att.name() {
                         AttribKey::Value => {
                             if let Some(buffer) = text_view.get_buffer() {
@@ -122,7 +125,7 @@ fn set_widget_attributes<MSG: 'static>(
                             }
                         }
                         AttribKey::Editable => {
-                            let editable = value.as_bool().unwrap_or(false);
+                            let editable = value.as_bool();
                             text_view.set_editable(editable);
                         }
                         _ => (),
@@ -135,7 +138,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<Image>()
                 .unwrap_or_else(|| panic!("must be an image {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_value() {
+                if let Some(value) = att.get_plain() {
                     match att.name() {
                         AttribKey::Data => {
                             if let Some(bytes) = value.as_bytes() {
@@ -167,7 +170,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<Label>()
                 .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_value() {
+                if let Some(value) = att.get_plain() {
                     match att.name() {
                         AttribKey::Value => label.set_text(&value.to_string()),
                         _ => (),
@@ -185,7 +188,10 @@ fn find_nodes<MSG>(
     node: &Node<MSG>,
     container: &Container,
     patches: &[Patch<MSG>],
-) -> HashMap<usize, Widget> {
+) -> HashMap<usize, Widget>
+where
+    MSG: 'static,
+{
     let mut nodes_to_find: HashMap<usize, &crate::Widget> = HashMap::new();
     let mut cur_node_idx = 0;
 
@@ -201,7 +207,10 @@ fn find_nodes_recursive<MSG>(
     container: &Container,
     cur_node_idx: &mut usize,
     nodes_to_find: &HashMap<usize, &crate::Widget>,
-) -> HashMap<usize, Widget> {
+) -> HashMap<usize, Widget>
+where
+    MSG: 'static,
+{
     let tag = node.tag().expect("must have a tag");
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
     println!("tag: {:?}", tag);
@@ -229,7 +238,7 @@ fn find_nodes_recursive<MSG>(
             for (child_node, widget_child) in node_children.iter().zip(widget_children.iter()) {
                 *cur_node_idx += 1;
                 let child_tag = child_node.tag().expect("must have a child tag");
-                let attrs = child_node.get_attributes();
+                let attrs = child_node.get_attributes().expect("must have attributes");
                 if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
                     println!("got some: {:?}", tag);
                     match child_tag {

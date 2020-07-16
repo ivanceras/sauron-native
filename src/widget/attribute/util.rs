@@ -16,7 +16,7 @@ where
 }
 
 /// find the callback of the attribute key from a Vec of attributes
-pub fn find_callback<MSG>(key: AttribKey, attrs: &Vec<Attribute<MSG>>) -> Option<&Callback<MSG>>
+pub fn find_callback<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&Callback<MSG>>
 where
     MSG: 'static,
 {

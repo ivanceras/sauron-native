@@ -1,5 +1,6 @@
 //! gtk backend
 use super::Dispatch;
+use crate::widget::attribute::event::{InputEvent, MouseEvent};
 use crate::{
     util,
     widget::attribute::{find_callback, find_value, util::is_scrollable},
@@ -13,7 +14,6 @@ use gtk::{
     ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
 };
 use log::*;
-use sauron_vdom::event::{InputEvent, MouseEvent};
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
 mod apply_patches;
@@ -154,10 +154,7 @@ where
                 gtk_widget.add_children(children);
                 gtk_widget
             }
-            crate::Node::Text(txt) => {
-                let btn = Button::new_with_label(&txt.text);
-                GtkWidget::Button(btn)
-            }
+            crate::Node::Text(_) => unreachable!(),
         }
     }
 }
@@ -165,7 +162,7 @@ where
 pub(crate) fn from_node<MSG, DSP>(
     program: &DSP,
     widget: &Widget,
-    attrs: &Vec<Attribute<MSG>>,
+    attrs: &[Attribute<MSG>],
 ) -> GtkWidget
 where
     MSG: Debug + 'static,
@@ -259,7 +256,7 @@ where
             if let Some(label) = label {
                 btn.set_label(&label);
             }
-            if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
+            if let Some(cb) = find_callback(AttribKey::ClickEvent, attrs) {
                 let cb_clone = cb.clone();
                 let program_clone = program.clone();
                 btn.connect_clicked(move |_| {
@@ -368,7 +365,6 @@ where
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
 
             let cb = CheckButton::new_with_label(&label);
@@ -383,7 +379,6 @@ where
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
             let rb = RadioButton::new_with_label(&label);
             rb.set_property("active", &value)
@@ -391,11 +386,10 @@ where
             GtkWidget::Radio(rb)
         }
         Widget::Image => {
-            let empty = vec![];
-            let bytes = find_value(AttribKey::Data, &attrs)
+            let bytes: &[u8] = find_value(AttribKey::Data, &attrs)
                 .map(|v| v.as_bytes())
                 .flatten()
-                .unwrap_or(&empty);
+                .unwrap_or(&[]);
             let image = Image::new();
             let mime = util::image_mime_type(&bytes).expect("unsupported have mime type");
             let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
@@ -478,7 +472,6 @@ where
 
             let editable = find_value(AttribKey::Editable, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(true);
 
             let buffer = TextBuffer::new(None::<&TextTagTable>);
@@ -581,12 +574,7 @@ where
         let new_view = self.app.borrow().view();
         {
             let current_vdom = self.current_vdom.borrow();
-            let diff = sauron_vdom::diff_with_key(
-                &AttribKey::Style,
-                &current_vdom,
-                &new_view,
-                &AttribKey::Key,
-            );
+            let diff = mt_dom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
             apply_patches::apply_patches(self, &current_vdom, &self.root_container(), &diff);
         }
         *self.current_vdom.borrow_mut() = new_view;
