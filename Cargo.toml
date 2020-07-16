@@ -14,8 +14,9 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.26", optional = true }
-sauron_vdom = { version = "0.26" }
+sauron = { version = "0.27", path = "../sauron", optional = true }
+mt-dom = { version = "0.1", path = "../mt-dom" }
+stretch = "0.3"
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
 gtk = { version = "0.8", optional = true }
@@ -81,4 +82,5 @@ members = [
 
 [patch.crates-io]
 sauron = { path = "../sauron" }
-sauron_vdom = { path = "../sauron/crates/sauron_vdom" }
+mt-dom = { path = "../mt-dom" }
+stretch = { path = "../stretch" }

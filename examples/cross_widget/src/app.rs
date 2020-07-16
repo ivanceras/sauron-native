@@ -1,7 +1,6 @@
 use log::*;
 use sauron_native::{
-    event::{on, InputEvent},
-    widget::{attribute::*, *},
+    widget::{attribute::event::*, attribute::*, *},
     Attribute, Callback, Component, Event, Node, Program, Value,
 };
 use std::{

@@ -1,8 +1,8 @@
 use sauron_native::{
+    mt_dom::diff_with_key,
     widget::{attribute::*, *},
     AttribKey, Node,
 };
-use sauron_vdom::diff_with_key;
 
 fn main() {
     let old: Node<()> = column(
@@ -71,6 +71,6 @@ fn main() {
         ],
     );
 
-    let changed = diff_with_key(&AttribKey::Style, &old, &new, &AttribKey::Key);
+    let changed = diff_with_key(&old, &new, &AttribKey::Key);
     println!("changed: {:#?}", changed);
 }

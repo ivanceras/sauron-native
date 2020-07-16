@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-sauron = { version = "0.26" }
+sauron = { version = "0.27" }
 sauron-native = { path = "../../"}
 wasm-bindgen = "0.2"
 titik = { version = "0.2", optional = true }

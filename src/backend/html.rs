@@ -8,6 +8,8 @@ use sauron::{
 };
 use std::{fmt::Debug, marker::PhantomData};
 
+mod convert_event;
+
 /// holds the user application
 pub struct HtmlApp<APP, MSG>
 where
@@ -82,18 +84,18 @@ where
 {
     match widget_node {
         crate::Node::Element(widget) => {
-            widget_to_html(&widget.tag, widget.attrs, widget.children, cur_node_idx)
+            widget_to_html(widget.tag, widget.attrs, widget.children, cur_node_idx)
         }
         crate::Node::Text(txt) => {
             *cur_node_idx += 1;
-            text(txt.text)
+            text(txt)
         }
     }
 }
 
 /// convert Widget into an equivalent html node
 fn widget_to_html<MSG>(
-    widget: &Widget,
+    widget: Widget,
     attrs: Vec<Attribute<MSG>>,
     widget_children: Vec<crate::Node<MSG>>,
     cur_node_idx: &mut usize,
@@ -171,9 +173,9 @@ where
             let attributes = attrs
                 .into_iter()
                 .filter_map(|att| match att.name() {
-                    AttribKey::ClickEvent => {
-                        att.take_callback().map(|cb| onclick(move |ev| cb.emit(ev)))
-                    }
+                    AttribKey::ClickEvent => att
+                        .take_callback()
+                        .map(|cb| on_click(move |ev| cb.emit(convert_event::from_mouse_event(ev)))),
                     _ => None,
                 })
                 .collect();
@@ -217,9 +219,9 @@ where
             let attributes = attrs
                 .into_iter()
                 .filter_map(|att| match att.name() {
-                    AttribKey::InputEvent => {
-                        att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
-                    }
+                    AttribKey::InputEvent => att
+                        .take_callback()
+                        .map(|cb| on_input(move |ev| cb.emit(convert_event::to_input_event(ev)))),
                     _ => None,
                 })
                 .collect();
@@ -232,9 +234,11 @@ where
             let attributes = attrs
                 .into_iter()
                 .filter_map(|att| match att.name() {
-                    AttribKey::InputEvent => {
-                        att.take_callback().map(|cb| oninput(move |ev| cb.emit(ev)))
-                    }
+                    /*
+                    AttribKey::InputEvent => att
+                        .take_callback()
+                        .map(|cb| on_input(move |ev| cb.emit(ev))),
+                    */
                     _ => None,
                 })
                 .collect();
@@ -250,7 +254,6 @@ where
                 .unwrap_or(String::new());
             let cb_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
             let widget_id = format!("checkbox_{}", cur_node_idx);
@@ -269,7 +272,6 @@ where
                 .unwrap_or(String::new());
             let cb_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
             let widget_id = format!("radio_{}", cur_node_idx);

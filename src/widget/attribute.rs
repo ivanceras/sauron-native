@@ -1,14 +1,15 @@
 //! Provides functions for attributes of sauron native widgets
 //!
-use crate::{
-    builder::attr,
-    event::{on, InputEvent, MouseEvent},
-    Attribute, Event, Value,
-};
+use crate::Attribute;
+pub use event::Event;
+use mt_dom::{attr, on};
 use std::fmt;
 pub use util::{find_callback, find_value};
+pub use value::Value;
 
+pub mod event;
 pub mod util;
+mod value;
 
 /// declare an attribute to be used as a function call
 macro_rules! declare_attr {
@@ -25,7 +26,7 @@ macro_rules! declare_attr {
             pub fn $fname<V,MSG>(v: V) -> Attribute<MSG>
                 where V:Into<Value>,
             {
-                attr(AttribKey::$att_key, v)
+                attr(AttribKey::$att_key, v.into())
             }
         )*
     }
@@ -97,59 +98,4 @@ impl fmt::Display for AttribKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
-}
-
-/// create an attribute which attach a callback to the on_click event
-pub fn on_click<F, MSG>(func: F) -> Attribute<MSG>
-where
-    F: Fn(MouseEvent) -> MSG + 'static,
-{
-    on(AttribKey::ClickEvent, move |ev: Event| match ev {
-        Event::MouseEvent(me) => func(me),
-        _ => unreachable!(),
-    })
-}
-
-/// create an attribute which attach a callback to the on_mousedown event
-pub fn on_mousedown<F, MSG>(func: F) -> Attribute<MSG>
-where
-    F: Fn(MouseEvent) -> MSG + 'static,
-{
-    on(AttribKey::MouseDown, move |ev: Event| match ev {
-        Event::MouseEvent(me) => func(me),
-        _ => unreachable!(),
-    })
-}
-
-/// create an attribute which attach a callback to the on_mouseup event
-pub fn on_mouseup<F, MSG>(func: F) -> Attribute<MSG>
-where
-    F: Fn(MouseEvent) -> MSG + 'static,
-{
-    on(AttribKey::MouseUp, move |ev: Event| match ev {
-        Event::MouseEvent(me) => func(me),
-        _ => unreachable!(),
-    })
-}
-
-/// create an attribute which attach a callback to the on_mousemove event
-pub fn on_mousemove<F, MSG>(func: F) -> Attribute<MSG>
-where
-    F: Fn(MouseEvent) -> MSG + 'static,
-{
-    on(AttribKey::MouseMove, move |ev: Event| match ev {
-        Event::MouseEvent(me) => func(me),
-        _ => unreachable!(),
-    })
-}
-
-/// create an attribute which attach a callback to the on_mousemove event
-pub fn on_input<F, MSG>(func: F) -> Attribute<MSG>
-where
-    F: Fn(InputEvent) -> MSG + 'static,
-{
-    on(AttribKey::InputEvent, move |ev: Event| match ev {
-        Event::InputEvent(input) => func(input),
-        _ => unreachable!(),
-    })
 }
