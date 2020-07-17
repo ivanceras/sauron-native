@@ -57,7 +57,7 @@ where
 
 pub(crate) fn from_node<MSG>(
     widget: &Widget,
-    attrs: &Vec<Attribute<MSG>>,
+    attrs: &[Attribute<MSG>],
 ) -> Box<dyn titik::Widget<MSG>>
 where
     MSG: Debug + 'static,
@@ -99,7 +99,7 @@ where
 
             let mut btn: Button<MSG> = Button::new(&label);
             if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
-                btn.add_click_listener(cb.clone());
+                //btn.add_click_listener(cb.clone());
             }
             Box::new(btn)
         }
@@ -124,13 +124,12 @@ where
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
 
             let mut checkbox = Checkbox::new(&label);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("checkbox has an input event");
-                checkbox.add_input_listener(cb.clone());
+                //checkbox.add_input_listener(cb.clone());
             }
             checkbox.set_checked(value);
             Box::new(checkbox)
@@ -142,7 +141,6 @@ where
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
-                .flatten()
                 .unwrap_or(false);
 
             let mut rb = Radio::new(label);
@@ -184,7 +182,7 @@ where
             textarea.set_size(width, height);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("textarea has an input event");
-                textarea.add_input_listener(cb.clone());
+                //textarea.add_input_listener(cb.clone());
             }
             Box::new(textarea)
         }
@@ -246,12 +244,7 @@ where
 
         {
             let previous_dom = self.current_dom.borrow();
-            let diff = sauron_vdom::diff_with_key(
-                &AttribKey::Style,
-                &previous_dom,
-                &new_view,
-                &AttribKey::Key,
-            );
+            let diff = mt_dom::diff_with_key(&previous_dom, &new_view, &AttribKey::Key);
             eprintln!("diff: {:#?}", diff);
             apply_patches::apply_patches(&self, root_node, &diff);
         }

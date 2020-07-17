@@ -84,3 +84,4 @@ members = [
 sauron = { path = "../sauron" }
 mt-dom = { path = "../mt-dom" }
 stretch = { path = "../stretch" }
+titik = {path = "../titik" }
