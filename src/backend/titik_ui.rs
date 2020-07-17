@@ -8,6 +8,7 @@ use crate::{
     AttribKey, Attribute, Backend, Component, Node,
 };
 use image::GenericImageView;
+use mt_dom::Callback;
 use std::{
     cell::RefCell,
     fmt::Debug,
@@ -21,6 +22,7 @@ use titik::{
 };
 
 mod apply_patches;
+mod convert_event;
 
 /// Titik Backend
 pub struct TitikBackend<APP, MSG>
@@ -99,7 +101,10 @@ where
 
             let mut btn: Button<MSG> = Button::new(&label);
             if let Some(cb) = find_callback(AttribKey::ClickEvent, &attrs) {
-                //btn.add_click_listener(cb.clone());
+                let cb = cb.clone();
+                btn.add_click_listener(Callback::from(move |t_event: titik::Event| {
+                    cb.emit(convert_event::from_titik(t_event))
+                }));
             }
             Box::new(btn)
         }
@@ -129,7 +134,10 @@ where
             let mut checkbox = Checkbox::new(&label);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("checkbox has an input event");
-                //checkbox.add_input_listener(cb.clone());
+                let cb = cb.clone();
+                checkbox.add_input_listener(Callback::from(move |t_event: titik::Event| {
+                    cb.emit(convert_event::from_titik(t_event))
+                }));
             }
             checkbox.set_checked(value);
             Box::new(checkbox)
@@ -182,7 +190,10 @@ where
             textarea.set_size(width, height);
             if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
                 eprintln!("textarea has an input event");
-                //textarea.add_input_listener(cb.clone());
+                let cb = cb.clone();
+                textarea.add_input_listener(Callback::from(move |t_event: titik::Event| {
+                    cb.emit(convert_event::from_titik(t_event))
+                }));
             }
             Box::new(textarea)
         }

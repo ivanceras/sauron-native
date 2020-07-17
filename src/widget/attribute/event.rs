@@ -139,6 +139,12 @@ impl InputEvent {
     }
 }
 
+impl From<Value> for InputEvent {
+    fn from(value: Value) -> Self {
+        InputEvent { value }
+    }
+}
+
 /// Which mouse button is used
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MouseButton {
