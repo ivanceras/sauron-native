@@ -100,27 +100,34 @@ impl MouseEvent {
 }
 
 /// Keypresses creates a key event
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyEvent {
     /// the key pressed
-    pub key: String,
+    pub key_code: KeyCode,
     /// the modifuer key pressed alongside
     pub modifier: Modifier,
-    /// is repeat enabled
-    pub repeat: bool,
-    /// read-only property returns an unsigned long representing the location of the key on the keyboard or other input device.
-    ///https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/location
-    pub location: u32,
 }
 
-impl KeyEvent {
-    /// creates a new key event
-    pub fn new(key: String) -> Self {
-        KeyEvent {
-            key,
-            ..Default::default()
-        }
-    }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum KeyCode {
+    Backspace,
+    Enter,
+    Left,
+    Right,
+    Up,
+    Down,
+    Home,
+    End,
+    PageUp,
+    PageDown,
+    Tab,
+    BackTab,
+    Delete,
+    Insert,
+    F(u8),
+    Char(char),
+    Null,
+    Esc,
 }
 
 /// Input event is triggered by controls such as text_area and text_input
@@ -222,8 +229,6 @@ pub struct Modifier {
     pub alt_key: bool,
     /// whether the ctrl key is pressed
     pub ctrl_key: bool,
-    /// whether the meta key is pressed
-    pub meta_key: bool,
     /// whether the shift key is pressed
     pub shift_key: bool,
 }
