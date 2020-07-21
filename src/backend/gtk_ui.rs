@@ -256,15 +256,17 @@ where
             if let Some(label) = label {
                 btn.set_label(&label);
             }
-            if let Some(cb) = find_callback(AttribKey::ClickEvent, attrs) {
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                btn.connect_clicked(move |_| {
-                    println!("btn is clicked..");
-                    let mouse_event = MouseEvent::default();
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                });
+            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs) {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    btn.connect_clicked(move |_| {
+                        println!("btn is clicked..");
+                        let mouse_event = MouseEvent::default();
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
             }
 
             if let Some(svg_image_data) = svg_image_data {
@@ -294,14 +296,16 @@ where
             let buffer = EntryBuffer::new(Some(&*value));
             let entry = Entry::new_with_buffer(&buffer);
 
-            if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                entry.connect_property_text_notify(move |entry| {
-                    let input_event = InputEvent::new(entry.get_buffer().get_text());
-                    let msg = cb_clone.emit(input_event);
-                    program_clone.dispatch(msg);
-                });
+            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    entry.connect_property_text_notify(move |entry| {
+                        let input_event = InputEvent::new(entry.get_buffer().get_text());
+                        let msg = cb_clone.emit(input_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
             }
             GtkWidget::TextInput(entry)
         }
@@ -313,45 +317,51 @@ where
             let label = Label::new(Some(&*value));
 
             let event_box = EventBox::new();
-            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
-                println!("label has some mouse down");
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                event_box.connect_button_press_event(move |_view, event| {
-                    println!("label is button pressed");
-                    let (x, y) = event.get_position();
-                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                    Inhibit(false)
-                });
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+                for cb in callbacks {
+                    println!("label has some mouse down");
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    event_box.connect_button_press_event(move |_view, event| {
+                        println!("label is button pressed");
+                        let (x, y) = event.get_position();
+                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                        Inhibit(false)
+                    });
+                }
             }
-            if let Some(cb) = find_callback(AttribKey::MouseUp, &attrs) {
-                println!("label has some mouse up");
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                event_box.connect_button_release_event(move |_view, event| {
-                    println!("label is button released");
-                    let (x, y) = event.get_position();
-                    let mouse_event = MouseEvent::release(x as i32, y as i32);
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                    Inhibit(false)
-                });
+            if let Some(callbacks) = find_callback(AttribKey::MouseUp, &attrs) {
+                for cb in callbacks {
+                    println!("label has some mouse up");
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    event_box.connect_button_release_event(move |_view, event| {
+                        println!("label is button released");
+                        let (x, y) = event.get_position();
+                        let mouse_event = MouseEvent::release(x as i32, y as i32);
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                        Inhibit(false)
+                    });
+                }
             }
 
-            if let Some(cb) = find_callback(AttribKey::MouseMove, &attrs) {
-                println!("label has some mouse up");
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                event_box.connect_motion_notify_event(move |_view, event| {
-                    println!("label is button released");
-                    let (x, y) = event.get_position();
-                    let mouse_event = MouseEvent::mousemove(x as i32, y as i32);
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                    Inhibit(false)
-                });
+            if let Some(callbacks) = find_callback(AttribKey::MouseMove, &attrs) {
+                for cb in callbacks {
+                    println!("label has some mouse up");
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    event_box.connect_motion_notify_event(move |_view, event| {
+                        println!("label is button released");
+                        let (x, y) = event.get_position();
+                        let mouse_event = MouseEvent::mousemove(x as i32, y as i32);
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                        Inhibit(false)
+                    });
+                }
             }
             event_box.add(&label);
             label.show();
@@ -438,18 +448,20 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
-            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
-                println!("textview has some mouse down");
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                image.connect_button_press_event(move |_view, event| {
-                    println!("textview is button pressed");
-                    let (x, y) = event.get_position();
-                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                    Inhibit(false)
-                });
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+                for cb in callbacks {
+                    println!("textview has some mouse down");
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    image.connect_button_press_event(move |_view, event| {
+                        println!("textview is button pressed");
+                        let (x, y) = event.get_position();
+                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                        Inhibit(false)
+                    });
+                }
             }
 
             let height = find_value(AttribKey::Height, &attrs)
@@ -477,18 +489,20 @@ where
             let buffer = TextBuffer::new(None::<&TextTagTable>);
             buffer.set_text(&value);
 
-            if let Some(cb) = find_callback(AttribKey::InputEvent, &attrs) {
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                buffer.connect_end_user_action(move |buffer| {
-                    let buffer_text =
-                        buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
-                    if let Some(buffer_text) = buffer_text {
-                        let input_event = InputEvent::new(buffer_text.to_string());
-                        let msg = cb_clone.emit(input_event);
-                        program_clone.dispatch(msg);
-                    }
-                });
+            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    buffer.connect_end_user_action(move |buffer| {
+                        let buffer_text =
+                            buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
+                        if let Some(buffer_text) = buffer_text {
+                            let input_event = InputEvent::new(buffer_text.to_string());
+                            let msg = cb_clone.emit(input_event);
+                            program_clone.dispatch(msg);
+                        }
+                    });
+                }
             }
 
             let text_view = TextView::new_with_buffer(&buffer);
@@ -505,18 +519,20 @@ where
                 .flatten()
                 .unwrap_or(20.0);
 
-            if let Some(cb) = find_callback(AttribKey::MouseDown, &attrs) {
-                println!("textview has some mouse down");
-                let cb_clone = cb.clone();
-                let program_clone = program.clone();
-                text_view.connect_button_press_event(move |_view, event| {
-                    println!("textview is button pressed");
-                    let (x, y) = event.get_position();
-                    let mouse_event = MouseEvent::pressed(x as i32, y as i32);
-                    let msg = cb_clone.emit(mouse_event);
-                    program_clone.dispatch(msg);
-                    Inhibit(false)
-                });
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+                for cb in callbacks {
+                    println!("textview has some mouse down");
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    text_view.connect_button_press_event(move |_view, event| {
+                        println!("textview is button pressed");
+                        let (x, y) = event.get_position();
+                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                        Inhibit(false)
+                    });
+                }
             }
 
             text_view.set_size_request(width as i32, height as i32);

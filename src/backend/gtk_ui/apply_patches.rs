@@ -98,13 +98,13 @@ pub fn apply_patches<MSG, DSP>(
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
     widget: &Widget,
-    attrs: &[&Attribute<MSG>],
+    attrs: &[Attribute<MSG>],
 ) {
     match tag {
         crate::Widget::Button => {
             let button = widget.downcast_ref::<Button>().expect("must be a button");
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Label => button.set_label(&value.to_string()),
                         _ => (),
@@ -117,7 +117,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<TextView>()
                 .unwrap_or_else(|| panic!("must be a text_view, found: {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Value => {
                             if let Some(buffer) = text_view.get_buffer() {
@@ -138,7 +138,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<Image>()
                 .unwrap_or_else(|| panic!("must be an image {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Data => {
                             if let Some(bytes) = value.as_bytes() {
@@ -170,7 +170,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_ref::<Label>()
                 .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Value => label.set_text(&value.to_string()),
                         _ => (),
