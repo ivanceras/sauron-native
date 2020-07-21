@@ -14,8 +14,8 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.27", path = "../sauron", optional = true }
-mt-dom = { version = "0.1", path = "../mt-dom" }
+sauron = { version = "0.28", optional = true }
+mt-dom = { version = "0.2"}
 stretch = "0.3"
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }

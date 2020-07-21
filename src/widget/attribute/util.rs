@@ -11,12 +11,12 @@ where
     attrs
         .iter()
         .find(|att| *att.name() == key)
-        .map(|att| att.get_plain())
+        .map(|att| att.get_plain().first().map(|v| *v))
         .flatten()
 }
 
 /// find the callback of the attribute key from a Vec of attributes
-pub fn find_callback<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&Callback<MSG>>
+pub fn find_callback<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<Vec<&Callback<MSG>>>
 where
     MSG: 'static,
 {
@@ -24,7 +24,6 @@ where
         .iter()
         .find(|att| *att.name() == key)
         .map(|att| att.get_callback())
-        .flatten()
 }
 
 /// find the Scrollable attribute boolean value, default is false

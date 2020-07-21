@@ -21,7 +21,6 @@ pub fn from_mouse_event(event: sauron::web_sys::MouseEvent) -> MouseEvent {
     let modifier = Modifier {
         alt_key: mouse.alt_key(),
         ctrl_key: mouse.ctrl_key(),
-        meta_key: mouse.meta_key(),
         shift_key: mouse.shift_key(),
     };
     let buttons = match mouse.button() {
