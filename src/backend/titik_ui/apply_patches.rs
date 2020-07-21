@@ -45,7 +45,7 @@ pub fn apply_patches<MSG, DSP>(
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
     widget: &mut dyn titik::Widget<MSG>,
-    attrs: &[&Attribute<MSG>],
+    attrs: &[Attribute<MSG>],
 ) {
     match tag {
         Widget::TextArea => {
@@ -54,7 +54,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .downcast_mut()
                 .expect("must be a textarea");
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Value => {
                             text_area.set_value(&value.to_string());
@@ -71,7 +71,7 @@ fn set_widget_attributes<MSG: 'static>(
                 .expect("must be a button");
 
             for att in attrs {
-                if let Some(value) = att.get_plain() {
+                for value in att.get_plain() {
                     match att.name() {
                         AttribKey::Label => {
                             btn.set_label(&value.to_string());
