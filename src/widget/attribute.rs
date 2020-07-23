@@ -50,10 +50,6 @@ pub enum AttribKey {
     Editable,
     /// data, used in image blobs and svg
     Data,
-    /// height of widget
-    Height,
-    /// width of widgets
-    Width,
     /// svg image data attribute used in button
     SvgImage,
     /// The style attribute
@@ -70,8 +66,6 @@ pub enum AttribKey {
     InputEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
-    /// position of the Hpane, Vpane
-    Position,
 }
 
 declare_attr! {
@@ -82,16 +76,12 @@ declare_attr! {
     /// label attribute, used in button, checkbox and radio
     label => Label;
     /// height attribute, used in most widgets
-    height => Height;
-    /// width attribute, used in most widgets
-    width => Width;
     /// svg_image attribute, used in buttons
     svg_image => SvgImage;
     /// editable attribute
     editable => Editable;
     /// scrollable attribute
     scrollable => Scrollable;
-    position => Position;
 }
 
 impl fmt::Display for AttribKey {
