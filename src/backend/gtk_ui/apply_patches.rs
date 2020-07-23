@@ -98,7 +98,7 @@ pub fn apply_patches<MSG, DSP>(
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
     widget: &Widget,
-    attrs: &[Attribute<MSG>],
+    attrs: &[&Attribute<MSG>],
 ) {
     match tag {
         crate::Widget::Button => {

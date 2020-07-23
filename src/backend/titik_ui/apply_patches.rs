@@ -45,7 +45,7 @@ pub fn apply_patches<MSG, DSP>(
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
     widget: &mut dyn titik::Widget<MSG>,
-    attrs: &[Attribute<MSG>],
+    attrs: &[&Attribute<MSG>],
 ) {
     match tag {
         Widget::TextArea => {

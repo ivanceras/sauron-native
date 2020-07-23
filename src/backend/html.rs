@@ -241,17 +241,20 @@ where
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
-            let attributes = attrs
-                .into_iter()
-                .filter_map(|att| match att.name() {
-                    /*
-                    AttribKey::InputEvent => att
-                        .take_callback()
-                        .map(|cb| on_input(move |ev| cb.emit(ev))),
-                    */
-                    _ => None,
-                })
-                .collect();
+            let mut attributes = vec![];
+            for att in attrs {
+                match att.name() {
+                    AttribKey::InputEvent => {
+                        for cb in att.get_callback() {
+                            let cb = cb.clone();
+                            attributes.push(on_input(move |ev| {
+                                cb.emit(convert_event::to_input_event(ev))
+                            }));
+                        }
+                    }
+                    _ => (),
+                }
+            }
             textarea(
                 vec![value(&txt_value), styles([("height", "100%")])],
                 vec![text(txt_value)],
