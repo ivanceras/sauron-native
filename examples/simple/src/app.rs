@@ -1,7 +1,6 @@
 use log::*;
 use sauron_native::{
-    event::{on, InputEvent},
-    widget::{attribute::*, *},
+    widget::{attribute::event::*, attribute::*, *},
     Attribute, Callback, Component, Event, Node, Program, Value,
 };
 use std::{
@@ -62,7 +61,7 @@ impl Component<Msg> for App {
                 vec![],
                 vec![
                     textarea(vec![
-                        value(&self.text),
+                        value(self.text.clone()),
                         on_input(|input| {
                             Msg::ParagraphChanged(
                                 input.value.as_str().expect("must be a string").to_owned(),
@@ -71,7 +70,7 @@ impl Component<Msg> for App {
                     ]),
                     button(vec![label("btn1")]),
                     button(vec![label("btn2")]),
-                    textarea(vec![value(&self.paragraph_text)]),
+                    textarea(vec![value(self.paragraph_text.clone())]),
                 ],
             )],
         )

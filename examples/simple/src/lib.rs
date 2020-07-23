@@ -1,8 +1,6 @@
 use app::{App, Msg};
 use log::*;
 #[cfg(feature = "with-html")]
-use sauron::body;
-#[cfg(feature = "with-html")]
 use sauron_native::{backend::HtmlBackend, Component, Program};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
