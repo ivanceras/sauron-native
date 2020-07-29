@@ -217,54 +217,14 @@ impl NwgWidget {
 
                         NwgWidget::Overlay(child) => {}
                         NwgWidget::GroupBox(child) => {}
-                        NwgWidget::Button(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::Label(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::Paragraph(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::TextInput(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::TextArea(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::Checkbox(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::Radio(child) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Percent(1.0),
-                            });
-                        }
-                        NwgWidget::Image(child, _) => {
-                            builder = builder.child(child).child_size(Size {
-                                width: Dimension::Percent(1.0),
-                                height: Dimension::Points(400.0),
-                            });
-                        }
+                        NwgWidget::Button(child) => builder = builder.child(child),
+                        NwgWidget::Label(child) => builder = builder.child(child),
+                        NwgWidget::Paragraph(child) => builder = builder.child(child),
+                        NwgWidget::TextInput(child) => builder = builder.child(child),
+                        NwgWidget::TextArea(child) => builder = builder.child(child),
+                        NwgWidget::Checkbox(child) => builder = builder.child(child),
+                        NwgWidget::Radio(child) => builder = builder.child(child),
+                        NwgWidget::Image(child, _) => builder = builder.child(child),
                     }
                 }
 
@@ -279,6 +239,31 @@ impl NwgWidget {
                 let mut builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Row);
+
+                for child in children.iter() {
+                    match child {
+                        NwgWidget::Box(child) => {
+                            /*
+                            box_layout.add_child(child, Style{
+                                size: Size {
+                                    width: Dimension::Percent(1.0),
+                                    height: Dimension::Percent(1.0),
+                                }
+                            });*/
+                        }
+
+                        NwgWidget::Overlay(child) => {}
+                        NwgWidget::GroupBox(child) => {}
+                        NwgWidget::Button(child) => builder = builder.child(child),
+                        NwgWidget::Label(child) => builder = builder.child(child),
+                        NwgWidget::Paragraph(child) => builder = builder.child(child),
+                        NwgWidget::TextInput(child) => builder = builder.child(child),
+                        NwgWidget::TextArea(child) => builder = builder.child(child),
+                        NwgWidget::Checkbox(child) => builder = builder.child(child),
+                        NwgWidget::Radio(child) => builder = builder.child(child),
+                        NwgWidget::Image(child, _) => builder = builder.child(child),
+                    }
+                }
 
                 builder.build(&mut box_layout);
 
@@ -310,14 +295,13 @@ impl NwgWidget {
             }
             Widget::Button => {
                 println!("button..");
-                let label = find_value(AttribKey::Value, &attrs)
+                let label = find_value(AttribKey::Label, &attrs)
                     .map(|v| v.to_string())
                     .unwrap_or(String::new());
 
                 let mut btn = Button::default();
 
                 Button::builder()
-                    .size((280, 20))
                     .text(&label)
                     .parent(window)
                     .build(&mut btn)
@@ -335,7 +319,6 @@ impl NwgWidget {
                 let mut lbl = Label::default();
 
                 Label::builder()
-                    .size((280, 20))
                     .text(&label_value)
                     .parent(window)
                     .build(&mut lbl)
@@ -350,7 +333,6 @@ impl NwgWidget {
                 let mut rtb = RichTextBox::default();
 
                 RichTextBox::builder()
-                    .size((280, 20))
                     .text(&txt)
                     .parent(window)
                     .build(&mut rtb)
@@ -367,7 +349,6 @@ impl NwgWidget {
                 let mut text_input = TextInput::default();
 
                 TextInput::builder()
-                    .size((280, 20))
                     .text(&value)
                     .parent(window)
                     .build(&mut text_input)
@@ -384,7 +365,6 @@ impl NwgWidget {
                 let mut text_box = TextBox::default();
 
                 TextBox::builder()
-                    .size((280, 60))
                     .text(&value)
                     .parent(window)
                     .build(&mut text_box)
@@ -405,7 +385,6 @@ impl NwgWidget {
 
                 let mut checkbox = CheckBox::default();
                 CheckBox::builder()
-                    .size((280, 60))
                     .text(&label)
                     .parent(window)
                     .build(&mut checkbox)
@@ -425,7 +404,6 @@ impl NwgWidget {
 
                 let mut radio = RadioButton::default();
                 RadioButton::builder()
-                    .size((280, 60))
                     .text(&label)
                     .parent(window)
                     .build(&mut radio)
