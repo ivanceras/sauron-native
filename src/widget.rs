@@ -2,6 +2,7 @@
 //! which has a mapping to the actual widget in the supported backend
 //!
 use crate::{Attribute, Node};
+pub use attribute::event;
 use mt_dom::element;
 use std::fmt::Debug;
 

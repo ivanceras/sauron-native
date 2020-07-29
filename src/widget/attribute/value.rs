@@ -54,9 +54,21 @@ impl From<&'static str> for Value {
     }
 }
 
+impl From<&String> for Value {
+    fn from(s: &String) -> Self {
+        Value::String(s.to_owned())
+    }
+}
+
 impl From<bool> for Value {
     fn from(v: bool) -> Self {
         Value::Bool(v)
+    }
+}
+
+impl From<Vec<u8>> for Value {
+    fn from(v: Vec<u8>) -> Self {
+        Value::Bytes(v)
     }
 }
 
