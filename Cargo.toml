@@ -14,8 +14,8 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.28", optional = true }
-mt-dom = { version = "0.2"}
+sauron = { version = "0.29", optional = true }
+mt-dom = { version = "0.3"}
 stretch = "0.3"
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
@@ -27,7 +27,8 @@ log = "0.4"
 base64 = "0.11"
 image = "0.23"
 console_log = { version = "0.1", optional = true }
-native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", rev="3011830", optional = true , features = ["all"]}
+#native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", rev="3011830", optional = true , features = ["all"]}
+native-windows-gui = { path = "../native-windows-gui/native-windows-gui", optional = true, features = ["flexbox", "rich-textbox", "image-decoder", "textbox"] }
 titik = { version = "0.2", optional = true }
 resvg = { version = "0.9", features = ["raqote-backend"], optional = true }
 
@@ -85,3 +86,4 @@ sauron = { path = "../sauron" }
 mt-dom = { path = "../mt-dom" }
 stretch = { path = "../stretch" }
 titik = {path = "../titik" }
+native-windows-gui = { path = "../native-windows-gui/native-windows-gui" }

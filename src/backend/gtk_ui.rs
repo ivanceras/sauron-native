@@ -171,6 +171,7 @@ where
     match widget {
         // vbox can have many children
         Widget::Vbox => {
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -180,13 +181,15 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
 
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
-            vbox.set_size_request(width as i32, height as i32);
+            //vbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(vbox)
         }
         // hbox can have many children
         Widget::Hbox => {
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -196,8 +199,9 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
             let hbox = gtk::Box::new(Orientation::Horizontal, 0);
-            hbox.set_size_request(width as i32, height as i32);
+            //hbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(hbox)
         }
         Widget::GroupBox => {
@@ -211,6 +215,7 @@ where
         }
         // paned has only 2 children
         Widget::Hpane => {
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -225,13 +230,15 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
 
             let hpane = Paned::new(Orientation::Horizontal);
-            hpane.set_size_request(width as i32, height as i32);
-            hpane.set_position(position as i32);
+            //hpane.set_size_request(width as i32, height as i32);
+            //hpane.set_position(position as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -241,8 +248,9 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
             let vpane = Paned::new(Orientation::Vertical);
-            vpane.set_size_request(width as i32, height as i32);
+            //vpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(vpane)
         }
         Widget::Button => {
@@ -413,6 +421,7 @@ where
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
 
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -423,6 +432,7 @@ where
                 .flatten()
                 .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
+            */
             GtkWidget::Image(image)
         }
         Widget::Svg => {
@@ -443,10 +453,12 @@ where
             let pixbuf = pixbuf_loader.get_pixbuf();
 
             image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
 
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
                 for cb in callbacks {
@@ -464,11 +476,13 @@ where
                 }
             }
 
+            /*
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
+            */
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
                 scroll.add(&image);
@@ -509,6 +523,7 @@ where
             text_view.set_monospace(true);
             text_view.set_editable(editable);
 
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -518,6 +533,7 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
+            */
 
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
                 for cb in callbacks {
@@ -535,11 +551,11 @@ where
                 }
             }
 
-            text_view.set_size_request(width as i32, height as i32);
+            //text_view.set_size_request(width as i32, height as i32);
 
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
-                scroll.set_size_request(width as i32, height as i32);
+                //scroll.set_size_request(width as i32, height as i32);
                 scroll.add(&text_view);
                 GtkWidget::TextViewScrollable(scroll)
             } else {
@@ -549,6 +565,7 @@ where
         Widget::Overlay => {
             let overlay = Overlay::new();
 
+            /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
                 .flatten()
@@ -558,7 +575,8 @@ where
                 .map(|v| v.as_f64())
                 .flatten()
                 .unwrap_or(20.0);
-            overlay.set_size_request(width as i32, height as i32);
+            */
+            //overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)
         }

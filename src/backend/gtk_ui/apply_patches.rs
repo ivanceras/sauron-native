@@ -63,13 +63,15 @@ pub fn apply_patches<MSG, DSP>(
                     }
                 }
             }
-            Patch::TruncateChildren(_tag, _node_idx, num_children_remaining) => {
+            Patch::RemoveChildren(_tag, _node_idx, children_index) => {
                 println!("truncating children..");
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
-                    for i in *num_children_remaining..children.len() {
-                        println!("truncating children: {:?}", children[i]);
-                        container.remove(&children[i]);
+                    for (i, child) in children.iter().enumerate() {
+                        if children_index.contains(&i) {
+                            println!("truncating children: {:?}", children[i]);
+                            container.remove(&children[i]);
+                        }
                     }
                 }
             }

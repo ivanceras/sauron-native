@@ -6,13 +6,11 @@ use crate::{
 use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
 use nwg::{
-    stretch::{
-        geometry::Size,
-        style::{Dimension, FlexDirection},
-    },
     Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder, ImageFrame, Label,
     RadioButton, RichTextBox, TextBox, TextInput, Window,
 };
+use stretch::geometry::Size;
+use stretch::style::{Dimension, FlexDirection};
 
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
 
@@ -115,7 +113,10 @@ where
 
 enum NwgWidget {
     Box(FlexboxLayout),
+    Overlay(FlexboxLayout),
+    GroupBox(FlexboxLayout),
     Button(Button),
+    Label(Label),
     Paragraph(RichTextBox),
     TextInput(TextInput),
     TextArea(TextBox),
@@ -128,7 +129,10 @@ impl fmt::Debug for NwgWidget {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             NwgWidget::Box(w) => write!(f, "FlexboxLayout"),
+            NwgWidget::Overlay(w) => write!(f, "Overlay"),
+            NwgWidget::GroupBox(w) => write!(f, "GroupBox"),
             NwgWidget::Button(w) => write!(f, "{}", w.class_name()),
+            NwgWidget::Label(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Paragraph(w) => write!(f, "{}", w.class_name()),
             NwgWidget::TextInput(w) => write!(f, "{}", w.class_name()),
             NwgWidget::TextArea(w) => write!(f, "{}", w.class_name()),
@@ -210,40 +214,49 @@ impl NwgWidget {
                                 }
                             });*/
                         }
+
+                        NwgWidget::Overlay(child) => {}
+                        NwgWidget::GroupBox(child) => {}
                         NwgWidget::Button(child) => {
                             builder = builder.child(child).child_size(Size {
-                                width: Dimension::Points(20.0),
-                                height: Dimension::Points(20.0),
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Percent(1.0),
+                            });
+                        }
+                        NwgWidget::Label(child) => {
+                            builder = builder.child(child).child_size(Size {
+                                width: Dimension::Percent(1.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::Paragraph(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::TextInput(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::TextArea(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::Checkbox(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::Radio(child) => {
                             builder = builder.child(child).child_size(Size {
                                 width: Dimension::Percent(1.0),
-                                height: Dimension::Points(20.0),
+                                height: Dimension::Percent(1.0),
                             });
                         }
                         NwgWidget::Image(child, _) => {
@@ -312,6 +325,24 @@ impl NwgWidget {
 
                 NwgWidget::Button(btn)
             }
+
+            Widget::Label => {
+                println!("label..");
+                let label_value = find_value(AttribKey::Value, &attrs)
+                    .map(|v| v.to_string())
+                    .unwrap_or(String::new());
+
+                let mut lbl = Label::default();
+
+                Label::builder()
+                    .size((280, 20))
+                    .text(&label_value)
+                    .parent(window)
+                    .build(&mut lbl)
+                    .expect("must build button");
+
+                NwgWidget::Label(lbl)
+            }
             Widget::Paragraph => {
                 let txt = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.to_string())
@@ -370,7 +401,6 @@ impl NwgWidget {
 
                 let value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.as_bool())
-                    .flatten()
                     .unwrap_or(false);
 
                 let mut checkbox = CheckBox::default();
@@ -391,7 +421,6 @@ impl NwgWidget {
 
                 let value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.as_bool())
-                    .flatten()
                     .unwrap_or(false);
 
                 let mut radio = RadioButton::default();
@@ -479,6 +508,31 @@ impl NwgWidget {
                     .expect("must build image_frame");
 
                 NwgWidget::Image(image_frame, bitmap)
+            }
+
+            // TODO:
+            Widget::Overlay => {
+                let mut box_layout = FlexboxLayout::default();
+
+                let mut builder = FlexboxLayout::builder()
+                    .parent(window)
+                    .flex_direction(FlexDirection::Row);
+
+                builder.build(&mut box_layout);
+
+                NwgWidget::Overlay(box_layout)
+            }
+            // TODO:
+            Widget::GroupBox => {
+                let mut box_layout = FlexboxLayout::default();
+
+                let mut builder = FlexboxLayout::builder()
+                    .parent(window)
+                    .flex_direction(FlexDirection::Row);
+
+                builder.build(&mut box_layout);
+
+                NwgWidget::GroupBox(box_layout)
             }
         }
     }
