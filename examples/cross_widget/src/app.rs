@@ -1,4 +1,6 @@
 use log::*;
+use sauron_native::stretch::geometry::Size;
+use sauron_native::stretch::style::{Dimension, Style};
 use sauron_native::{
     widget::{attribute::event::*, attribute::*, *},
     Attribute, Callback, Component, Event, Node, Program, Value,
@@ -93,7 +95,7 @@ impl Component<Msg> for App {
 
     fn view(&self) -> Node<Msg> {
         column(
-            vec![],
+            vec![width(50.0)],
             vec![
                 groupbox(
                     vec![label("Target platform:")],

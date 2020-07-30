@@ -1,7 +1,9 @@
 //! utility functions for manipulating attributes
 //!
-use crate::{widget::attribute::AttribKey, Attribute, Callback, Value};
+use crate::{widget::attribute::AttribKey, Attribute, Callback, Element, Node, Value};
 use mt_dom::AttValue;
+use stretch::result::Layout;
+use stretch::style::Style;
 
 /// find the value of the attribute key from a Vec of attributes
 pub fn find_value<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&Value>
@@ -31,4 +33,20 @@ pub fn is_scrollable<MSG: 'static>(attrs: &[Attribute<MSG>]) -> bool {
     find_value(AttribKey::Scrollable, attrs)
         .map(|v| v.as_bool())
         .unwrap_or(false)
+}
+
+/// return the first style attribute of this node
+pub fn get_style<MSG>(node: &Node<MSG>) -> Option<&Style> {
+    node.get_attribute_value(&AttribKey::Style)
+        .map(|values| values.first().map(|value| value.as_style()))
+        .flatten()
+        .flatten()
+}
+
+pub fn get_layout<MSG>(element: &Element<MSG>) -> Option<&Layout> {
+    element
+        .get_attribute_value(&AttribKey::Layout)
+        .map(|values| values.first().map(|value| value.as_layout()))
+        .flatten()
+        .flatten()
 }

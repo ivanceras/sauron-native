@@ -4,7 +4,8 @@ use crate::Attribute;
 pub use event::Event;
 use mt_dom::{attr, on};
 use std::fmt;
-pub use util::{find_callback, find_value};
+use stretch::style::Style;
+pub use util::{find_callback, find_value, get_style};
 pub use value::Value;
 
 pub mod event;
@@ -66,6 +67,12 @@ pub enum AttribKey {
     InputEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
+    /// the calculated layout of this widget
+    Layout,
+    /// explicit width specified to the widget
+    Width,
+    /// explicit height specified to the widget
+    Height,
 }
 
 declare_attr! {
@@ -82,10 +89,18 @@ declare_attr! {
     editable => Editable;
     /// scrollable attribute
     scrollable => Scrollable;
+    /// specified width
+    width => Width;
+    /// specified height
+    height => Height;
 }
 
 impl fmt::Display for AttribKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
+}
+
+pub fn style<MSG>(style: Style) -> Attribute<MSG> {
+    attr(AttribKey::Style, Value::Style(style))
 }
