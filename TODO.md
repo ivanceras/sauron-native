@@ -14,3 +14,4 @@
    - [ ] events need to propagate
 - Html backend
    - [ ] Make adding children to specific widgets customizable
+   - [ ] Calculate the layout using stretch

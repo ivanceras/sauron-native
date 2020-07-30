@@ -29,11 +29,13 @@ pub fn apply_patches<MSG, DSP>(
                     assert!(added);
                 }
             }
-            Patch::TruncateChildren(_tag, _node_idx, num_children_remaining) => {
+            Patch::RemoveChildren(_tag, _node_idx, children_index) => {
                 eprintln!("truncating children..");
+                let mut sorted_children_index = children_index.clone();
+                sorted_children_index.sort();
                 let children = widget.children().expect("must have children");
-                for i in *num_children_remaining..children.len() {
-                    widget.take_child(i);
+                for child_index in sorted_children_index.iter().rev() {
+                    widget.take_child(*child_index);
                 }
             }
             // todo for other patches here.
