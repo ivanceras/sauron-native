@@ -2,7 +2,7 @@ use app::{App, Msg};
 use log::*;
 use sauron_native::backend::Backend;
 #[cfg(feature = "with-html")]
-use sauron_native::{backend::HtmlBackend, Component};
+use sauron_native::{backend::HtmlApp, Component};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
@@ -14,5 +14,5 @@ pub fn initialize(initial_state: &str) {
     console_error_panic_hook::set_once();
     console_log::init_with_level(log::Level::Trace).expect("must init");
     trace!("Initial state: {}", initial_state);
-    HtmlBackend::init(App::new());
+    HtmlApp::init(App::new());
 }

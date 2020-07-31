@@ -588,10 +588,9 @@ where
     APP: Component<MSG> + 'static,
     MSG: Clone + Debug + 'static,
 {
-    fn init(app: APP) -> Self {
+    fn init(app: APP) {
         let rc_app = GtkBackend::new(app);
         rc_app.create_app();
-        rc_app
     }
 }
 

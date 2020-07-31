@@ -233,7 +233,7 @@ where
     APP: Component<MSG> + 'static,
     MSG: Debug + 'static,
 {
-    fn init(app: APP) -> Self {
+    fn init(app: APP) {
         let mut stdout = io::stdout();
         let vdom = app.view();
         let current_dom = app.view();
@@ -246,7 +246,6 @@ where
         };
         let mut renderer = Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
         renderer.run().expect("must run");
-        backend
     }
 }
 

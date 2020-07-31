@@ -41,23 +41,17 @@ where
     }
 }
 
-/// html backend
-pub struct HtmlBackend<APP, MSG>
-where
-    MSG: Clone + Debug + 'static,
-    APP: Component<MSG> + 'static,
-{
-    _phantom_app: PhantomData<(APP, MSG)>,
-}
-
 impl<APP, MSG> sauron::Component<MSG> for HtmlApp<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn update(&mut self, msg: MSG) -> sauron::dom::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
+    fn init(&self) -> sauron::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
+        sauron::cmd::Cmd::none()
+    }
+    fn update(&mut self, msg: MSG) -> sauron::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
         self.app.update(msg);
-        sauron::dom::cmd::Cmd::none()
+        sauron::cmd::Cmd::none()
     }
 
     fn view(&self) -> sauron::Node<MSG> {
@@ -75,18 +69,15 @@ where
     }
 }
 
-impl<APP, MSG> Backend<APP, MSG> for HtmlBackend<APP, MSG>
+impl<APP, MSG> Backend<APP, MSG> for HtmlApp<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn init(app: APP) -> Self {
+    fn init(app: APP) {
         log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
         sauron::Program::mount_to_body(html_app);
-        HtmlBackend {
-            _phantom_app: PhantomData,
-        }
     }
 }
 

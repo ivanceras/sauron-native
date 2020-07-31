@@ -5,7 +5,7 @@ use crate::Component;
 #[cfg(feature = "with-html")]
 pub mod html;
 #[cfg(feature = "with-html")]
-pub use html::HtmlBackend;
+pub use html::HtmlApp;
 
 #[cfg(feature = "with-titik")]
 pub mod titik_ui;
@@ -29,15 +29,7 @@ where
     APP: Component<MSG> + 'static,
 {
     /// initialize the backend
-    fn init(app: APP) -> Self;
-
-    /// start rendering the backend, used in titik where the
-    /// render is manually invoked.
-    fn start_render(&self) {
-        // html backend don't use render loop
-        //
-        // this is useful for tui backend
-    }
+    fn init(app: APP);
 }
 
 /// This trait is used in the DomUpdater to call the dispatch
