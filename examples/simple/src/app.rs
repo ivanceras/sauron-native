@@ -64,7 +64,11 @@ impl Component<Msg> for App {
                         value(self.text.clone()),
                         on_input(|input| {
                             Msg::ParagraphChanged(
-                                input.value.as_str().expect("must be a string").to_owned(),
+                                input
+                                    .value
+                                    .as_str()
+                                    .expect("must be a string")
+                                    .to_owned(),
                             )
                         }),
                     ]),

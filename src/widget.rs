@@ -71,7 +71,10 @@ where
 }
 
 /// a vertically oriented flexbox
-pub fn column<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn column<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -111,7 +114,10 @@ where
 }
 
 /// create a horizontally oriented flexbox
-pub fn row<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn row<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -151,7 +157,10 @@ where
 }
 
 /// create a vertically oriented resizable flexbox
-pub fn vpane<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn vpane<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -191,7 +200,10 @@ where
 }
 
 /// create a horizontally oriented resizable flexbox
-pub fn hpane<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn hpane<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -231,7 +243,10 @@ where
 }
 
 /// overlay can be on top of other widgets
-pub fn overlay<MSG>(mut attrs: Vec<Attribute<MSG>>, mut children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn overlay<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    mut children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -272,7 +287,10 @@ where
 }
 
 /// group widges together will a visible label and border enclosure
-pub fn groupbox<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn groupbox<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
 where
     MSG: 'static,
 {

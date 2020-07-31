@@ -108,14 +108,22 @@ impl Component<Msg> for App {
                     vec![label("Distribute as:")],
                     DistributionMedium::all()
                         .iter()
-                        .map(|name| checkbox(vec![label(format!("{:?}", name))]))
+                        .map(|name| {
+                            checkbox(vec![label(format!("{:?}", name))])
+                        })
                         .collect(),
                 ),
                 button(vec![
                     on_click(|_| Msg::Click),
-                    label(format!("More buttons: current({})", self.click_count)),
+                    label(format!(
+                        "More buttons: current({})",
+                        self.click_count
+                    )),
                 ]),
-                button(vec![on_click(|_| Msg::Decrement), label("Less buttons")]),
+                button(vec![
+                    on_click(|_| Msg::Decrement),
+                    label("Less buttons"),
+                ]),
                 row(
                     vec![],
                     (0..self.click_count)

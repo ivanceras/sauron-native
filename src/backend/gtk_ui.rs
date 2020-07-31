@@ -9,9 +9,10 @@ use crate::{
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
-    prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container, Entry,
-    EntryBuffer, EventBox, Frame, Image, Label, Orientation, Overlay, Paned, RadioButton,
-    ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
+    prelude::*, Adjustment, Application, ApplicationWindow, Button,
+    CheckButton, Container, Entry, EntryBuffer, EventBox, Frame, Image, Label,
+    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, TextBuffer,
+    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
@@ -164,8 +165,17 @@ where
         let new_view = self.app.borrow().view();
         {
             let current_vdom = self.current_vdom.borrow();
-            let diff = mt_dom::diff_with_key(&current_vdom, &new_view, &AttribKey::Key);
-            apply_patches::apply_patches(self, &current_vdom, &self.root_container(), &diff);
+            let diff = mt_dom::diff_with_key(
+                &current_vdom,
+                &new_view,
+                &AttribKey::Key,
+            );
+            apply_patches::apply_patches(
+                self,
+                &current_vdom,
+                &self.root_container(),
+                &diff,
+            );
         }
         *self.current_vdom.borrow_mut() = new_view;
     }
@@ -242,10 +252,14 @@ impl GtkWidget {
                 if children.len() > 2 {
                     warn!("pane children excess of 2 is ignored");
                 }
-                if let Some(child1) = children.get(0).map(|c| c.as_widget()).flatten() {
+                if let Some(child1) =
+                    children.get(0).map(|c| c.as_widget()).flatten()
+                {
                     paned.pack1(child1, true, true);
                 }
-                if let Some(child2) = children.get(1).map(|c| c.as_widget()).flatten() {
+                if let Some(child2) =
+                    children.get(1).map(|c| c.as_widget()).flatten()
+                {
                     paned.pack2(child2, true, true);
                 }
             }
@@ -257,7 +271,10 @@ impl GtkWidget {
                         let c_index = container.get_child_index(child_widget);
                         assert_eq!(c_index, index);
                     } else {
-                        println!("was not able to add child widget: {:?}", child.as_widget());
+                        println!(
+                            "was not able to add child widget: {:?}",
+                            child.as_widget()
+                        );
                     }
                     index += 1;
                 }
@@ -268,13 +285,17 @@ impl GtkWidget {
                         //container.pack_start(child_widget, false, false, 0);
                         container.add(child_widget);
                     } else {
-                        println!("was not able to add child widget: {:?}", child.as_widget());
+                        println!(
+                            "was not able to add child widget: {:?}",
+                            child.as_widget()
+                        );
                     }
                 }
             }
             GtkWidget::GroupBox(frame_container) => {
                 let frame_children = frame_container.get_children();
-                let gbox_widget = frame_children.get(0).expect("must have one child");
+                let gbox_widget =
+                    frame_children.get(0).expect("must have one child");
                 let container = gbox_widget
                     .downcast_ref::<Container>()
                     .expect("must be a container");
@@ -283,7 +304,10 @@ impl GtkWidget {
                         //container.pack_start(child_widget, false, false, 0);
                         container.add(child_widget);
                     } else {
-                        println!("was not able to add child widget: {:?}", child.as_widget());
+                        println!(
+                            "was not able to add child widget: {:?}",
+                            child.as_widget()
+                        );
                     }
                 }
             }

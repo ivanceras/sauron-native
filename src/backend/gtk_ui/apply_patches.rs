@@ -1,9 +1,12 @@
 use super::convert_widget;
 use super::Dispatch;
-use crate::{widget::attribute::util::is_scrollable, AttribKey, Attribute, Node, Patch};
+use crate::{
+    widget::attribute::util::is_scrollable, AttribKey, Attribute, Node, Patch,
+};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
-    prelude::*, Button, Container, ContainerExt, EventBox, Image, Label, Overlay, TextView, Widget,
+    prelude::*, Button, Container, ContainerExt, EventBox, Image, Label,
+    Overlay, TextView, Widget,
 };
 use std::{collections::HashMap, fmt::Debug};
 
@@ -41,7 +44,9 @@ pub fn apply_patches<MSG, DSP>(
                                     &element.tag,
                                     &element.attrs,
                                 );
-                                let widget = child.as_widget().expect("must be a widget");
+                                let widget = child
+                                    .as_widget()
+                                    .expect("must be a widget");
                                 //Note: overlay have different behavior when adding child widget
                                 overlay.add_overlay(widget);
                                 overlay.set_child_index(widget, -1);
@@ -62,7 +67,9 @@ pub fn apply_patches<MSG, DSP>(
                                     &element.tag,
                                     &element.attrs,
                                 );
-                                let widget = child.as_widget().expect("must be a widget");
+                                let widget = child
+                                    .as_widget()
+                                    .expect("must be a widget");
                                 println!("appending children: {:?}", widget);
                                 //Note: overlay have different behavior when adding child widget
                                 container.add(widget);
@@ -93,7 +100,8 @@ pub fn apply_patches<MSG, DSP>(
                         &new_element.tag,
                         new_node.get_attributes().expect("must have aatibutes"),
                     );
-                    let new_widget = new_widget.as_widget().expect("must be a widget");
+                    let new_widget =
+                        new_widget.as_widget().expect("must be a widget");
                     root_container.add(new_widget);
                     new_widget.show();
                 }
@@ -113,20 +121,24 @@ fn set_widget_attributes<MSG: 'static>(
 ) {
     match tag {
         crate::Widget::Button => {
-            let button = widget.downcast_ref::<Button>().expect("must be a button");
+            let button =
+                widget.downcast_ref::<Button>().expect("must be a button");
             for att in attrs {
                 for value in att.get_plain() {
                     match att.name() {
-                        AttribKey::Label => button.set_label(&value.to_string()),
+                        AttribKey::Label => {
+                            button.set_label(&value.to_string())
+                        }
                         _ => (),
                     }
                 }
             }
         }
         crate::Widget::TextArea => {
-            let text_view = widget
-                .downcast_ref::<TextView>()
-                .unwrap_or_else(|| panic!("must be a text_view, found: {:?}", widget));
+            let text_view =
+                widget.downcast_ref::<TextView>().unwrap_or_else(|| {
+                    panic!("must be a text_view, found: {:?}", widget)
+                });
             for att in attrs {
                 for value in att.get_plain() {
                     match att.name() {
@@ -154,12 +166,16 @@ fn set_widget_attributes<MSG: 'static>(
                         AttribKey::Data => {
                             if let Some(bytes) = value.as_bytes() {
                                 let pixbuf_loader =
-                                    PixbufLoader::new_with_mime_type("image/svg+xml")
-                                        .expect("error loader");
+                                    PixbufLoader::new_with_mime_type(
+                                        "image/svg+xml",
+                                    )
+                                    .expect("error loader");
                                 pixbuf_loader
                                     .write(bytes)
                                     .expect("Unable to write svg data into pixbuf_loader");
-                                pixbuf_loader.close().expect("error creating pixbuf");
+                                pixbuf_loader
+                                    .close()
+                                    .expect("error creating pixbuf");
                                 let pixbuf = pixbuf_loader.get_pixbuf();
                                 image.set_from_pixbuf(Some(
                                     &pixbuf.expect("error in pixbuf_loader"),
@@ -172,14 +188,16 @@ fn set_widget_attributes<MSG: 'static>(
             }
         }
         crate::Widget::Label => {
-            let event_box = widget
-                .downcast_ref::<EventBox>()
-                .unwrap_or_else(|| panic!("must be an eventbox, found: {:?}", widget));
+            let event_box =
+                widget.downcast_ref::<EventBox>().unwrap_or_else(|| {
+                    panic!("must be an eventbox, found: {:?}", widget)
+                });
             let event_box_children = event_box.get_children();
-            let child1 = event_box_children.get(0).expect("must have one child");
-            let label = child1
-                .downcast_ref::<Label>()
-                .unwrap_or_else(|| panic!("must be a label, found: {:?}", widget));
+            let child1 =
+                event_box_children.get(0).expect("must have one child");
+            let label = child1.downcast_ref::<Label>().unwrap_or_else(|| {
+                panic!("must be a label, found: {:?}", widget)
+            });
             for att in attrs {
                 for value in att.get_plain() {
                     match att.name() {
@@ -231,12 +249,14 @@ where
         | crate::Widget::Hbox
         | crate::Widget::GroupBox
         | crate::Widget::Overlay => {
-            let node_children = node.get_children().expect("must have children");
+            let node_children =
+                node.get_children().expect("must have children");
 
             //GroupBox(Frame(Box))
             let widget_children = if *tag == crate::Widget::GroupBox {
                 let frame_children = container.get_children();
-                let gbox_widget = frame_children.get(0).expect("must have one child");
+                let gbox_widget =
+                    frame_children.get(0).expect("must have one child");
                 let container = gbox_widget
                     .downcast_ref::<Container>()
                     .expect("must be a container");
@@ -246,10 +266,14 @@ where
             };
 
             assert_eq!(node_children.len(), widget_children.len());
-            for (child_node, widget_child) in node_children.iter().zip(widget_children.iter()) {
+            for (child_node, widget_child) in
+                node_children.iter().zip(widget_children.iter())
+            {
                 *cur_node_idx += 1;
-                let child_tag = child_node.tag().expect("must have a child tag");
-                let attrs = child_node.get_attributes().expect("must have attributes");
+                let child_tag =
+                    child_node.tag().expect("must have a child tag");
+                let attrs =
+                    child_node.get_attributes().expect("must have attributes");
                 if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
                     println!("got some: {:?}", tag);
                     match child_tag {
@@ -258,14 +282,20 @@ where
                                 // ScrolledWindow -> TextArea
                                 let scrolled_window = widget_child
                                     .downcast_ref::<Container>()
-                                    .expect("must be a scrolled window container");
-                                let scrolled_window_children = scrolled_window.get_children();
-                                let text_area =
-                                    scrolled_window_children.get(0).expect("must have a child");
-                                let text_area: Widget = text_area.clone().upcast();
+                                    .expect(
+                                        "must be a scrolled window container",
+                                    );
+                                let scrolled_window_children =
+                                    scrolled_window.get_children();
+                                let text_area = scrolled_window_children
+                                    .get(0)
+                                    .expect("must have a child");
+                                let text_area: Widget =
+                                    text_area.clone().upcast();
                                 nodes_to_patch.insert(*cur_node_idx, text_area);
                             } else {
-                                let text_area: Widget = widget_child.clone().upcast();
+                                let text_area: Widget =
+                                    widget_child.clone().upcast();
                                 nodes_to_patch.insert(*cur_node_idx, text_area);
                             }
                         }
@@ -274,24 +304,33 @@ where
                                 // ScrolledWindow -> ViewPort -> Image
                                 let scrolled_window = widget_child
                                     .downcast_ref::<Container>()
-                                    .expect("must be a scrolled window container");
+                                    .expect(
+                                        "must be a scrolled window container",
+                                    );
 
-                                let scrolled_window_children = scrolled_window.get_children();
-                                let view_port = scrolled_window_children
-                                    .get(0)
-                                    .expect("scrolled window must have a child");
+                                let scrolled_window_children =
+                                    scrolled_window.get_children();
+                                let view_port =
+                                    scrolled_window_children.get(0).expect(
+                                        "scrolled window must have a child",
+                                    );
                                 let view_port = view_port
                                     .downcast_ref::<Container>()
                                     .expect("must be a viewport container");
 
-                                let view_port_children = view_port.get_children();
+                                let view_port_children =
+                                    view_port.get_children();
                                 let svg_image = view_port_children
                                     .get(0)
-                                    .expect("view port must have svg image as child");
-                                let svg_image: Widget = svg_image.clone().upcast();
+                                    .expect(
+                                    "view port must have svg image as child",
+                                );
+                                let svg_image: Widget =
+                                    svg_image.clone().upcast();
                                 nodes_to_patch.insert(*cur_node_idx, svg_image);
                             } else {
-                                let svg_image: Widget = widget_child.clone().upcast();
+                                let svg_image: Widget =
+                                    widget_child.clone().upcast();
                                 nodes_to_patch.insert(*cur_node_idx, svg_image);
                             }
                         }
@@ -307,7 +346,9 @@ where
                         println!("skipping leaf widgets that are containers..");
                     }
                     _ => {
-                        if let Some(container) = widget_child.downcast_ref::<Container>() {
+                        if let Some(container) =
+                            widget_child.downcast_ref::<Container>()
+                        {
                             let child_nodes_to_patch = find_nodes_recursive(
                                 child_node,
                                 container,

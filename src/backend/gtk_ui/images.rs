@@ -3,7 +3,8 @@ use gtk::{Image, ImageExt};
 
 pub fn svg_image(bytes: &[u8]) -> Image {
     let image = Image::new();
-    let pixbuf_loader = PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
+    let pixbuf_loader = PixbufLoader::new_with_mime_type("image/svg+xml")
+        .expect("error loader");
     pixbuf_loader
         .write(bytes)
         .expect("Unable to write svg data into pixbuf_loader");

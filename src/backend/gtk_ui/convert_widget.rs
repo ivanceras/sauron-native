@@ -10,14 +10,18 @@ use crate::{
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
-    prelude::*, Adjustment, Application, ApplicationWindow, Button, CheckButton, Container, Entry,
-    EntryBuffer, EventBox, Frame, Image, Label, Orientation, Overlay, Paned, RadioButton,
-    ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
+    prelude::*, Adjustment, Application, ApplicationWindow, Button,
+    CheckButton, Container, Entry, EntryBuffer, EventBox, Frame, Image, Label,
+    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, TextBuffer,
+    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
 
-pub(crate) fn from_node_tree<DSP, MSG>(program: &DSP, widget_node: crate::Node<MSG>) -> GtkWidget
+pub(crate) fn from_node_tree<DSP, MSG>(
+    program: &DSP,
+    widget_node: crate::Node<MSG>,
+) -> GtkWidget
 where
     MSG: Debug + 'static,
     DSP: Clone + Dispatch<MSG> + 'static,
@@ -133,7 +137,8 @@ where
         }
         Widget::Button => {
             println!("it's a button");
-            let label = find_value(AttribKey::Label, &attrs).map(|v| v.to_string());
+            let label =
+                find_value(AttribKey::Label, &attrs).map(|v| v.to_string());
 
             let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
                 .map(|v| v.as_bytes())
@@ -142,7 +147,8 @@ where
             if let Some(label) = label {
                 btn.set_label(&label);
             }
-            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs) {
+            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs)
+            {
                 for cb in callbacks {
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
@@ -182,12 +188,15 @@ where
             let buffer = EntryBuffer::new(Some(&*value));
             let entry = Entry::new_with_buffer(&buffer);
 
-            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+            if let Some(callbacks) =
+                find_callback(AttribKey::InputEvent, &attrs)
+            {
                 for cb in callbacks {
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
                     entry.connect_property_text_notify(move |entry| {
-                        let input_event = InputEvent::new(entry.get_buffer().get_text());
+                        let input_event =
+                            InputEvent::new(entry.get_buffer().get_text());
                         let msg = cb_clone.emit(input_event);
                         program_clone.dispatch(msg);
                     });
@@ -203,19 +212,23 @@ where
             let label = Label::new(Some(&*value));
 
             let event_box = EventBox::new();
-            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
+            {
                 for cb in callbacks {
                     println!("label has some mouse down");
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
-                    event_box.connect_button_press_event(move |_view, event| {
-                        println!("label is button pressed");
-                        let (x, y) = event.get_position();
-                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
-                        let msg = cb_clone.emit(mouse_event);
-                        program_clone.dispatch(msg);
-                        Inhibit(false)
-                    });
+                    event_box.connect_button_press_event(
+                        move |_view, event| {
+                            println!("label is button pressed");
+                            let (x, y) = event.get_position();
+                            let mouse_event =
+                                MouseEvent::pressed(x as i32, y as i32);
+                            let msg = cb_clone.emit(mouse_event);
+                            program_clone.dispatch(msg);
+                            Inhibit(false)
+                        },
+                    );
                 }
             }
             if let Some(callbacks) = find_callback(AttribKey::MouseUp, &attrs) {
@@ -223,30 +236,37 @@ where
                     println!("label has some mouse up");
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
-                    event_box.connect_button_release_event(move |_view, event| {
-                        println!("label is button released");
-                        let (x, y) = event.get_position();
-                        let mouse_event = MouseEvent::release(x as i32, y as i32);
-                        let msg = cb_clone.emit(mouse_event);
-                        program_clone.dispatch(msg);
-                        Inhibit(false)
-                    });
+                    event_box.connect_button_release_event(
+                        move |_view, event| {
+                            println!("label is button released");
+                            let (x, y) = event.get_position();
+                            let mouse_event =
+                                MouseEvent::release(x as i32, y as i32);
+                            let msg = cb_clone.emit(mouse_event);
+                            program_clone.dispatch(msg);
+                            Inhibit(false)
+                        },
+                    );
                 }
             }
 
-            if let Some(callbacks) = find_callback(AttribKey::MouseMove, &attrs) {
+            if let Some(callbacks) = find_callback(AttribKey::MouseMove, &attrs)
+            {
                 for cb in callbacks {
                     println!("label has some mouse up");
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
-                    event_box.connect_motion_notify_event(move |_view, event| {
-                        println!("label is button released");
-                        let (x, y) = event.get_position();
-                        let mouse_event = MouseEvent::mousemove(x as i32, y as i32);
-                        let msg = cb_clone.emit(mouse_event);
-                        program_clone.dispatch(msg);
-                        Inhibit(false)
-                    });
+                    event_box.connect_motion_notify_event(
+                        move |_view, event| {
+                            println!("label is button released");
+                            let (x, y) = event.get_position();
+                            let mouse_event =
+                                MouseEvent::mousemove(x as i32, y as i32);
+                            let msg = cb_clone.emit(mouse_event);
+                            program_clone.dispatch(msg);
+                            Inhibit(false)
+                        },
+                    );
                 }
             }
             event_box.add(&label);
@@ -287,8 +307,10 @@ where
                 .flatten()
                 .unwrap_or(&[]);
             let image = Image::new();
-            let mime = util::image_mime_type(&bytes).expect("unsupported have mime type");
-            let pixbuf_loader = PixbufLoader::new_with_mime_type(mime).expect("error loader");
+            let mime = util::image_mime_type(&bytes)
+                .expect("unsupported have mime type");
+            let pixbuf_loader =
+                PixbufLoader::new_with_mime_type(mime).expect("error loader");
             pixbuf_loader
                 .write(&bytes)
                 .expect("Unable to write svg data into pixbuf_loader");
@@ -297,7 +319,9 @@ where
 
             let pixbuf = pixbuf_loader.get_pixbuf();
 
-            image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            image.set_from_pixbuf(Some(
+                &pixbuf.expect("error in pixbuf_loader"),
+            ));
 
             /*
             let width = find_value(AttribKey::Width, &attrs)
@@ -321,7 +345,8 @@ where
                 .unwrap_or(&empty);
             let image = Image::new();
             let pixbuf_loader =
-                PixbufLoader::new_with_mime_type("image/svg+xml").expect("error loader");
+                PixbufLoader::new_with_mime_type("image/svg+xml")
+                    .expect("error loader");
             pixbuf_loader
                 .write(bytes)
                 .expect("Unable to write svg data into pixbuf_loader");
@@ -330,7 +355,9 @@ where
 
             let pixbuf = pixbuf_loader.get_pixbuf();
 
-            image.set_from_pixbuf(Some(&pixbuf.expect("error in pixbuf_loader")));
+            image.set_from_pixbuf(Some(
+                &pixbuf.expect("error in pixbuf_loader"),
+            ));
             /*
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64())
@@ -338,7 +365,8 @@ where
                 .unwrap_or(20.0);
             */
 
-            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
+            {
                 for cb in callbacks {
                     println!("textview has some mouse down");
                     let cb_clone = cb.clone();
@@ -346,7 +374,8 @@ where
                     image.connect_button_press_event(move |_view, event| {
                         println!("textview is button pressed");
                         let (x, y) = event.get_position();
-                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
+                        let mouse_event =
+                            MouseEvent::pressed(x as i32, y as i32);
                         let msg = cb_clone.emit(mouse_event);
                         program_clone.dispatch(msg);
                         Inhibit(false)
@@ -362,7 +391,10 @@ where
             image.set_size_request(width as i32, height as i32);
             */
             if is_scrollable(&attrs) {
-                let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+                let scroll = ScrolledWindow::new(
+                    None::<&Adjustment>,
+                    None::<&Adjustment>,
+                );
                 scroll.add(&image);
                 GtkWidget::ImageScrollable(scroll)
             } else {
@@ -381,15 +413,21 @@ where
             let buffer = TextBuffer::new(None::<&TextTagTable>);
             buffer.set_text(&value);
 
-            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+            if let Some(callbacks) =
+                find_callback(AttribKey::InputEvent, &attrs)
+            {
                 for cb in callbacks {
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
                     buffer.connect_end_user_action(move |buffer| {
-                        let buffer_text =
-                            buffer.get_text(&buffer.get_start_iter(), &buffer.get_end_iter(), true);
+                        let buffer_text = buffer.get_text(
+                            &buffer.get_start_iter(),
+                            &buffer.get_end_iter(),
+                            true,
+                        );
                         if let Some(buffer_text) = buffer_text {
-                            let input_event = InputEvent::new(buffer_text.to_string());
+                            let input_event =
+                                InputEvent::new(buffer_text.to_string());
                             let msg = cb_clone.emit(input_event);
                             program_clone.dispatch(msg);
                         }
@@ -413,26 +451,33 @@ where
                 .unwrap_or(20.0);
             */
 
-            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs) {
+            if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
+            {
                 for cb in callbacks {
                     println!("textview has some mouse down");
                     let cb_clone = cb.clone();
                     let program_clone = program.clone();
-                    text_view.connect_button_press_event(move |_view, event| {
-                        println!("textview is button pressed");
-                        let (x, y) = event.get_position();
-                        let mouse_event = MouseEvent::pressed(x as i32, y as i32);
-                        let msg = cb_clone.emit(mouse_event);
-                        program_clone.dispatch(msg);
-                        Inhibit(false)
-                    });
+                    text_view.connect_button_press_event(
+                        move |_view, event| {
+                            println!("textview is button pressed");
+                            let (x, y) = event.get_position();
+                            let mouse_event =
+                                MouseEvent::pressed(x as i32, y as i32);
+                            let msg = cb_clone.emit(mouse_event);
+                            program_clone.dispatch(msg);
+                            Inhibit(false)
+                        },
+                    );
                 }
             }
 
             //text_view.set_size_request(width as i32, height as i32);
 
             if is_scrollable(&attrs) {
-                let scroll = ScrolledWindow::new(None::<&Adjustment>, None::<&Adjustment>);
+                let scroll = ScrolledWindow::new(
+                    None::<&Adjustment>,
+                    None::<&Adjustment>,
+                );
                 //scroll.set_size_request(width as i32, height as i32);
                 scroll.add(&text_view);
                 GtkWidget::TextViewScrollable(scroll)

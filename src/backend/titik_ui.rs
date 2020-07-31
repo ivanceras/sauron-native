@@ -17,8 +17,8 @@ use std::{
     rc::Rc,
 };
 use titik::{
-    renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image, Radio, SvgImage,
-    TextArea, TextInput, Widget as Control,
+    renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image,
+    Radio, SvgImage, TextArea, TextInput, Widget as Control,
 };
 
 mod apply_patches;
@@ -39,7 +39,9 @@ where
     APP: Component<MSG> + 'static,
     MSG: Debug + 'static,
 {
-    fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget<MSG>>
+    fn from_node_tree(
+        widget_node: crate::Node<MSG>,
+    ) -> Box<dyn titik::Widget<MSG>>
     where
         MSG: Debug + 'static,
     {
@@ -100,12 +102,16 @@ where
                 .unwrap_or(String::new());
 
             let mut btn: Button<MSG> = Button::new(&label);
-            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, &attrs) {
+            if let Some(callbacks) =
+                find_callback(AttribKey::ClickEvent, &attrs)
+            {
                 for cb in callbacks {
                     let cb = cb.clone();
-                    btn.add_click_listener(Callback::from(move |t_event: titik::Event| {
-                        cb.emit(convert_event::from_titik(t_event))
-                    }));
+                    btn.add_click_listener(Callback::from(
+                        move |t_event: titik::Event| {
+                            cb.emit(convert_event::from_titik(t_event))
+                        },
+                    ));
                 }
             }
             Box::new(btn)
@@ -134,13 +140,17 @@ where
                 .unwrap_or(false);
 
             let mut checkbox = Checkbox::new(&label);
-            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+            if let Some(callbacks) =
+                find_callback(AttribKey::InputEvent, &attrs)
+            {
                 for cb in callbacks {
                     eprintln!("checkbox has an input event");
                     let cb = cb.clone();
-                    checkbox.add_input_listener(Callback::from(move |t_event: titik::Event| {
-                        cb.emit(convert_event::from_titik(t_event))
-                    }));
+                    checkbox.add_input_listener(Callback::from(
+                        move |t_event: titik::Event| {
+                            cb.emit(convert_event::from_titik(t_event))
+                        },
+                    ));
                 }
             }
             checkbox.set_checked(value);
@@ -168,7 +178,10 @@ where
             let image = image::load_from_memory(&bytes).expect("should load");
             let mut img = Image::new(bytes.to_vec());
             let (width, height) = image.dimensions();
-            img.set_size(Some(width as f32 / 10.0), Some(height as f32 / 10.0 / 2.0));
+            img.set_size(
+                Some(width as f32 / 10.0),
+                Some(height as f32 / 10.0 / 2.0),
+            );
             Box::new(img)
         }
         Widget::Svg => {
@@ -177,7 +190,8 @@ where
                 .map(|v| v.as_bytes())
                 .flatten()
                 .unwrap_or(&empty);
-            let svg = String::from_utf8(bytes.to_vec()).unwrap_or(String::new());
+            let svg =
+                String::from_utf8(bytes.to_vec()).unwrap_or(String::new());
             Box::new(SvgImage::new(svg))
         }
         Widget::TextArea => {
@@ -194,13 +208,17 @@ where
             */
             let mut textarea = TextArea::new(value);
             //textarea.set_size(width, height);
-            if let Some(callbacks) = find_callback(AttribKey::InputEvent, &attrs) {
+            if let Some(callbacks) =
+                find_callback(AttribKey::InputEvent, &attrs)
+            {
                 for cb in callbacks {
                     eprintln!("textarea has an input event");
                     let cb = cb.clone();
-                    textarea.add_input_listener(Callback::from(move |t_event: titik::Event| {
-                        cb.emit(convert_event::from_titik(t_event))
-                    }));
+                    textarea.add_input_listener(Callback::from(
+                        move |t_event: titik::Event| {
+                            cb.emit(convert_event::from_titik(t_event))
+                        },
+                    ));
                 }
             }
             Box::new(textarea)
@@ -244,7 +262,8 @@ where
             current_dom: Rc::new(RefCell::new(current_dom)),
             _phantom_msg: PhantomData,
         };
-        let mut renderer = Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
+        let mut renderer =
+            Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
         renderer.run().expect("must run");
     }
 }
@@ -264,7 +283,11 @@ where
 
         {
             let previous_dom = self.current_dom.borrow();
-            let diff = mt_dom::diff_with_key(&previous_dom, &new_view, &AttribKey::Key);
+            let diff = mt_dom::diff_with_key(
+                &previous_dom,
+                &new_view,
+                &AttribKey::Key,
+            );
             eprintln!("diff: {:#?}", diff);
             apply_patches::apply_patches(&self, root_node, &diff);
         }

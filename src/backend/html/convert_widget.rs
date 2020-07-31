@@ -33,7 +33,10 @@ where
 }
 
 /// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(element: &crate::Element<MSG>, cur_node_idx: &mut usize) -> sauron::Node<MSG>
+fn widget_to_html<MSG>(
+    element: &crate::Element<MSG>,
+    cur_node_idx: &mut usize,
+) -> sauron::Node<MSG>
 where
     MSG: Clone + Debug + 'static,
 {
@@ -46,7 +49,8 @@ where
     for widget_child in element.get_children().iter() {
         *cur_node_idx += 1;
         // convert all widget child to an html child node
-        let html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child, cur_node_idx);
+        let html_child: sauron::Node<MSG> =
+            widget_tree_to_html_node(widget_child, cur_node_idx);
         html_children.push(html_child);
     }
     match element.tag() {
@@ -105,13 +109,17 @@ where
                 .zip(element.get_children().iter())
                 .enumerate()
                 .for_each(|(child_index, (html_child, widget_child))| {
-                    let widget_child_element =
-                        widget_child.as_element_ref().expect("must be an element");
-                    let child_layout =
-                        get_layout(&widget_child_element).expect("must have a child layout");
+                    let widget_child_element = widget_child
+                        .as_element_ref()
+                        .expect("must be an element");
+                    let child_layout = get_layout(&widget_child_element)
+                        .expect("must have a child layout");
                     html_child.set_attributes_ref_mut(vec![styles([
                         ("position", "absolute".to_string()),
-                        ("width", px(child_layout.size.width * children_len as f32)),
+                        (
+                            "width",
+                            px(child_layout.size.width * children_len as f32),
+                        ),
                         ("height", px(child_layout.size.height)),
                     ])]);
                 });
@@ -298,7 +306,8 @@ where
                     ])*/
                 ],
                 vec![
-                    input(vec![type_("checkbox"), id(&widget_id)], vec![]).add_attributes(checked),
+                    input(vec![type_("checkbox"), id(&widget_id)], vec![])
+                        .add_attributes(checked),
                     label(vec![for_(&widget_id)], vec![text(cb_label)]),
                 ],
             )
@@ -321,7 +330,8 @@ where
                     ])*/
                 ],
                 vec![
-                    input(vec![type_("radio"), id(&widget_id)], vec![]).add_attributes(checked),
+                    input(vec![type_("radio"), id(&widget_id)], vec![])
+                        .add_attributes(checked),
                     label(vec![for_(&widget_id)], vec![text(cb_label)]),
                 ],
             )
@@ -333,7 +343,8 @@ where
                 .flatten()
                 .unwrap_or(&empty);
 
-            let mime_type = util::image_mime_type(bytes).expect("unsupported image");
+            let mime_type =
+                util::image_mime_type(bytes).expect("unsupported image");
             div(
                 vec![
                     class("Image"),

@@ -1,4 +1,6 @@
-use crate::widget::attribute::event::{InputEvent, KeyCode, KeyEvent, Modifier, MouseEvent};
+use crate::widget::attribute::event::{
+    InputEvent, KeyCode, KeyEvent, Modifier, MouseEvent,
+};
 use crate::widget::attribute::Value;
 use crate::Event;
 

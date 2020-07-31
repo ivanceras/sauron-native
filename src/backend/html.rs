@@ -58,7 +58,10 @@ where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn init(&self) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>> {
+    fn init(
+        &self,
+    ) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>>
+    {
         log::debug!("init in HtmlApp..");
         Browser::on_resize(|w, h| BackendMsg::Resize(w, h))
     }
@@ -66,7 +69,8 @@ where
     fn update(
         &mut self,
         msg: BackendMsg<MSG>,
-    ) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>> {
+    ) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>>
+    {
         match msg {
             BackendMsg::AppMsg(msg) => {
                 self.app.update(msg);

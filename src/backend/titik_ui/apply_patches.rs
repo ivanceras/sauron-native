@@ -12,7 +12,8 @@ pub fn apply_patches<MSG, DSP>(
     for patch in patches {
         let patch_node_idx = patch.node_idx();
         let widget: &mut dyn titik::Widget<MSG> =
-            titik::find_widget_mut(root_node, patch_node_idx).expect("must have a node to patch");
+            titik::find_widget_mut(root_node, patch_node_idx)
+                .expect("must have a node to patch");
         match patch {
             Patch::AddAttributes(tag, _node_idx, attrs) => {
                 eprintln!("setting attributes...");
@@ -21,8 +22,12 @@ pub fn apply_patches<MSG, DSP>(
             Patch::AppendChildren(_tag, _node_idx, children) => {
                 eprintln!("adding children..");
                 for child in children {
-                    let child_element = child.as_element_ref().expect("must be an element");
-                    let child_widget = super::from_node(&child_element.tag, &child_element.attrs);
+                    let child_element =
+                        child.as_element_ref().expect("must be an element");
+                    let child_widget = super::from_node(
+                        &child_element.tag,
+                        &child_element.attrs,
+                    );
                     eprintln!("added 1 {:?} to {:?}", child_widget, widget);
                     let added = widget.add_child(child_widget);
                     eprintln!("widget becomes: {:?}", widget);

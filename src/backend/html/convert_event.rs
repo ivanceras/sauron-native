@@ -1,10 +1,13 @@
-use crate::widget::attribute::event::{Coordinate, InputEvent, Modifier, MouseButton, MouseEvent};
+use crate::widget::attribute::event::{
+    Coordinate, InputEvent, Modifier, MouseButton, MouseEvent,
+};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement, HtmlTextAreaElement};
 
 /// convert html mouse event to sauron native Event
 pub fn from_mouse_event(event: sauron::web_sys::MouseEvent) -> MouseEvent {
-    let mouse: &web_sys::MouseEvent = event.dyn_ref().expect("Unable to cast to mouse event");
+    let mouse: &web_sys::MouseEvent =
+        event.dyn_ref().expect("Unable to cast to mouse event");
 
     let coordinate = Coordinate {
         client_x: mouse.client_x(),

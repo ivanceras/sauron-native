@@ -55,8 +55,15 @@ fn set_node_layout_from_stretch_node<MSG>(
         .into_iter()
         .zip(widget_children.iter_mut())
         .for_each(|(stretch_node_child, widget_child)| {
-            set_node_layout_from_stretch_node(widget_child, stretch_node_child, stretch)
+            set_node_layout_from_stretch_node(
+                widget_child,
+                stretch_node_child,
+                stretch,
+            )
         });
 
-    widget_node.add_attributes_ref_mut(vec![attr(AttribKey::Layout, Value::from(layout))]);
+    widget_node.add_attributes_ref_mut(vec![attr(
+        AttribKey::Layout,
+        Value::from(layout),
+    )]);
 }

@@ -6,8 +6,8 @@ use crate::{
 use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
 use nwg::{
-    Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder, ImageFrame, Label,
-    RadioButton, RichTextBox, TextBox, TextInput, Window,
+    Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder,
+    ImageFrame, Label, RadioButton, RichTextBox, TextBox, TextInput, Window,
 };
 use stretch::geometry::Size;
 use stretch::style::{Dimension, FlexDirection};
@@ -39,7 +39,9 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         let mut window: Window = Window::default();
         Window::builder()
             .flags(
-                nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE | nwg::WindowFlags::RESIZABLE,
+                nwg::WindowFlags::WINDOW
+                    | nwg::WindowFlags::VISIBLE
+                    | nwg::WindowFlags::RESIZABLE,
             )
             .size((800, 800))
             .position((300, 300))
@@ -70,8 +72,9 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
         let events_window = backend.window.clone();
 
         println!("4 new");
-        let handler =
-            nwg::full_bind_event_handler(&backend.window.handle, move |evt, _evt_data, handle| {
+        let handler = nwg::full_bind_event_handler(
+            &backend.window.handle,
+            move |evt, _evt_data, handle| {
                 use nwg::Event;
 
                 match evt {
@@ -83,7 +86,8 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
                     Event::OnButtonClick => {}
                     _ => {}
                 }
-            });
+            },
+        );
         nwg::dispatch_thread_events();
         nwg::unbind_event_handler(&handler);
         println!("last part new");
@@ -171,9 +175,15 @@ impl NwgWidget {
                     .collect();
 
                 let mut all_children = vec![];
-                let (direct, indirect): (Vec<Self>, Vec<Vec<Self>>) = children.into_iter().unzip();
-                let nwg_widget =
-                    Self::from_node(window, program, element.tag, &direct, element.attrs);
+                let (direct, indirect): (Vec<Self>, Vec<Vec<Self>>) =
+                    children.into_iter().unzip();
+                let nwg_widget = Self::from_node(
+                    window,
+                    program,
+                    element.tag,
+                    &direct,
+                    element.attrs,
+                );
                 all_children.extend(direct);
                 all_children.extend(indirect.into_iter().flatten());
                 (nwg_widget, all_children)
@@ -217,14 +227,30 @@ impl NwgWidget {
 
                         NwgWidget::Overlay(child) => {}
                         NwgWidget::GroupBox(child) => {}
-                        NwgWidget::Button(child) => builder = builder.child(child),
-                        NwgWidget::Label(child) => builder = builder.child(child),
-                        NwgWidget::Paragraph(child) => builder = builder.child(child),
-                        NwgWidget::TextInput(child) => builder = builder.child(child),
-                        NwgWidget::TextArea(child) => builder = builder.child(child),
-                        NwgWidget::Checkbox(child) => builder = builder.child(child),
-                        NwgWidget::Radio(child) => builder = builder.child(child),
-                        NwgWidget::Image(child, _) => builder = builder.child(child),
+                        NwgWidget::Button(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Label(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Paragraph(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::TextInput(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::TextArea(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Checkbox(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Radio(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Image(child, _) => {
+                            builder = builder.child(child)
+                        }
                     }
                 }
 
@@ -254,14 +280,30 @@ impl NwgWidget {
 
                         NwgWidget::Overlay(child) => {}
                         NwgWidget::GroupBox(child) => {}
-                        NwgWidget::Button(child) => builder = builder.child(child),
-                        NwgWidget::Label(child) => builder = builder.child(child),
-                        NwgWidget::Paragraph(child) => builder = builder.child(child),
-                        NwgWidget::TextInput(child) => builder = builder.child(child),
-                        NwgWidget::TextArea(child) => builder = builder.child(child),
-                        NwgWidget::Checkbox(child) => builder = builder.child(child),
-                        NwgWidget::Radio(child) => builder = builder.child(child),
-                        NwgWidget::Image(child, _) => builder = builder.child(child),
+                        NwgWidget::Button(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Label(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Paragraph(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::TextInput(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::TextArea(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Checkbox(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Radio(child) => {
+                            builder = builder.child(child)
+                        }
+                        NwgWidget::Image(child, _) => {
+                            builder = builder.child(child)
+                        }
                     }
                 }
 
@@ -450,10 +492,14 @@ impl NwgWidget {
                     .map(|v| v.as_bytes())
                     .flatten()
                     .unwrap_or(&empty);
-                let rtree = resvg::usvg::Tree::from_data(&bytes, &resvg::usvg::Options::default())
-                    .expect("must be parse into tree");
+                let rtree = resvg::usvg::Tree::from_data(
+                    &bytes,
+                    &resvg::usvg::Options::default(),
+                )
+                .expect("must be parse into tree");
                 let svg_size = rtree.svg_node().size;
-                let (width, height) = (svg_size.width() as u32, svg_size.height() as u32);
+                let (width, height) =
+                    (svg_size.width() as u32, svg_size.height() as u32);
                 let backend = resvg::default_backend();
                 let mut img = backend
                     .render_to_image(&rtree, &resvg::Options::default())
@@ -470,7 +516,12 @@ impl NwgWidget {
 
                 let mut bytes: Vec<u8> = vec![];
 
-                BMPEncoder::new(&mut bytes).write_image(&rgba_raw, width, height, ColorType::Rgb8);
+                BMPEncoder::new(&mut bytes).write_image(
+                    &rgba_raw,
+                    width,
+                    height,
+                    ColorType::Rgb8,
+                );
 
                 let mut bitmap = Bitmap::default();
                 Bitmap::builder()

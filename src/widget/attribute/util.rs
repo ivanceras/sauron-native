@@ -1,12 +1,17 @@
 //! utility functions for manipulating attributes
 //!
-use crate::{widget::attribute::AttribKey, Attribute, Callback, Element, Node, Value};
+use crate::{
+    widget::attribute::AttribKey, Attribute, Callback, Element, Node, Value,
+};
 use mt_dom::AttValue;
 use stretch::result::Layout;
 use stretch::style::Style;
 
 /// find the value of the attribute key from a Vec of attributes
-pub fn find_value<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<&Value>
+pub fn find_value<MSG>(
+    key: AttribKey,
+    attrs: &[Attribute<MSG>],
+) -> Option<&Value>
 where
     MSG: 'static,
 {
@@ -18,7 +23,10 @@ where
 }
 
 /// find the callback of the attribute key from a Vec of attributes
-pub fn find_callback<MSG>(key: AttribKey, attrs: &[Attribute<MSG>]) -> Option<Vec<&Callback<MSG>>>
+pub fn find_callback<MSG>(
+    key: AttribKey,
+    attrs: &[Attribute<MSG>],
+) -> Option<Vec<&Callback<MSG>>>
 where
     MSG: 'static,
 {
