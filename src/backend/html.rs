@@ -17,7 +17,8 @@ use stretch::Stretch;
 
 mod convert_event;
 
-/// holds the user application
+/// holds the user application,
+/// this just wraps the app, so we can implement the Component trait for it
 pub struct HtmlApp<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
@@ -25,15 +26,6 @@ where
 {
     app: APP,
     _phantom_data: PhantomData<MSG>,
-}
-
-/// html backend
-pub struct HtmlBackend<APP, MSG>
-where
-    MSG: Clone + Debug + 'static,
-    APP: Component<MSG> + 'static,
-{
-    _phantom_app: PhantomData<(APP, MSG)>,
 }
 
 impl<APP, MSG> HtmlApp<APP, MSG>
@@ -47,6 +39,15 @@ where
             _phantom_data: PhantomData,
         }
     }
+}
+
+/// html backend
+pub struct HtmlBackend<APP, MSG>
+where
+    MSG: Clone + Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    _phantom_app: PhantomData<(APP, MSG)>,
 }
 
 impl<APP, MSG> sauron::Component<MSG> for HtmlApp<APP, MSG>

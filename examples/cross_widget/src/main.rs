@@ -6,7 +6,7 @@ use sauron_native::backend::nwg_ui::NwgBackend;
 use sauron_native::backend::text_ui::TuiBackend;
 #[cfg(feature = "with-titik")]
 use sauron_native::backend::titik_ui::TitikBackend;
-use sauron_native::Program;
+use sauron_native::Backend;
 use std::rc::Rc;
 
 pub mod app;
@@ -15,11 +15,11 @@ use app::{App, Msg};
 fn main() {
     pretty_env_logger::init();
     #[cfg(feature = "with-titik")]
-    let program: Rc<Program<App, Msg, TitikBackend<App, Msg>>> = Program::new(App::new());
+    TitikBackend::init(App::new());
 
     #[cfg(feature = "with-gtk")]
-    let program: Rc<Program<App, Msg, GtkBackend<App, Msg>>> = Program::new(App::new());
+    GtkBackend::init(App::new());
 
     #[cfg(feature = "with-nwg")]
-    let program: Rc<Program<App, Msg, NwgBackend<App, Msg>>> = Program::new(App::new());
+    NwgBackend::init(App::new());
 }

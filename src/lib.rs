@@ -7,7 +7,6 @@
 pub use backend::Backend;
 pub use component::Component;
 pub use mt_dom;
-pub use program::Program;
 pub use stretch;
 pub use widget::{
     attribute::{AttribKey, Value},
@@ -16,7 +15,6 @@ pub use widget::{
 
 pub mod backend;
 mod component;
-mod program;
 mod util;
 pub mod widget;
 
