@@ -1,3 +1,4 @@
+use super::convert_widget;
 use super::Dispatch;
 use crate::{widget::attribute::util::is_scrollable, AttribKey, Attribute, Node, Patch};
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
@@ -35,7 +36,11 @@ pub fn apply_patches<MSG, DSP>(
                             .expect("must be an overlay");
                         for node in nodes {
                             if let Some(element) = node.as_element_ref() {
-                                let child = super::from_node(program, &element.tag, &element.attrs);
+                                let child = convert_widget::from_node(
+                                    program,
+                                    &element.tag,
+                                    &element.attrs,
+                                );
                                 let widget = child.as_widget().expect("must be a widget");
                                 //Note: overlay have different behavior when adding child widget
                                 overlay.add_overlay(widget);
@@ -52,7 +57,11 @@ pub fn apply_patches<MSG, DSP>(
                             .expect("must be a container");
                         for node in nodes {
                             if let Some(element) = node.as_element_ref() {
-                                let child = super::from_node(program, &element.tag, &element.attrs);
+                                let child = convert_widget::from_node(
+                                    program,
+                                    &element.tag,
+                                    &element.attrs,
+                                );
                                 let widget = child.as_widget().expect("must be a widget");
                                 println!("appending children: {:?}", widget);
                                 //Note: overlay have different behavior when adding child widget
@@ -79,7 +88,7 @@ pub fn apply_patches<MSG, DSP>(
                 println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
-                    let new_widget = super::from_node(
+                    let new_widget = convert_widget::from_node(
                         program,
                         &new_element.tag,
                         new_node.get_attributes().expect("must have aatibutes"),

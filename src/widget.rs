@@ -52,6 +52,7 @@ pub enum Widget {
     /// textarea widget
     TextArea,
     /// an overlay widget
+    /// TODO: rename to cardbox
     Overlay,
     /// groupbox
     GroupBox,
