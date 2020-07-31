@@ -323,13 +323,15 @@ pub fn checkbox<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    /*
     attrs.push(style(Style {
         size: Size {
-            width: Dimension::Percent(1.0),
-            height: Dimension::Percent(1.0),
+            width: Dimension::Points(50.0),
+            height: Dimension::Points(20.0),
         },
         ..Default::default()
     }));
+    */
     widget(Widget::Checkbox, attrs, vec![])
 }
 
@@ -338,13 +340,15 @@ pub fn radio<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    /*
     attrs.push(style(Style {
         size: Size {
-            width: Dimension::Percent(1.0),
-            height: Dimension::Percent(1.0),
+            width: Dimension::Points(50.0),
+            height: Dimension::Points(20.0),
         },
         ..Default::default()
     }));
+    */
     widget(Widget::Radio, attrs, vec![])
 }
 

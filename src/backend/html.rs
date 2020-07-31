@@ -61,11 +61,12 @@ where
 
     fn view(&self) -> sauron::Node<MSG> {
         let mut view = self.app.view();
+        let (w, h) = Browser::get_size();
         compute_node_layout(
             &mut view,
             Size {
-                width: Number::Defined(1000.0),
-                height: Number::Defined(1000.0),
+                width: Number::Defined(w as f32),
+                height: Number::Defined(h as f32),
             },
         );
         let html_view = widget_tree_to_html_node(&view, &mut 0);
@@ -125,6 +126,7 @@ where
     match element.tag() {
         Widget::Vbox => div(
             vec![
+                class("Vbox"),
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
                 styles([
                     ("width", px(layout.size.width)),
@@ -135,6 +137,7 @@ where
         ),
         Widget::Hbox => div(
             vec![
+                class("Hbox"),
                 styles(vec![("display", "flex"), ("flex-direction", "row")]),
                 styles([
                     ("width", px(layout.size.width)),
@@ -146,6 +149,7 @@ where
         //TODO: vpane and hpane should be draggable
         Widget::Vpane => div(
             vec![
+                class("Vpane"),
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
                 styles([
                     ("width", px(layout.size.width)),
@@ -158,6 +162,7 @@ where
         // and a 100% height
         Widget::Hpane => div(
             vec![
+                class("Hpane"),
                 styles([("display", "flex"), ("flex-direction", "row")]),
                 styles([
                     ("width", px(layout.size.width)),
@@ -173,7 +178,7 @@ where
             });
             div(
                 vec![
-                    class("overlay"),
+                    class("Overlay"),
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
@@ -183,17 +188,30 @@ where
             )
         }
         Widget::GroupBox => div(
-            vec![styles([
-                ("width", px(layout.size.width)),
-                ("height", px(layout.size.height)),
-            ])],
+            vec![
+                class("GroupBox"),
+                styles([
+                    ("width", px(layout.size.width)),
+                    ("height", px(layout.size.height)),
+                ]),
+            ],
             html_children,
         ),
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
-            label(vec![styles([("user-select", "none")])], vec![text(value)])
+            label(
+                vec![
+                    class("Label"),
+                    styles([("user-select", "none")]),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
+                vec![text(value)],
+            )
         }
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -220,10 +238,13 @@ where
             }
 
             button(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Button"),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
                 vec![
                     text(label),
                     if let Some(svg_image_data) = svg_image_data {
@@ -246,10 +267,13 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
             p(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Paragraph"),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
                 vec![text(txt_value)],
             )
         }
@@ -273,6 +297,7 @@ where
             }
             input(
                 vec![
+                    class("TextInput"),
                     r#type("text"),
                     value(txt_value),
                     styles([
@@ -304,6 +329,7 @@ where
             }
             textarea(
                 vec![
+                    class("TextArea"),
                     value(&txt_value),
                     styles([
                         ("width", px(layout.size.width)),
@@ -325,10 +351,13 @@ where
             let widget_id = format!("checkbox_{}", cur_node_idx);
 
             div(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Checkbox"),
+                    /*styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ])*/
+                ],
                 vec![
                     input(vec![type_("checkbox"), id(&widget_id)], vec![]).add_attributes(checked),
                     label(vec![for_(&widget_id)], vec![text(cb_label)]),
@@ -345,10 +374,13 @@ where
             let checked = attrs_flag([("checked", "checked", cb_value)]);
             let widget_id = format!("radio_{}", cur_node_idx);
             div(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Radio"),
+                    /*styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ])*/
+                ],
                 vec![
                     input(vec![type_("radio"), id(&widget_id)], vec![]).add_attributes(checked),
                     label(vec![for_(&widget_id)], vec![text(cb_label)]),
@@ -364,10 +396,13 @@ where
 
             let mime_type = util::image_mime_type(bytes).expect("unsupported image");
             div(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Image"),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
                 vec![img(
                     vec![src(format!(
                         "data:{};base64,{}",
@@ -385,10 +420,13 @@ where
                 .flatten()
                 .unwrap_or(&empty);
             div(
-                vec![styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ])],
+                vec![
+                    class("Svg"),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
                 vec![img(
                     vec![src(format!(
                         "data:image/svg+xml;base64,{}",

@@ -95,7 +95,7 @@ impl Component<Msg> for App {
 
     fn view(&self) -> Node<Msg> {
         column(
-            vec![width(50.0)],
+            vec![],
             vec![
                 groupbox(
                     vec![label("Target platform:")],
