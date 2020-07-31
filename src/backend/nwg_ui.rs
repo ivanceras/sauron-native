@@ -97,9 +97,9 @@ where
     APP: Component<MSG> + 'static,
     MSG: Clone + Debug + 'static,
 {
-    fn init(app: APP) -> Self {
+    fn init(app: APP) {
         println!("init app..");
-        NwgBackend::new(app)
+        NwgBackend::new(app);
     }
 }
 

@@ -16,6 +16,15 @@ use stretch::number::Number;
 use stretch::Stretch;
 
 mod convert_event;
+mod convert_widget;
+
+/// We wrap the App's Msg with this such that we can add high level behavior of the app
+/// such as automatically computing the layout when the window is resized
+#[derive(Clone)]
+pub enum BackendMsg<MSG> {
+    AppMsg(MSG),
+    Resize(i32, i32),
+}
 
 /// holds the user application,
 /// this just wraps the app, so we can implement the Component trait for it
@@ -25,6 +34,8 @@ where
     APP: Component<MSG> + 'static,
 {
     app: APP,
+    current_view: Node<BackendMsg<MSG>>,
+    browser_size: (i32, i32),
     _phantom_data: PhantomData<MSG>,
 }
 
@@ -34,38 +45,67 @@ where
     APP: Component<MSG> + 'static,
 {
     fn new(app: APP) -> Self {
+        let browser_size = Browser::get_size();
+        let current_view = Self::calculate_view(&app, browser_size);
         HtmlApp {
             app,
+            current_view,
+            browser_size,
             _phantom_data: PhantomData,
         }
     }
+
+    fn calculate_view(app: &APP, browser_size: (i32, i32)) -> Node<BackendMsg<MSG>> {
+        let t1 = sauron::now();
+
+        let mut view = app.view();
+        let (w, h) = browser_size;
+        let (adjusted_w, adjusted_h) = (w as f32 - 100.0, h as f32 - 20.0);
+        compute_node_layout(
+            &mut view,
+            Size {
+                width: Number::Defined(adjusted_w),
+                height: Number::Defined(adjusted_h),
+            },
+        );
+
+        let t2 = sauron::now();
+        log::warn!("layout computation took: {}ms", t2 - t1);
+
+        let html_view = convert_widget::widget_tree_to_html_node(&view, &mut 0);
+        html_view.map_msg(|html_msg| BackendMsg::AppMsg(html_msg))
+    }
 }
 
-impl<APP, MSG> sauron::Component<MSG> for HtmlApp<APP, MSG>
+impl<APP, MSG> sauron::Component<BackendMsg<MSG>> for HtmlApp<APP, MSG>
 where
     MSG: Clone + Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn init(&self) -> sauron::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
-        sauron::cmd::Cmd::none()
+    fn init(&self) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>> {
+        log::debug!("init in HtmlApp..");
+        Browser::on_resize(|w, h| BackendMsg::Resize(w, h))
     }
-    fn update(&mut self, msg: MSG) -> sauron::cmd::Cmd<sauron::Program<Self, MSG>, MSG> {
-        self.app.update(msg);
+
+    fn update(
+        &mut self,
+        msg: BackendMsg<MSG>,
+    ) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>> {
+        match msg {
+            BackendMsg::AppMsg(msg) => {
+                self.app.update(msg);
+            }
+            BackendMsg::Resize(w, h) => {
+                log::debug!("window is resizing..");
+                self.browser_size = (w, h);
+                self.current_view = Self::calculate_view(&self.app, (w, h));
+            }
+        }
         sauron::cmd::Cmd::none()
     }
 
-    fn view(&self) -> sauron::Node<MSG> {
-        let mut view = self.app.view();
-        let (w, h) = Browser::get_size();
-        compute_node_layout(
-            &mut view,
-            Size {
-                width: Number::Defined(w as f32),
-                height: Number::Defined(h as f32),
-            },
-        );
-        let html_view = widget_tree_to_html_node(&view, &mut 0);
-        html_view
+    fn view(&self) -> sauron::Node<BackendMsg<MSG>> {
+        Self::calculate_view(&self.app, self.browser_size)
     }
 }
 
@@ -78,355 +118,5 @@ where
         log::trace!("Html app started..");
         let html_app = HtmlApp::new(app);
         sauron::Program::mount_to_body(html_app);
-    }
-}
-
-/// converts widget virtual node tree into an html node tree
-pub fn widget_tree_to_html_node<MSG>(
-    widget_node: &crate::Node<MSG>,
-    cur_node_idx: &mut usize,
-) -> sauron::Node<MSG>
-where
-    MSG: Clone + Debug + 'static,
-{
-    match widget_node {
-        crate::Node::Element(widget) => widget_to_html(widget, cur_node_idx),
-        crate::Node::Text(txt) => {
-            *cur_node_idx += 1;
-            text(txt)
-        }
-    }
-}
-
-/// convert Widget into an equivalent html node
-fn widget_to_html<MSG>(element: &crate::Element<MSG>, cur_node_idx: &mut usize) -> sauron::Node<MSG>
-where
-    MSG: Clone + Debug + 'static,
-{
-    let attrs = element.get_attributes();
-
-    let layout = get_layout(&element).expect("must have a layout");
-    log::debug!("tag: {:?} layout: {:#?}", element.tag(), layout);
-
-    let mut html_children = vec![];
-    for widget_child in element.get_children().iter() {
-        *cur_node_idx += 1;
-        // convert all widget child to an html child node
-        let html_child: sauron::Node<MSG> = widget_tree_to_html_node(widget_child, cur_node_idx);
-        html_children.push(html_child);
-    }
-    match element.tag() {
-        Widget::Vbox => div(
-            vec![
-                class("Vbox"),
-                styles(vec![("display", "flex"), ("flex-direction", "column")]),
-                styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ]),
-            ],
-            html_children,
-        ),
-        Widget::Hbox => div(
-            vec![
-                class("Hbox"),
-                styles(vec![("display", "flex"), ("flex-direction", "row")]),
-                styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ]),
-            ],
-            html_children,
-        ),
-        //TODO: vpane and hpane should be draggable
-        Widget::Vpane => div(
-            vec![
-                class("Vpane"),
-                styles(vec![("display", "flex"), ("flex-direction", "column")]),
-                styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ]),
-            ],
-            html_children,
-        ),
-        // hpane will split the 2 children with 50-50 width
-        // and a 100% height
-        Widget::Hpane => div(
-            vec![
-                class("Hpane"),
-                styles([("display", "flex"), ("flex-direction", "row")]),
-                styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ]),
-            ],
-            html_children,
-        ),
-        // the children in overlay will be all in absolute
-        Widget::Overlay => {
-            html_children.iter_mut().for_each(|child| {
-                child.add_attributes_ref_mut(vec![styles([("position", "absolute")])]);
-            });
-            div(
-                vec![
-                    class("Overlay"),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                html_children,
-            )
-        }
-        Widget::GroupBox => div(
-            vec![
-                class("GroupBox"),
-                styles([
-                    ("width", px(layout.size.width)),
-                    ("height", px(layout.size.height)),
-                ]),
-            ],
-            html_children,
-        ),
-        Widget::Label => {
-            let value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            label(
-                vec![
-                    class("Label"),
-                    styles([("user-select", "none")]),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![text(value)],
-            )
-        }
-        Widget::Button => {
-            let label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-
-            let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
-                .map(|v| v.as_bytes().map(|v| v.to_vec()))
-                .flatten();
-
-            let mut attributes = vec![];
-            for att in attrs {
-                match att.name() {
-                    AttribKey::ClickEvent => {
-                        for cb in att.get_callback() {
-                            let cb = cb.clone();
-                            attributes.push(on_click(move |ev| {
-                                cb.emit(convert_event::from_mouse_event(ev))
-                            }))
-                        }
-                    }
-                    _ => (),
-                }
-            }
-
-            button(
-                vec![
-                    class("Button"),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![
-                    text(label),
-                    if let Some(svg_image_data) = svg_image_data {
-                        img(
-                            vec![src(format!(
-                                "data:image/svg+xml;base64,{}",
-                                base64::encode(&svg_image_data)
-                            ))],
-                            vec![],
-                        )
-                    } else {
-                        text("")
-                    },
-                ],
-            )
-            .add_attributes(attributes)
-        }
-        Widget::Paragraph => {
-            let txt_value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            p(
-                vec![
-                    class("Paragraph"),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![text(txt_value)],
-            )
-        }
-        Widget::TextInput => {
-            let txt_value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            let mut attributes = vec![];
-            for att in attrs {
-                match att.name() {
-                    AttribKey::InputEvent => {
-                        for cb in att.get_callback() {
-                            let cb = cb.clone();
-                            attributes.push(on_input(move |ev| {
-                                cb.emit(convert_event::to_input_event(ev))
-                            }));
-                        }
-                    }
-                    _ => (),
-                }
-            }
-            input(
-                vec![
-                    class("TextInput"),
-                    r#type("text"),
-                    value(txt_value),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![],
-            )
-            .add_attributes(attributes)
-        }
-        Widget::TextArea => {
-            let txt_value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            let mut attributes = vec![];
-            for att in attrs {
-                match att.name() {
-                    AttribKey::InputEvent => {
-                        for cb in att.get_callback() {
-                            let cb = cb.clone();
-                            attributes.push(on_input(move |ev| {
-                                cb.emit(convert_event::to_input_event(ev))
-                            }));
-                        }
-                    }
-                    _ => (),
-                }
-            }
-            textarea(
-                vec![
-                    class("TextArea"),
-                    value(&txt_value),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![text(txt_value)],
-            )
-            .add_attributes(attributes)
-        }
-        Widget::Checkbox => {
-            let cb_label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            let cb_value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.as_bool())
-                .unwrap_or(false);
-            let checked = attrs_flag([("checked", "checked", cb_value)]);
-            let widget_id = format!("checkbox_{}", cur_node_idx);
-
-            div(
-                vec![
-                    class("Checkbox"),
-                    /*styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ])*/
-                ],
-                vec![
-                    input(vec![type_("checkbox"), id(&widget_id)], vec![]).add_attributes(checked),
-                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
-                ],
-            )
-        }
-        Widget::Radio => {
-            let cb_label = find_value(AttribKey::Label, &attrs)
-                .map(|v| v.to_string())
-                .unwrap_or(String::new());
-            let cb_value = find_value(AttribKey::Value, &attrs)
-                .map(|v| v.as_bool())
-                .unwrap_or(false);
-            let checked = attrs_flag([("checked", "checked", cb_value)]);
-            let widget_id = format!("radio_{}", cur_node_idx);
-            div(
-                vec![
-                    class("Radio"),
-                    /*styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ])*/
-                ],
-                vec![
-                    input(vec![type_("radio"), id(&widget_id)], vec![]).add_attributes(checked),
-                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
-                ],
-            )
-        }
-        Widget::Image => {
-            let empty = vec![];
-            let bytes = find_value(AttribKey::Data, &attrs)
-                .map(|v| v.as_bytes())
-                .flatten()
-                .unwrap_or(&empty);
-
-            let mime_type = util::image_mime_type(bytes).expect("unsupported image");
-            div(
-                vec![
-                    class("Image"),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![img(
-                    vec![src(format!(
-                        "data:{};base64,{}",
-                        mime_type,
-                        base64::encode(bytes)
-                    ))],
-                    vec![],
-                )],
-            )
-        }
-        Widget::Svg => {
-            let empty = vec![];
-            let bytes = find_value(AttribKey::Data, &attrs)
-                .map(|v| v.as_bytes())
-                .flatten()
-                .unwrap_or(&empty);
-            div(
-                vec![
-                    class("Svg"),
-                    styles([
-                        ("width", px(layout.size.width)),
-                        ("height", px(layout.size.height)),
-                    ]),
-                ],
-                vec![img(
-                    vec![src(format!(
-                        "data:image/svg+xml;base64,{}",
-                        base64::encode(bytes)
-                    ))],
-                    vec![],
-                )],
-            )
-        }
     }
 }

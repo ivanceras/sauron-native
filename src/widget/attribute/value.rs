@@ -1,5 +1,6 @@
 use std::fmt;
 use stretch::result::Layout;
+use stretch::style::PositionType;
 use stretch::style::Style;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -10,6 +11,7 @@ pub enum Value {
     Bytes(Vec<u8>),
     Style(Style),
     Layout(Layout),
+    PositionType(PositionType),
     F64(f64),
 }
 
@@ -53,6 +55,13 @@ impl Value {
     pub fn as_layout(&self) -> Option<&Layout> {
         match self {
             Value::Layout(layout) => Some(&layout),
+            _ => None,
+        }
+    }
+
+    pub fn as_position_type(&self) -> Option<&PositionType> {
+        match self {
+            Value::PositionType(position) => Some(position),
             _ => None,
         }
     }
@@ -100,6 +109,12 @@ impl From<Layout> for Value {
     }
 }
 
+impl From<PositionType> for Value {
+    fn from(v: PositionType) -> Self {
+        Value::PositionType(v)
+    }
+}
+
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -107,9 +122,7 @@ impl fmt::Display for Value {
             Value::Str(s) => write!(f, "{}", s),
             Value::Bool(b) => write!(f, "{}", b),
             Value::F64(v) => write!(f, "{}", v),
-            Value::Style(s) => todo!(),
-            Value::Layout(v) => todo!(),
-            Value::Bytes(v) => todo!(),
+            _ => todo!(),
         }
     }
 }

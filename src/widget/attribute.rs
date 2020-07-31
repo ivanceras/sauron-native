@@ -73,6 +73,8 @@ pub enum AttribKey {
     Width,
     /// explicit height specified to the widget
     Height,
+    /// Position type of widgets whether absolute or relative
+    PositionType,
 }
 
 declare_attr! {

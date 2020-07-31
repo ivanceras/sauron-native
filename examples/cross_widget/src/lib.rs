@@ -14,5 +14,6 @@ pub fn initialize(initial_state: &str) {
     console_error_panic_hook::set_once();
     console_log::init_with_level(log::Level::Trace).expect("must init");
     trace!("Initial state: {}", initial_state);
-    HtmlApp::init(App::new());
+    let app = App::new();
+    HtmlApp::init(app);
 }

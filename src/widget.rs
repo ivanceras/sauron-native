@@ -3,13 +3,14 @@
 //!
 use crate::widget::attribute::style;
 use crate::widget::attribute::util::find_value;
-use crate::{AttribKey, Attribute, Node};
+use crate::{AttribKey, Attribute, Node, Value};
 pub use attribute::event;
-use mt_dom::element;
+use mt_dom::{attr, element};
 use std::fmt::Debug;
 use stretch::geometry::Size;
 use stretch::style::Dimension;
 use stretch::style::FlexDirection;
+use stretch::style::PositionType;
 use stretch::style::Style;
 
 pub mod attribute;
@@ -80,8 +81,17 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
         flex_direction: FlexDirection::Column,
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -111,8 +121,17 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
         flex_direction: FlexDirection::Row,
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -142,8 +161,17 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
         flex_direction: FlexDirection::Column,
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -173,8 +201,17 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
         flex_direction: FlexDirection::Row,
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -193,7 +230,7 @@ where
 }
 
 /// overlay can be on top of other widgets
-pub fn overlay<MSG>(mut attrs: Vec<Attribute<MSG>>, children: Vec<Node<MSG>>) -> Node<MSG>
+pub fn overlay<MSG>(mut attrs: Vec<Attribute<MSG>>, mut children: Vec<Node<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -203,6 +240,17 @@ where
     let spec_height = find_value(AttribKey::Height, &attrs)
         .map(|w| w.as_f64())
         .flatten();
+
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
+    children.iter_mut().for_each(|child| {
+        child.add_attributes_ref_mut(vec![attr(
+            AttribKey::PositionType,
+            Value::from(PositionType::Absolute),
+        )]);
+    });
 
     attrs.push(style(Style {
         size: Size {
@@ -234,7 +282,16 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -264,7 +321,16 @@ where
         .map(|w| w.as_f64())
         .flatten();
 
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: if let Some(width) = spec_width {
                 Dimension::Points(width as f32)
@@ -308,7 +374,16 @@ pub fn text_input<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: Dimension::Percent(1.0),
             height: Dimension::Percent(1.0),
@@ -357,7 +432,16 @@ pub fn image<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: Dimension::Percent(1.0),
             height: Dimension::Percent(1.0),
@@ -372,7 +456,16 @@ pub fn svg<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: Dimension::Percent(1.0),
             height: Dimension::Percent(1.0),
@@ -387,7 +480,16 @@ pub fn textarea<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: Dimension::Percent(1.0),
             height: Dimension::Percent(1.0),
@@ -402,7 +504,16 @@ pub fn text_label<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
     attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            *spec_position
+        } else {
+            Default::default()
+        },
         size: Size {
             width: Dimension::Percent(1.0),
             height: Dimension::Percent(1.0),
