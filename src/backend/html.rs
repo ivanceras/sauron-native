@@ -34,7 +34,6 @@ where
     APP: Component<MSG> + 'static,
 {
     app: APP,
-    current_view: Node<BackendMsg<MSG>>,
     browser_size: (i32, i32),
     _phantom_data: PhantomData<MSG>,
 }
@@ -46,34 +45,11 @@ where
 {
     fn new(app: APP) -> Self {
         let browser_size = Browser::get_size();
-        let current_view = Self::calculate_view(&app, browser_size);
         HtmlApp {
             app,
-            current_view,
             browser_size,
             _phantom_data: PhantomData,
         }
-    }
-
-    fn calculate_view(app: &APP, browser_size: (i32, i32)) -> Node<BackendMsg<MSG>> {
-        let t1 = sauron::now();
-
-        let mut view = app.view();
-        let (w, h) = browser_size;
-        let (adjusted_w, adjusted_h) = (w as f32 - 100.0, h as f32 - 20.0);
-        compute_node_layout(
-            &mut view,
-            Size {
-                width: Number::Defined(adjusted_w),
-                height: Number::Defined(adjusted_h),
-            },
-        );
-
-        let t2 = sauron::now();
-        log::warn!("layout computation took: {}ms", t2 - t1);
-
-        let html_view = convert_widget::widget_tree_to_html_node(&view, &mut 0);
-        html_view.map_msg(|html_msg| BackendMsg::AppMsg(html_msg))
     }
 }
 
@@ -98,14 +74,30 @@ where
             BackendMsg::Resize(w, h) => {
                 log::debug!("window is resizing..");
                 self.browser_size = (w, h);
-                self.current_view = Self::calculate_view(&self.app, (w, h));
             }
         }
         sauron::cmd::Cmd::none()
     }
 
     fn view(&self) -> sauron::Node<BackendMsg<MSG>> {
-        Self::calculate_view(&self.app, self.browser_size)
+        let t1 = sauron::now();
+
+        let mut view = self.app.view();
+        let (w, h) = self.browser_size;
+        let (adjusted_w, adjusted_h) = (w as f32 - 100.0, h as f32 - 20.0);
+        compute_node_layout(
+            &mut view,
+            Size {
+                width: Number::Defined(adjusted_w),
+                height: Number::Defined(adjusted_h),
+            },
+        );
+
+        let t2 = sauron::now();
+        log::warn!("layout computation took: {}ms", t2 - t1);
+
+        let html_view = convert_widget::widget_tree_to_html_node(&view, &mut 0);
+        html_view.map_msg(|html_msg| BackendMsg::AppMsg(html_msg))
     }
 }
 
