@@ -1,24 +1,27 @@
+//! native windows gui backend
+//!
 use super::Dispatch;
 use crate::{
-    widget::attribute::{find_callback, find_value},
-    AttribKey, Attribute, Backend, Component, Node, Patch, Widget,
+    widget::attribute::find_value, AttribKey, Attribute, Backend, Component,
+    Node, Widget,
 };
 use image::{bmp::BMPEncoder, ColorType, GenericImageView, ImageEncoder};
 use native_windows_gui as nwg;
 use nwg::{
-    Bitmap, Button, CheckBox, ControlHandle, FlexboxLayout, ImageDecoder,
-    ImageFrame, Label, RadioButton, RichTextBox, TextBox, TextInput, Window,
+    Bitmap, Button, CheckBox, FlexboxLayout, ImageFrame, Label, RadioButton,
+    RichTextBox, TextBox, TextInput, Window,
 };
-use stretch::geometry::Size;
-use stretch::style::{Dimension, FlexDirection};
-
 use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
+use stretch::style::FlexDirection;
 
+/// native windows Gui backend
 pub struct NwgBackend<APP, MSG>
 where
     MSG: 'static,
 {
+    #[allow(unused)]
     app: Rc<RefCell<APP>>,
+    #[allow(unused)]
     current_vdom: Rc<RefCell<Node<MSG>>>,
     root_node: Rc<RefCell<Option<NwgWidget>>>,
     window: Rc<Window>,
@@ -53,7 +56,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
 
         let root_widget: Option<NwgWidget> = None;
 
-        let mut backend = NwgBackend {
+        let backend = NwgBackend {
             app: Rc::new(RefCell::new(app)),
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
@@ -63,7 +66,7 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
 
         println!("3 new");
         println!("3.1 new");
-        let (root_widget, children_widgets) =
+        let (root_widget, _children_widgets) =
             NwgWidget::from_node_tree(&backend.window, &backend, root_vdom);
         println!("3.5 new");
         *backend.root_node.borrow_mut() = Some(root_widget);
@@ -112,7 +115,7 @@ where
     MSG: Debug + 'static,
     APP: Component<MSG> + 'static,
 {
-    fn dispatch(&self, msg: MSG) {}
+    fn dispatch(&self, _msg: MSG) {}
 }
 
 enum NwgWidget {
@@ -132,9 +135,9 @@ enum NwgWidget {
 impl fmt::Debug for NwgWidget {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            NwgWidget::Box(w) => write!(f, "FlexboxLayout"),
-            NwgWidget::Overlay(w) => write!(f, "Overlay"),
-            NwgWidget::GroupBox(w) => write!(f, "GroupBox"),
+            NwgWidget::Box(_w) => write!(f, "FlexboxLayout"),
+            NwgWidget::Overlay(_w) => write!(f, "Overlay"),
+            NwgWidget::GroupBox(_w) => write!(f, "GroupBox"),
             NwgWidget::Button(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Label(w) => write!(f, "{}", w.class_name()),
             NwgWidget::Paragraph(w) => write!(f, "{}", w.class_name()),
@@ -148,6 +151,7 @@ impl fmt::Debug for NwgWidget {
 }
 
 impl NwgWidget {
+    #[allow(unused)]
     fn as_box(self) -> Option<FlexboxLayout> {
         match self {
             NwgWidget::Box(box_layout) => Some(box_layout),
@@ -168,7 +172,7 @@ impl NwgWidget {
         match widget_node {
             crate::Node::Element(element) => {
                 println!("element...");
-                let mut children: Vec<(Self, Vec<Self>)> = element
+                let children: Vec<(Self, Vec<Self>)> = element
                     .children
                     .into_iter()
                     .map(|child| Self::from_node_tree(window, program, child))
@@ -188,13 +192,13 @@ impl NwgWidget {
                 all_children.extend(indirect.into_iter().flatten());
                 (nwg_widget, all_children)
             }
-            crate::Node::Text(txt) => unreachable!(),
+            crate::Node::Text(_txt) => unreachable!(),
         }
     }
 
     fn from_node<MSG, DSP>(
         window: &Window,
-        program: &DSP,
+        _program: &DSP,
         widget: Widget,
         children: &Vec<Self>,
         attrs: Vec<Attribute<MSG>>,
@@ -215,7 +219,7 @@ impl NwgWidget {
 
                 for child in children.iter() {
                     match child {
-                        NwgWidget::Box(child) => {
+                        NwgWidget::Box(_child) => {
                             /*
                             box_layout.add_child(child, Style{
                                 size: Size {
@@ -225,8 +229,8 @@ impl NwgWidget {
                             });*/
                         }
 
-                        NwgWidget::Overlay(child) => {}
-                        NwgWidget::GroupBox(child) => {}
+                        NwgWidget::Overlay(_child) => {}
+                        NwgWidget::GroupBox(_child) => {}
                         NwgWidget::Button(child) => {
                             builder = builder.child(child)
                         }
@@ -254,7 +258,7 @@ impl NwgWidget {
                     }
                 }
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::Box(box_layout)
             }
@@ -268,7 +272,7 @@ impl NwgWidget {
 
                 for child in children.iter() {
                     match child {
-                        NwgWidget::Box(child) => {
+                        NwgWidget::Box(_child) => {
                             /*
                             box_layout.add_child(child, Style{
                                 size: Size {
@@ -278,8 +282,8 @@ impl NwgWidget {
                             });*/
                         }
 
-                        NwgWidget::Overlay(child) => {}
-                        NwgWidget::GroupBox(child) => {}
+                        NwgWidget::Overlay(_child) => {}
+                        NwgWidget::GroupBox(_child) => {}
                         NwgWidget::Button(child) => {
                             builder = builder.child(child)
                         }
@@ -307,7 +311,7 @@ impl NwgWidget {
                     }
                 }
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::Box(box_layout)
             }
@@ -315,11 +319,11 @@ impl NwgWidget {
                 println!("hpane");
                 let mut box_layout = FlexboxLayout::default();
 
-                let mut builder = FlexboxLayout::builder()
+                let builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Row);
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::Box(box_layout)
             }
@@ -327,11 +331,11 @@ impl NwgWidget {
                 println!("hpane");
                 let mut box_layout = FlexboxLayout::default();
 
-                let mut builder = FlexboxLayout::builder()
+                let builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Column);
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::Box(box_layout)
             }
@@ -421,7 +425,7 @@ impl NwgWidget {
                     .map(|v| v.to_string())
                     .unwrap_or(String::new());
 
-                let value = find_value(AttribKey::Value, &attrs)
+                let _value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.as_bool())
                     .unwrap_or(false);
 
@@ -440,7 +444,7 @@ impl NwgWidget {
                     .map(|v| v.to_string())
                     .unwrap_or(String::new());
 
-                let value = find_value(AttribKey::Value, &attrs)
+                let _value = find_value(AttribKey::Value, &attrs)
                     .map(|v| v.as_bool())
                     .unwrap_or(false);
 
@@ -464,17 +468,20 @@ impl NwgWidget {
                 let (width, height) = img.dimensions();
                 let mut bytes: Vec<u8> = vec![];
 
-                BMPEncoder::new(&mut bytes).write_image(
-                    &img.to_rgb().into_raw(),
-                    width,
-                    height,
-                    ColorType::Rgb8,
-                );
+                BMPEncoder::new(&mut bytes)
+                    .write_image(
+                        &img.to_rgb().into_raw(),
+                        width,
+                        height,
+                        ColorType::Rgb8,
+                    )
+                    .expect("must write image");
 
                 let mut bitmap = Bitmap::default();
                 Bitmap::builder()
                     .source_bin(Some(&bytes))
-                    .build(&mut bitmap);
+                    .build(&mut bitmap)
+                    .expect("must not error");
 
                 let mut image_frame = ImageFrame::default();
                 ImageFrame::builder()
@@ -516,17 +523,15 @@ impl NwgWidget {
 
                 let mut bytes: Vec<u8> = vec![];
 
-                BMPEncoder::new(&mut bytes).write_image(
-                    &rgba_raw,
-                    width,
-                    height,
-                    ColorType::Rgb8,
-                );
+                BMPEncoder::new(&mut bytes)
+                    .write_image(&rgba_raw, width, height, ColorType::Rgb8)
+                    .expect("must write image");
 
                 let mut bitmap = Bitmap::default();
                 Bitmap::builder()
                     .source_bin(Some(&bytes))
-                    .build(&mut bitmap);
+                    .build(&mut bitmap)
+                    .expect("must not error");
 
                 let mut image_frame = ImageFrame::default();
                 ImageFrame::builder()
@@ -543,11 +548,11 @@ impl NwgWidget {
             Widget::Overlay => {
                 let mut box_layout = FlexboxLayout::default();
 
-                let mut builder = FlexboxLayout::builder()
+                let builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Row);
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::Overlay(box_layout)
             }
@@ -555,11 +560,11 @@ impl NwgWidget {
             Widget::GroupBox => {
                 let mut box_layout = FlexboxLayout::default();
 
-                let mut builder = FlexboxLayout::builder()
+                let builder = FlexboxLayout::builder()
                     .parent(window)
                     .flex_direction(FlexDirection::Row);
 
-                builder.build(&mut box_layout);
+                builder.build(&mut box_layout).expect("must not error");
 
                 NwgWidget::GroupBox(box_layout)
             }
