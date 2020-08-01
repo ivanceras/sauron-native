@@ -14,7 +14,7 @@ use stretch::style::PositionType;
 use stretch::style::Style;
 
 pub mod attribute;
-pub mod layout;
+pub(crate) mod layout;
 
 /// TODO: Each widget variant will need to have more details
 ///  such as attributes, that will be converted to their
@@ -92,7 +92,7 @@ where
     attrs.push(style(Style {
         flex_direction: FlexDirection::Column,
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -135,7 +135,7 @@ where
     attrs.push(style(Style {
         flex_direction: FlexDirection::Row,
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -178,7 +178,7 @@ where
     attrs.push(style(Style {
         flex_direction: FlexDirection::Column,
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -221,7 +221,7 @@ where
     attrs.push(style(Style {
         flex_direction: FlexDirection::Row,
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -255,10 +255,6 @@ where
         .flatten();
     let spec_height = find_value(AttribKey::Height, &attrs)
         .map(|w| w.as_f64())
-        .flatten();
-
-    let spec_position = find_value(AttribKey::PositionType, &attrs)
-        .map(|w| w.as_position_type())
         .flatten();
 
     children.iter_mut().for_each(|child| {
@@ -307,7 +303,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -346,7 +342,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -399,7 +395,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -413,7 +409,7 @@ where
 }
 
 /// create a checkbox control
-pub fn checkbox<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
+pub fn checkbox<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -430,7 +426,7 @@ where
 }
 
 /// create a radio control
-pub fn radio<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
+pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
@@ -457,7 +453,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -481,7 +477,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -505,7 +501,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },
@@ -529,7 +525,7 @@ where
 
     attrs.push(style(Style {
         position_type: if let Some(spec_position) = spec_position {
-            *spec_position
+            spec_position
         } else {
             Default::default()
         },

@@ -1,8 +1,8 @@
 //! sauron native is a multi-faceted library which supports
 //! multiple UI backends including native, html and tui
 //!
-//#![deny(warnings, missing_docs)]
-//#![deny(clippy::all)]
+#![deny(warnings, missing_docs)]
+#![deny(clippy::all)]
 
 pub use backend::Backend;
 pub use component::Component;
@@ -18,7 +18,11 @@ mod component;
 mod util;
 pub mod widget;
 
+/// It is an abstracted event to allow conversion
+/// to multiple platforms such as gtk, html, titik
 pub type Event = widget::attribute::Event;
+
+/// we are not using namespace
 pub type Namespace = ();
 
 /// A node tree
@@ -34,4 +38,5 @@ pub type Patch<'a, MSG> =
 pub type Attribute<MSG> =
     mt_dom::Attribute<Namespace, AttribKey, Value, Event, MSG>;
 
+/// Callback with Event defined
 pub type Callback<MSG> = mt_dom::Callback<Event, MSG>;

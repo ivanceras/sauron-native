@@ -1,19 +1,11 @@
 use super::convert_event;
 use crate::widget::attribute::util::get_layout;
-use crate::{
-    util,
-    widget::attribute::{find_value, get_style},
-    widget::layout::compute_node_layout,
-    AttribKey, Attribute, Backend, Component, Widget,
-};
+use crate::{util, widget::attribute::find_value, AttribKey, Widget};
 use sauron::{
     html::{attributes::*, div, img, input, text},
     prelude::*,
 };
-use std::{fmt::Debug, marker::PhantomData};
-use stretch::geometry::Size;
-use stretch::number::Number;
-use stretch::Stretch;
+use std::fmt::Debug;
 
 /// converts widget virtual node tree into an html node tree
 pub fn widget_tree_to_html_node<MSG>(
@@ -108,7 +100,7 @@ where
                 .iter_mut()
                 .zip(element.get_children().iter())
                 .enumerate()
-                .for_each(|(child_index, (html_child, widget_child))| {
+                .for_each(|(_child_index, (html_child, widget_child))| {
                     let widget_child_element = widget_child
                         .as_element_ref()
                         .expect("must be an element");
@@ -147,7 +139,7 @@ where
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             label(
                 vec![
                     class("Label"),
@@ -163,7 +155,7 @@ where
         Widget::Button => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
                 .map(|v| v.as_bytes().map(|v| v.to_vec()))
@@ -212,7 +204,7 @@ where
         Widget::Paragraph => {
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             p(
                 vec![
                     class("Paragraph"),
@@ -227,7 +219,7 @@ where
         Widget::TextInput => {
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             let mut attributes = vec![];
             for att in attrs {
                 match att.name() {
@@ -259,7 +251,7 @@ where
         Widget::TextArea => {
             let txt_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             let mut attributes = vec![];
             for att in attrs {
                 match att.name() {
@@ -290,7 +282,7 @@ where
         Widget::Checkbox => {
             let cb_label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             let cb_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
                 .unwrap_or(false);
@@ -315,7 +307,7 @@ where
         Widget::Radio => {
             let cb_label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             let cb_value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
                 .unwrap_or(false);

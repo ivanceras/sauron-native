@@ -2,7 +2,7 @@
 //!
 use crate::Attribute;
 pub use event::Event;
-use mt_dom::{attr, on};
+use mt_dom::attr;
 use std::fmt;
 use stretch::style::Style;
 pub use util::{find_callback, find_value, get_style};
@@ -103,6 +103,7 @@ impl fmt::Display for AttribKey {
     }
 }
 
-pub fn style<MSG>(style: Style) -> Attribute<MSG> {
+/// create a style attribute from the style in stretch crate
+pub(crate) fn style<MSG>(style: Style) -> Attribute<MSG> {
     attr(AttribKey::Style, Value::Style(style))
 }

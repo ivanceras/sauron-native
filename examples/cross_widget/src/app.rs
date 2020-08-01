@@ -1,13 +1,6 @@
-use log::*;
-use sauron_native::stretch::geometry::Size;
-use sauron_native::stretch::style::{Dimension, Style};
 use sauron_native::{
     widget::{attribute::event::*, attribute::*, *},
-    Attribute, Callback, Component, Event, Node, Value,
-};
-use std::{
-    cell::{Cell, RefCell},
-    rc::Rc,
+    Component, Node,
 };
 
 pub struct App {
@@ -88,7 +81,9 @@ impl Component<Msg> for App {
             Msg::PlatformSelect(selection) => {
                 self.platform = Some(selection);
             }
-            Msg::DistributionSelect(medium) => {}
+            Msg::DistributionSelect(medium) => {
+                self.distribution = vec![medium];
+            }
             Msg::Nothing => {}
         }
     }

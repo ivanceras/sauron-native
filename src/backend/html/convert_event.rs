@@ -2,7 +2,6 @@ use crate::widget::attribute::event::{
     Coordinate, InputEvent, Modifier, MouseButton, MouseEvent,
 };
 use wasm_bindgen::JsCast;
-use web_sys::{EventTarget, HtmlInputElement, HtmlTextAreaElement};
 
 /// convert html mouse event to sauron native Event
 pub fn from_mouse_event(event: sauron::web_sys::MouseEvent) -> MouseEvent {
@@ -54,5 +53,5 @@ pub fn from_mouse_event(event: sauron::web_sys::MouseEvent) -> MouseEvent {
 
 pub fn to_input_event(input_event: sauron::InputEvent) -> InputEvent {
     // TODO: make a comprehensive conversion here
-    InputEvent::new(input_event.value.to_string())
+    InputEvent::new(input_event.value)
 }

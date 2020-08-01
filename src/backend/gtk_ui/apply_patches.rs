@@ -83,7 +83,7 @@ pub fn apply_patches<MSG, DSP>(
                 println!("truncating children..");
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
-                    for (i, child) in children.iter().enumerate() {
+                    for (i, _child) in children.iter().enumerate() {
                         if children_index.contains(&i) {
                             println!("truncating children: {:?}", children[i]);
                             container.remove(&children[i]);

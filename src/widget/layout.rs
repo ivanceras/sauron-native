@@ -4,11 +4,11 @@ use crate::widget::attribute::Value;
 use mt_dom::attr;
 use stretch::geometry::Size;
 use stretch::number::Number;
-use stretch::result::Layout;
 use stretch::Stretch;
 
 /// calculate the layout of the nodes utilizing the styles set on each of the widget
 /// and its children widget styles
+#[allow(unused)]
 pub(crate) fn compute_node_layout<MSG>(
     widget_node: &mut crate::Node<MSG>,
     parent_size: Size<Number>,
@@ -34,9 +34,7 @@ fn build_stretch_node_recursive<MSG>(
     } else {
         vec![]
     };
-    let node_style = get_style(widget_node)
-        .cloned()
-        .unwrap_or(stretch::style::Style::default());
+    let node_style = get_style(widget_node).cloned().unwrap_or_default();
     stretch.new_node(node_style, &children_styles).ok()
 }
 

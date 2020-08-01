@@ -1,19 +1,9 @@
 //! html backend where all the functionalities is offloaded into sauron
-use crate::widget::attribute::util::get_layout;
-use crate::{
-    util,
-    widget::attribute::{find_value, get_style},
-    widget::layout::compute_node_layout,
-    AttribKey, Attribute, Backend, Component, Widget,
-};
-use sauron::{
-    html::{attributes::*, div, img, input, text},
-    prelude::*,
-};
+use crate::{widget::layout::compute_node_layout, Backend, Component};
+use sauron::prelude::*;
 use std::{fmt::Debug, marker::PhantomData};
 use stretch::geometry::Size;
 use stretch::number::Number;
-use stretch::Stretch;
 
 mod convert_event;
 mod convert_widget;
@@ -22,7 +12,9 @@ mod convert_widget;
 /// such as automatically computing the layout when the window is resized
 #[derive(Clone)]
 pub enum BackendMsg<MSG> {
+    /// the Wrapped MSG meant for the app
     AppMsg(MSG),
+    /// the app container is resized
     Resize(i32, i32),
 }
 
@@ -63,7 +55,7 @@ where
     ) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>, BackendMsg<MSG>>
     {
         log::debug!("init in HtmlApp..");
-        Browser::on_resize(|w, h| BackendMsg::Resize(w, h))
+        Browser::on_resize(BackendMsg::Resize)
     }
 
     fn update(
@@ -101,7 +93,7 @@ where
         log::warn!("layout computation took: {}ms", t2 - t1);
 
         let html_view = convert_widget::widget_tree_to_html_node(&view, &mut 0);
-        html_view.map_msg(|html_msg| BackendMsg::AppMsg(html_msg))
+        html_view.map_msg(BackendMsg::AppMsg)
     }
 }
 

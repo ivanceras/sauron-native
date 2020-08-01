@@ -1,3 +1,4 @@
+#![deny(warnings)]
 #[cfg(feature = "with-gtk")]
 use sauron_native::backend::gtk_ui::GtkBackend;
 #[cfg(feature = "with-nwg")]
@@ -7,10 +8,9 @@ use sauron_native::backend::text_ui::TuiBackend;
 #[cfg(feature = "with-titik")]
 use sauron_native::backend::titik_ui::TitikBackend;
 use sauron_native::Backend;
-use std::rc::Rc;
 
 pub mod app;
-use app::{App, Msg};
+use app::App;
 
 fn main() {
     pretty_env_logger::init();

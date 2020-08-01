@@ -3,19 +3,29 @@ use stretch::result::Layout;
 use stretch::style::PositionType;
 use stretch::style::Style;
 
+/// The possible values of widget attributes
 #[derive(PartialEq, Debug, Clone)]
 pub enum Value {
+    /// generic strings, used in labels, btn labels
     String(String),
+    /// a static version of the string, for efficient storage
     Str(&'static str),
+    /// boolean values such as checked,
     Bool(bool),
+    /// Bytes value, used in controls such as image
     Bytes(Vec<u8>),
+    /// The stretch style used in calculating the layout of a widget
     Style(Style),
+    /// the calculated layout of a widget
     Layout(Layout),
+    /// Position type of a widget
     PositionType(PositionType),
+    /// float values
     F64(f64),
 }
 
 impl Value {
+    /// return the boolean value if it is a Bool variant
     pub fn as_bool(&self) -> bool {
         match self {
             Value::Bool(v) => *v,
@@ -23,6 +33,7 @@ impl Value {
         }
     }
 
+    /// return the bytes value if it is a Bytes variant
     pub fn as_bytes(&self) -> Option<&[u8]> {
         match self {
             Value::Bytes(v) => Some(v),
@@ -30,6 +41,7 @@ impl Value {
         }
     }
 
+    /// return the f64 value if it is an F64 variant
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             Value::F64(v) => Some(*v),
@@ -37,6 +49,7 @@ impl Value {
         }
     }
 
+    /// return the &str value if it is a String or Str variant
     pub fn as_str(&self) -> Option<&str> {
         match self {
             Value::String(v) => Some(&v),
@@ -45,6 +58,7 @@ impl Value {
         }
     }
 
+    /// return the style if it is a Style variant
     pub fn as_style(&self) -> Option<&Style> {
         match self {
             Value::Style(style) => Some(&style),
@@ -52,6 +66,7 @@ impl Value {
         }
     }
 
+    /// return the layout if it is a layout variant
     pub fn as_layout(&self) -> Option<&Layout> {
         match self {
             Value::Layout(layout) => Some(&layout),
@@ -59,9 +74,10 @@ impl Value {
         }
     }
 
-    pub fn as_position_type(&self) -> Option<&PositionType> {
+    /// return the position type if it is a PositionType variant
+    pub fn as_position_type(&self) -> Option<PositionType> {
         match self {
-            Value::PositionType(position) => Some(position),
+            Value::PositionType(position) => Some(*position),
             _ => None,
         }
     }

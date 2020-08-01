@@ -108,25 +108,44 @@ pub struct KeyEvent {
     pub modifier: Modifier,
 }
 
+/// The keycode of the character pressed
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeyCode {
+    /// backspace
     Backspace,
+    /// Enter 13
     Enter,
+    /// arrow left
     Left,
+    /// arrow right
     Right,
+    /// arrow up
     Up,
+    /// arrow down
     Down,
+    /// Home button
     Home,
+    /// End button
     End,
+    /// Page up
     PageUp,
+    /// Page down
     PageDown,
+    /// Tab button
     Tab,
+    /// Shitf + Tab?
     BackTab,
+    /// Delete button
     Delete,
+    /// Insert button
     Insert,
+    /// Function buttons from F1..F12
     F(u8),
+    /// The alphanumeric characters
     Char(char),
+    /// Keycode is not identified
     Null,
+    /// Escape key
     Esc,
 }
 
@@ -243,6 +262,8 @@ impl Modifier {
     }
 }
 
+/// creates an attribute with name `event` with a value of a callback derive from the function
+/// `func`
 pub fn on<F, MSG>(event: AttribKey, func: F) -> Attribute<MSG>
 where
     F: Fn(Event) -> MSG + 'static,

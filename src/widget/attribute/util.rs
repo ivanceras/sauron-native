@@ -3,7 +3,6 @@
 use crate::{
     widget::attribute::AttribKey, Attribute, Callback, Element, Node, Value,
 };
-use mt_dom::AttValue;
 use stretch::result::Layout;
 use stretch::style::Style;
 
@@ -18,7 +17,7 @@ where
     attrs
         .iter()
         .find(|att| *att.name() == key)
-        .map(|att| att.get_plain().first().map(|v| *v))
+        .map(|att| att.get_plain().first().copied())
         .flatten()
 }
 
@@ -51,6 +50,7 @@ pub fn get_style<MSG>(node: &Node<MSG>) -> Option<&Style> {
         .flatten()
 }
 
+/// return the calculated layout of this element
 pub fn get_layout<MSG>(element: &Element<MSG>) -> Option<&Layout> {
     element
         .get_attribute_value(&AttribKey::Layout)

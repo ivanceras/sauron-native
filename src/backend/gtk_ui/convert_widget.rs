@@ -5,18 +5,17 @@ use crate::widget::attribute::event::{InputEvent, MouseEvent};
 use crate::{
     util,
     widget::attribute::{find_callback, find_value, util::is_scrollable},
-    AttribKey, Attribute, Backend, Component, Node, Widget,
+    AttribKey, Attribute, Widget,
 };
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
-use gio::{prelude::*, ApplicationFlags};
+use gio::prelude::*;
 use gtk::{
-    prelude::*, Adjustment, Application, ApplicationWindow, Button,
-    CheckButton, Container, Entry, EntryBuffer, EventBox, Frame, Image, Label,
-    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, TextBuffer,
-    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
+    prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
+    Frame, Image, Label, Orientation, Overlay, Paned, RadioButton,
+    ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView,
+    TextViewExt, WidgetExt,
 };
-use log::*;
-use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+use std::fmt::Debug;
 
 pub(crate) fn from_node_tree<DSP, MSG>(
     program: &DSP,
@@ -174,7 +173,7 @@ where
 
             let txt = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             buffer.set_text(&txt);
 
@@ -183,7 +182,7 @@ where
         Widget::TextInput => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let buffer = EntryBuffer::new(Some(&*value));
             let entry = Entry::new_with_buffer(&buffer);
@@ -207,7 +206,7 @@ where
         Widget::Label => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let label = Label::new(Some(&*value));
 
@@ -277,7 +276,7 @@ where
         Widget::Checkbox => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
@@ -291,7 +290,7 @@ where
         Widget::Radio => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.as_bool())
@@ -404,7 +403,7 @@ where
         Widget::TextArea => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
-                .unwrap_or(String::new());
+                .unwrap_or_default();
 
             let editable = find_value(AttribKey::Editable, &attrs)
                 .map(|v| v.as_bool())

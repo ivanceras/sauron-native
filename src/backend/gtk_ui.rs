@@ -1,18 +1,11 @@
 //! gtk backend
 use super::Dispatch;
-use crate::widget::attribute::event::{InputEvent, MouseEvent};
-use crate::{
-    util,
-    widget::attribute::{find_callback, find_value, util::is_scrollable},
-    AttribKey, Attribute, Backend, Component, Node, Widget,
-};
-use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
+use crate::{AttribKey, Backend, Component, Node};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
-    prelude::*, Adjustment, Application, ApplicationWindow, Button,
-    CheckButton, Container, Entry, EntryBuffer, EventBox, Frame, Image, Label,
-    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, TextBuffer,
-    TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
+    prelude::*, Application, ApplicationWindow, Button, CheckButton, Container,
+    Entry, EventBox, Frame, Image, Overlay, Paned, RadioButton, ScrolledWindow,
+    TextView, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
@@ -264,19 +257,17 @@ impl GtkWidget {
                 }
             }
             GtkWidget::Overlay(container) => {
-                let mut index = 0;
-                for child in children {
+                for (index, child) in children.iter().enumerate() {
                     if let Some(child_widget) = child.as_widget() {
                         container.add_overlay(child_widget);
                         let c_index = container.get_child_index(child_widget);
-                        assert_eq!(c_index, index);
+                        assert_eq!(c_index, index as i32);
                     } else {
                         println!(
                             "was not able to add child widget: {:?}",
                             child.as_widget()
                         );
                     }
-                    index += 1;
                 }
             }
             GtkWidget::GBox(container) => {
