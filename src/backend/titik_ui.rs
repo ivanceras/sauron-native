@@ -198,16 +198,14 @@ where
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
-            /*
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
-            */
             let mut textarea = TextArea::new(value);
-            //textarea.set_size(width, height);
+            textarea.set_size(width, height);
             if let Some(callbacks) =
                 find_callback(AttribKey::InputEvent, &attrs)
             {
@@ -227,16 +225,14 @@ where
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
-            /*
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
-            */
             let mut textarea = TextArea::new(value);
-            //textarea.set_size(width, height);
+            textarea.set_size(width, height);
             Box::new(textarea)
         }
         Widget::Overlay => {

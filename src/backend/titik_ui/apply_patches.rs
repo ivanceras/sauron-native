@@ -38,7 +38,6 @@ pub fn apply_patches<MSG, DSP>(
                 eprintln!("truncating children..");
                 let mut sorted_children_index = children_index.clone();
                 sorted_children_index.sort();
-                let children = widget.children().expect("must have children");
                 for child_index in sorted_children_index.iter().rev() {
                     widget.take_child(*child_index);
                 }

@@ -1,7 +1,7 @@
 use log::*;
 use sauron_native::{
     widget::{attribute::event::*, attribute::*, *},
-    Attribute, Callback, Component, Event, Node, Program, Value,
+    Attribute, Callback, Component, Event, Node, Value,
 };
 use std::{
     cell::{Cell, RefCell},

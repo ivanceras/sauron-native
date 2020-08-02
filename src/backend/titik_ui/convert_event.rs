@@ -4,9 +4,15 @@ use crate::widget::attribute::event::{
 use crate::widget::attribute::Value;
 use crate::Event;
 
-//TODO
 fn from_titik_value(t_value: titik::Value) -> Value {
-    Value::from(false)
+    match t_value {
+        titik::Value::String(v) => Value::String(v),
+        titik::Value::Str(v) => Value::Str(v),
+        titik::Value::Bool(v) => Value::Bool(v),
+        titik::Value::Bytes(v) => Value::Bytes(v),
+        titik::Value::Style(v) => Value::Style(v),
+        titik::Value::F64(v) => Value::F64(v),
+    }
 }
 
 fn from_titik_key_code(tkk: titik::event::KeyCode) -> KeyCode {
@@ -67,6 +73,8 @@ pub fn from_titik(t_event: titik::Event) -> Event {
         titik::Event::InputEvent(ie) => {
             Event::InputEvent(InputEvent::from(from_titik_value(ie.value)))
         }
-        titik::Event::Resize(width, height) => todo!(),
+        titik::Event::Resize(width, height) => {
+            Event::Resize(width as f32, height as f32)
+        }
     }
 }

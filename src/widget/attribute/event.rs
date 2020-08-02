@@ -15,6 +15,8 @@ pub enum Event {
     KeyEvent(KeyEvent),
     /// Events in text_area or text_input
     InputEvent(InputEvent),
+    /// resize event
+    Resize(f32, f32),
 }
 
 impl From<MouseEvent> for Event {
