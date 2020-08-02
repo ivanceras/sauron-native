@@ -27,16 +27,7 @@ where
     DSP: Clone + Dispatch<MSG> + 'static,
 {
     match widget_node {
-        crate::Node::Element(element) => {
-            let gtk_widget = from_node(program, &element);
-            let mut children = vec![];
-            for child in element.children.iter() {
-                let gtk_child = from_node_tree(program, &child);
-                children.push(gtk_child);
-            }
-            gtk_widget.add_children(children);
-            gtk_widget
-        }
+        crate::Node::Element(element) => from_node(program, &element),
         crate::Node::Text(_) => unreachable!(),
     }
 }
@@ -56,16 +47,44 @@ where
     let width = layout.size.width;
     let height = layout.size.height;
 
+    let mut widget_children = vec![];
+    for child in children.iter() {
+        let gtk_child = from_node_tree(program, &child);
+        widget_children.push(gtk_child);
+    }
+
     match widget {
         // vbox can have many children
         Widget::Vbox => {
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
+
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    //container.pack_start(child_widget, false, false, 0);
+                    vbox.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
             vbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(vbox)
         }
         // hbox can have many children
         Widget::Hbox => {
             let hbox = gtk::Box::new(Orientation::Horizontal, 0);
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    hbox.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
             hbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(hbox)
         }
@@ -76,13 +95,56 @@ where
             let frame = Frame::new(label);
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
             vbox.set_size_request(width as i32, height as i32);
+
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    vbox.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
             frame.add(&vbox);
             GtkWidget::GroupBox(frame)
         }
         // paned has only 2 children
         Widget::Hpane => {
+            //TODO: make these infallable and more ergonomic
+            let child1_attrs =
+                children[0].get_attributes().expect("must have attributes");
+
+            let child2_attrs =
+                children[1].get_attributes().expect("must have attributes");
+
             let hpane = Paned::new(Orientation::Horizontal);
-            hpane.set_size_request(width as i32, height as i32);
+            if widget_children.len() != 2 {
+                log::warn!("pane should have 2 children");
+            }
+            if widget_children.len() > 2 {
+                log::warn!("pane children excess of 2 is ignored");
+            }
+            if let Some(child1) =
+                widget_children.get(0).map(|c| c.as_widget()).flatten()
+            {
+                let is_resizable =
+                    find_value(AttribKey::Resizable, &child1_attrs)
+                        .map(|v| v.as_bool())
+                        .unwrap_or(true);
+                hpane.pack1(child1, true, true);
+                hpane.set_child_resize(child1, is_resizable);
+            }
+            if let Some(child2) =
+                widget_children.get(1).map(|c| c.as_widget()).flatten()
+            {
+                let is_resizable =
+                    find_value(AttribKey::Resizable, &child2_attrs)
+                        .map(|v| v.as_bool())
+                        .unwrap_or(true);
+                hpane.pack2(child2, true, true);
+                hpane.set_child_resize(child2, is_resizable);
+            }
             if let Some(first_child) =
                 children.first().map(|c| c.as_element_ref()).flatten()
             {
@@ -90,10 +152,35 @@ where
                     get_layout(first_child).expect("must have a layout");
                 hpane.set_position(child1_layout.size.width as i32);
             }
+
+            hpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
             let vpane = Paned::new(Orientation::Vertical);
+            if widget_children.len() != 2 {
+                log::warn!("pane should have 2 children");
+            }
+            if widget_children.len() > 2 {
+                log::warn!("pane children excess of 2 is ignored");
+            }
+            if let Some(child1) =
+                widget_children.get(0).map(|c| c.as_widget()).flatten()
+            {
+                vpane.pack1(child1, true, true);
+            }
+            if let Some(child2) =
+                widget_children.get(1).map(|c| c.as_widget()).flatten()
+            {
+                vpane.pack2(child2, true, true);
+            }
+            if let Some(first_child) =
+                children.first().map(|c| c.as_element_ref()).flatten()
+            {
+                let child1_layout =
+                    get_layout(first_child).expect("must have a layout");
+                vpane.set_position(child1_layout.size.width as i32);
+            }
             vpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(vpane)
         }
@@ -416,6 +503,18 @@ where
         Widget::Overlay => {
             let overlay = Overlay::new();
 
+            for (index, child) in widget_children.iter().enumerate() {
+                if let Some(child_widget) = child.as_widget() {
+                    overlay.add_overlay(child_widget);
+                    let c_index = overlay.get_child_index(child_widget);
+                    assert_eq!(c_index, index as i32);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
             overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)

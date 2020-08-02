@@ -75,6 +75,8 @@ pub enum AttribKey {
     Height,
     /// Position type of widgets whether absolute or relative
     PositionType,
+    /// whether an item is resizable or not, used in Hpaned
+    Resizable,
 }
 
 declare_attr! {
@@ -95,6 +97,8 @@ declare_attr! {
     width => Width;
     /// specified height
     height => Height;
+    /// resizable item
+    resizable => Resizable;
 }
 
 impl fmt::Display for AttribKey {
