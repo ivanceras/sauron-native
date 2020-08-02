@@ -40,11 +40,8 @@ pub fn apply_patches<MSG, DSP>(
                             .expect("must be an overlay");
                         for node in nodes {
                             if let Some(element) = node.as_element_ref() {
-                                let child = convert_widget::from_node(
-                                    program,
-                                    &element.tag,
-                                    &element.attrs,
-                                );
+                                let child =
+                                    convert_widget::from_node(program, element);
                                 let widget = child
                                     .as_widget()
                                     .expect("must be a widget");
@@ -64,9 +61,7 @@ pub fn apply_patches<MSG, DSP>(
                         for node in nodes {
                             if let Some(element) = node.as_element_ref() {
                                 let child = convert_widget::from_node(
-                                    program,
-                                    &element.tag,
-                                    &element.attrs,
+                                    program, &element,
                                 );
                                 let widget = child
                                     .as_widget()
@@ -96,11 +91,8 @@ pub fn apply_patches<MSG, DSP>(
                 println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
-                    let new_widget = convert_widget::from_node(
-                        program,
-                        &new_element.tag,
-                        new_node.get_attributes().expect("must have aatibutes"),
-                    );
+                    let new_widget =
+                        convert_widget::from_node(program, new_element);
                     let new_widget =
                         new_widget.as_widget().expect("must be a widget");
                     root_container.add(new_widget);
@@ -241,10 +233,14 @@ fn find_nodes_recursive<MSG>(
 where
     MSG: 'static,
 {
-    println!("nodes to find: {:?}", nodes_to_find);
     let tag = node.tag().expect("must have a tag");
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
-    println!("tag: {:?}", tag);
+
+    if let Some(_) = nodes_to_find.get(cur_node_idx) {
+        let container_widget: Widget = container.clone().upcast();
+        nodes_to_patch.insert(*cur_node_idx, container_widget);
+    }
+
     match tag {
         crate::Widget::Hpane
         | crate::Widget::Vbox
@@ -277,7 +273,6 @@ where
                 let attrs =
                     child_node.get_attributes().expect("must have attributes");
                 if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
-                    println!("got some: {:?}", tag);
                     match child_tag {
                         crate::Widget::TextArea => {
                             if is_scrollable(&attrs) {
@@ -342,7 +337,6 @@ where
                         }
                     }
                 }
-                println!("child tag: {:?}", child_tag);
                 match child_tag {
                     crate::Widget::TextArea | crate::Widget::Svg => {
                         println!("skipping leaf widgets that are containers..");

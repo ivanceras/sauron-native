@@ -70,7 +70,7 @@ where
     fn new(app: APP) {
         let (initial_width, initial_height) = (800, 1000);
         let current_vdom =
-            Self::calculate_view_layoutw(&app, (initial_width, initial_height));
+            Self::calculate_view_layout(&app, (initial_width, initial_height));
         let root_vdom = current_vdom.clone();
 
         if gtk::init().is_err() {
@@ -120,7 +120,7 @@ where
                 );
                 *backend_clone2.window_size.borrow_mut() =
                     (rect.width, rect.height);
-                //backend_clone2.redraw();
+                backend_clone2.redraw();
             });
 
             application_window.show_all();
@@ -131,7 +131,7 @@ where
         backend.application.run(&[]);
     }
 
-    fn calculate_view_layoutw(app: &APP, window_size: (i32, i32)) -> Node<MSG> {
+    fn calculate_view_layout(app: &APP, window_size: (i32, i32)) -> Node<MSG> {
         let mut new_view = app.view();
 
         let (w, h) = window_size;
@@ -152,9 +152,12 @@ where
     where
         MSG: Debug,
     {
-        let mut new_view = self.app.borrow().view();
+        let mut new_view = Self::calculate_view_layout(
+            &self.app.borrow(),
+            *self.window_size.borrow(),
+        );
         let (w, h) = *self.window_size.borrow();
-        let (adjusted_w, adjusted_h) = (w as f32 - 100.0, h as f32 - 20.0);
+        let (adjusted_w, adjusted_h) = (w as f32 - 0.0, h as f32 - 0.0);
 
         compute_node_layout(
             &mut new_view,
@@ -170,7 +173,6 @@ where
                 &new_view,
                 &AttribKey::Key,
             );
-            println!("diff: {:#?}", diff);
             apply_patches::apply_patches(
                 self,
                 &current_vdom,
@@ -222,24 +224,6 @@ where
     {
         self.app.borrow_mut().update(msg);
         self.redraw();
-        /*
-        let new_view = self.app.borrow().view();
-        {
-            let current_vdom = self.current_vdom.borrow();
-            let diff = mt_dom::diff_with_key(
-                &current_vdom,
-                &new_view,
-                &AttribKey::Key,
-            );
-            apply_patches::apply_patches(
-                self,
-                &current_vdom,
-                &self.root_container(),
-                &diff,
-            );
-        }
-        *self.current_vdom.borrow_mut() = new_view;
-        */
     }
 }
 

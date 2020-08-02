@@ -2,6 +2,7 @@ use super::images;
 use super::Dispatch;
 use super::GtkWidget;
 use crate::widget::attribute::event::{InputEvent, MouseEvent};
+use crate::widget::attribute::util::get_layout;
 use crate::{
     util,
     widget::attribute::{find_callback, find_value, util::is_scrollable},
@@ -27,7 +28,7 @@ where
 {
     match widget_node {
         crate::Node::Element(element) => {
-            let gtk_widget = from_node(program, &element.tag, &element.attrs);
+            let gtk_widget = from_node(program, &element);
             let mut children = vec![];
             for child in element.children.iter() {
                 let gtk_child = from_node_tree(program, &child);
@@ -42,47 +43,30 @@ where
 
 pub(crate) fn from_node<MSG, DSP>(
     program: &DSP,
-    widget: &Widget,
-    attrs: &[Attribute<MSG>],
+    element: &crate::Element<MSG>,
 ) -> GtkWidget
 where
     MSG: Debug + 'static,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
+    let widget: &Widget = element.tag();
+    let attrs: &[Attribute<MSG>] = element.get_attributes();
+    let children: &[crate::Node<MSG>] = element.get_children();
+    let layout = get_layout(&element).expect("must have a layout");
+    let width = layout.size.width;
+    let height = layout.size.height;
+
     match widget {
         // vbox can have many children
         Widget::Vbox => {
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
-
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
-            //vbox.set_size_request(width as i32, height as i32);
+            vbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(vbox)
         }
         // hbox can have many children
         Widget::Hbox => {
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
             let hbox = gtk::Box::new(Orientation::Horizontal, 0);
-            //hbox.set_size_request(width as i32, height as i32);
+            hbox.set_size_request(width as i32, height as i32);
             GtkWidget::GBox(hbox)
         }
         Widget::GroupBox => {
@@ -91,47 +75,26 @@ where
                 .flatten();
             let frame = Frame::new(label);
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
+            vbox.set_size_request(width as i32, height as i32);
             frame.add(&vbox);
             GtkWidget::GroupBox(frame)
         }
         // paned has only 2 children
         Widget::Hpane => {
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let position = find_value(AttribKey::Position, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(width / 2.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
-
             let hpane = Paned::new(Orientation::Horizontal);
-            //hpane.set_size_request(width as i32, height as i32);
-            //hpane.set_position(position as i32);
+            hpane.set_size_request(width as i32, height as i32);
+            if let Some(first_child) =
+                children.first().map(|c| c.as_element_ref()).flatten()
+            {
+                let child1_layout =
+                    get_layout(first_child).expect("must have a layout");
+                hpane.set_position(child1_layout.size.width as i32);
+            }
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
             let vpane = Paned::new(Orientation::Vertical);
-            //vpane.set_size_request(width as i32, height as i32);
+            vpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(vpane)
         }
         Widget::Button => {
@@ -165,6 +128,8 @@ where
                 let svg_image: Image = images::svg_image(&svg_image_data);
                 btn.set_image(Some(&svg_image));
             }
+
+            btn.set_size_request(width as i32, height as i32);
             GtkWidget::Button(btn)
         }
         Widget::Paragraph => {
@@ -322,18 +287,7 @@ where
                 &pixbuf.expect("error in pixbuf_loader"),
             ));
 
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
-            */
             GtkWidget::Image(image)
         }
         Widget::Svg => {
@@ -357,13 +311,6 @@ where
             image.set_from_pixbuf(Some(
                 &pixbuf.expect("error in pixbuf_loader"),
             ));
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
-
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
             {
                 for cb in callbacks {
@@ -382,13 +329,7 @@ where
                 }
             }
 
-            /*
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
             image.set_size_request(width as i32, height as i32);
-            */
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(
                     None::<&Adjustment>,
@@ -438,18 +379,6 @@ where
             text_view.set_monospace(true);
             text_view.set_editable(editable);
 
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
-
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
             {
                 for cb in callbacks {
@@ -470,14 +399,14 @@ where
                 }
             }
 
-            //text_view.set_size_request(width as i32, height as i32);
+            text_view.set_size_request(width as i32, height as i32);
 
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(
                     None::<&Adjustment>,
                     None::<&Adjustment>,
                 );
-                //scroll.set_size_request(width as i32, height as i32);
+                scroll.set_size_request(width as i32, height as i32);
                 scroll.add(&text_view);
                 GtkWidget::TextViewScrollable(scroll)
             } else {
@@ -487,18 +416,7 @@ where
         Widget::Overlay => {
             let overlay = Overlay::new();
 
-            /*
-            let width = find_value(AttribKey::Width, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-
-            let height = find_value(AttribKey::Height, &attrs)
-                .map(|v| v.as_f64())
-                .flatten()
-                .unwrap_or(20.0);
-            */
-            //overlay.set_size_request(width as i32, height as i32);
+            overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)
         }
