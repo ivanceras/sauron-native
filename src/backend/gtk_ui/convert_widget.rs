@@ -19,7 +19,7 @@ use std::fmt::Debug;
 
 pub(crate) fn from_node_tree<DSP, MSG>(
     program: &DSP,
-    widget_node: crate::Node<MSG>,
+    widget_node: &crate::Node<MSG>,
 ) -> GtkWidget
 where
     MSG: Debug + 'static,
@@ -29,8 +29,8 @@ where
         crate::Node::Element(element) => {
             let gtk_widget = from_node(program, &element.tag, &element.attrs);
             let mut children = vec![];
-            for child in element.children {
-                let gtk_child = from_node_tree(program, child);
+            for child in element.children.iter() {
+                let gtk_child = from_node_tree(program, &child);
                 children.push(gtk_child);
             }
             gtk_widget.add_children(children);

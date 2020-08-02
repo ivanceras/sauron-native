@@ -23,6 +23,7 @@ pub fn apply_patches<MSG, DSP>(
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
+        println!("processing patch: {:#?}", patch);
         let widget = nodes_to_patch
             .get(&patch_node_idx)
             .expect("must have a node to patch");
@@ -240,6 +241,7 @@ fn find_nodes_recursive<MSG>(
 where
     MSG: 'static,
 {
+    println!("nodes to find: {:?}", nodes_to_find);
     let tag = node.tag().expect("must have a tag");
     let mut nodes_to_patch: HashMap<usize, Widget> = HashMap::new();
     println!("tag: {:?}", tag);

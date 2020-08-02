@@ -1,7 +1,7 @@
 //! sauron native is a multi-faceted library which supports
 //! multiple UI backends including native, html and tui
 //!
-#![deny(warnings, missing_docs)]
+//#![deny(warnings, missing_docs)]
 #![deny(clippy::all)]
 
 pub use backend::Backend;
