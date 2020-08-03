@@ -76,6 +76,7 @@ where
         if gtk::init().is_err() {
             println!("failed to initialize GTK Application");
         }
+        Self::setup_css();
         let application = Application::new(
             Some("ivanceras.github.io.gtk"),
             ApplicationFlags::FLAGS_NONE,
@@ -200,6 +201,26 @@ where
         } else {
             panic!("must have a root widget");
         }
+    }
+
+    // https://shallowsky.com/blog/programming/styling-gtk3-with-css-python.html
+    // https://developer.gnome.org/gtk3/stable/chap-css-properties.html
+    fn setup_css() {
+        let STYLE: &'static str = r#"
+            #label {
+                font-family: monospace;
+            }
+        "#;
+        let provider = gtk::CssProvider::new();
+        provider
+            .load_from_data(STYLE.as_bytes())
+            .expect("Failed to load CSS");
+        gtk::StyleContext::add_provider_for_screen(
+            &gdk::Screen::get_default()
+                .expect("Error initializing gtk css provider."),
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
     }
 }
 

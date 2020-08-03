@@ -77,6 +77,12 @@ pub enum AttribKey {
     PositionType,
     /// whether an item is resizable or not, used in Hpaned
     Resizable,
+    /// whether to use a monospace font or not
+    Monospace,
+    /// whether the UI is selectable or not
+    Selectable,
+    /// whether to assume the content to be pre-formatted or not
+    Preformatted,
 }
 
 declare_attr! {
@@ -99,6 +105,12 @@ declare_attr! {
     height => Height;
     /// resizable item
     resizable => Resizable;
+    /// monospace
+    monospace => Monospace;
+    /// selectable
+    selectable => Selectable;
+    /// preformatted
+    preformatted => Preformatted;
 }
 
 impl fmt::Display for AttribKey {

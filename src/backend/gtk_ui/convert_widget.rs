@@ -12,9 +12,9 @@ use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::prelude::*;
 use gtk::{
     prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
-    Frame, Image, Label, Orientation, Overlay, Paned, RadioButton,
-    ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable, TextView,
-    TextViewExt, WidgetExt,
+    Frame, Image, Label, LabelBuilder, Orientation, Overlay, Paned,
+    RadioButton, ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable,
+    TextView, TextViewExt, WidgetExt,
 };
 use std::fmt::Debug;
 
@@ -260,8 +260,6 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or_default();
 
-            let label = Label::new(Some(&*value));
-
             let event_box = EventBox::new();
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
             {
@@ -320,7 +318,12 @@ where
                     );
                 }
             }
+
+            let label =
+                LabelBuilder::new().label(&*value).name("label").build();
+
             event_box.add(&label);
+
             label.show();
             event_box.show();
             GtkWidget::Label(event_box)

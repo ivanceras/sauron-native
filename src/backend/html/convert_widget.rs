@@ -106,14 +106,68 @@ where
                         .expect("must be an element");
                     let child_layout = get_layout(&widget_child_element)
                         .expect("must have a child layout");
-                    html_child.set_attributes_ref_mut(vec![styles([
-                        ("position", "absolute".to_string()),
-                        (
+
+                    log::error!(
+                        "child attrs: {:#?}",
+                        html_child.get_attributes()
+                    );
+
+                    let existing_style: Vec<&AttributeValue> = html_child
+                        .get_attribute_value(&"style")
+                        .unwrap_or(vec![]);
+
+                    log::error!("existing styles: {:#?}", existing_style);
+
+                    let mut styles: Vec<Style> = existing_style
+                        .iter()
+                        .flat_map(|s| s.as_style().cloned())
+                        .flatten()
+                        .collect();
+                    log::error!("flatten styles: {:#?}", styles);
+
+                    // Remove and override the position to absolute
+                    if let Some(style_position) =
+                        styles.iter_mut().find(|st| st.name == "position")
+                    {
+                        style_position.value = Value::from("absolute");
+                    } else {
+                        styles.push(Style::new("position", "absolute".into()));
+                    }
+
+                    // we override the child with
+                    if let Some(style_width) =
+                        styles.iter_mut().find(|st| st.name == "width")
+                    {
+                        style_width.value = Value::from(px(child_layout
+                            .size
+                            .width
+                            * children_len as f32));
+                    } else {
+                        styles.push(Style::new(
                             "width",
-                            px(child_layout.size.width * children_len as f32),
-                        ),
-                        ("height", px(child_layout.size.height)),
-                    ])]);
+                            px(child_layout.size.width * children_len as f32)
+                                .into(),
+                        ));
+                    }
+
+                    // we override the child height
+                    if let Some(style_height) =
+                        styles.iter_mut().find(|st| st.name == "height")
+                    {
+                        style_height.value =
+                            Value::from(px(child_layout.size.height));
+                    } else {
+                        styles.push(Style::new(
+                            "height",
+                            px(child_layout.size.width as f32).into(),
+                        ));
+                    }
+
+                    // the styles are reconstructed and net to be set again rather than add
+                    html_child.set_attributes_ref_mut(vec![mt_dom::attr(
+                        "style",
+                        AttributeValue::from_styles(styles),
+                    )]);
                 });
             div(
                 vec![
@@ -140,10 +194,27 @@ where
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or_default();
+
+            let is_preformatted = find_value(AttribKey::Preformatted, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(false);
+
+            let is_monospace = find_value(AttribKey::Monospace, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(false);
+
+            let is_selectable = find_value(AttribKey::Selectable, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(true);
+
             label(
                 vec![
                     class("Label"),
-                    styles([("user-select", "none")]),
+                    styles_flag([
+                        ("user-select", "none", !is_selectable),
+                        ("font-family", "monospace", is_monospace),
+                        ("white-space", "pre", is_preformatted),
+                    ]),
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
@@ -266,6 +337,27 @@ where
                     _ => (),
                 }
             }
+
+            let is_preformatted = find_value(AttribKey::Preformatted, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(false);
+            log::warn!("preformatted: {}", is_preformatted);
+
+            let is_monospace = find_value(AttribKey::Monospace, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(false);
+
+            let is_selectable = find_value(AttribKey::Selectable, &attrs)
+                .map(|v| v.as_bool())
+                .unwrap_or(true);
+            let st: Attribute<MSG> = styles_flag([
+                ("user-select", "none", !is_selectable),
+                ("font-family", "monospace", is_monospace),
+                ("white-space", "pre", is_preformatted),
+            ]);
+
+            log::warn!("st: {:#?}", st);
+
             textarea(
                 vec![
                     class("TextArea"),
@@ -273,6 +365,11 @@ where
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
+                    ]),
+                    styles_flag([
+                        ("user-select", "none", !is_selectable),
+                        ("font-family", "monospace", is_monospace),
+                        ("white-space", "pre", is_preformatted),
                     ]),
                 ],
                 vec![text(txt_value)],
