@@ -23,7 +23,6 @@ pub fn apply_patches<MSG, DSP>(
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-        println!("processing patch: {:#?}", patch);
         let widget = nodes_to_patch
             .get(&patch_node_idx)
             .expect("must have a node to patch");
@@ -34,7 +33,6 @@ pub fn apply_patches<MSG, DSP>(
             Patch::AppendChildren(tag, _node_idx, nodes) => {
                 match tag {
                     crate::Widget::Overlay => {
-                        eprintln!("appending children..");
                         let overlay = widget
                             .downcast_ref::<Overlay>()
                             .expect("must be an overlay");
@@ -66,7 +64,6 @@ pub fn apply_patches<MSG, DSP>(
                                 let widget = child
                                     .as_widget()
                                     .expect("must be a widget");
-                                println!("appending children: {:?}", widget);
                                 //Note: overlay have different behavior when adding child widget
                                 container.add(widget);
                                 widget.show();
@@ -76,19 +73,16 @@ pub fn apply_patches<MSG, DSP>(
                 }
             }
             Patch::RemoveChildren(_tag, _node_idx, children_index) => {
-                println!("truncating children..");
                 if let Some(container) = widget.downcast_ref::<Container>() {
                     let children = container.get_children();
                     for (i, _child) in children.iter().enumerate() {
                         if children_index.contains(&i) {
-                            println!("truncating children: {:?}", children[i]);
                             container.remove(&children[i]);
                         }
                     }
                 }
             }
             Patch::Replace(_tag, _node_idx, new_node) => {
-                println!("replacing...");
                 root_container.remove(widget);
                 if let Some(new_element) = new_node.as_element_ref() {
                     let new_widget =
