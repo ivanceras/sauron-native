@@ -75,6 +75,8 @@ where
     APP: Component<MSG> + 'static,
 {
     fn new(app: APP) {
+        let app_title = app.title();
+
         let (initial_width, initial_height) = (800, 1000);
         let current_vdom =
             Self::calculate_view_layout(&app, (initial_width, initial_height));
@@ -109,8 +111,9 @@ where
         backend.application.connect_activate(move |application| {
             let application_window = ApplicationWindow::new(application);
             application_window.set_default_size(initial_width, initial_height);
+            application_window.move_(1000, 500);
             application_window.set_icon_name(Some("applications-graphics"));
-            application_window.set_title("Gtk backend");
+            application_window.set_title(&app_title);
             application_window.add(
                 backend_clone
                     .root_node
