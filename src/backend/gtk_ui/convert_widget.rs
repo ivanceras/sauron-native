@@ -12,9 +12,9 @@ use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::prelude::*;
 use gtk::{
     prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
-    Frame, HeaderBar, Image, Label, LabelBuilder, Orientation, Overlay, Paned,
-    RadioButton, ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable,
-    TextView, TextViewExt, WidgetExt,
+    Frame, HeaderBar, Image, Label, LabelBuilder, Menu, MenuBar, MenuItem,
+    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, SearchEntry,
+    TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
 };
 use std::fmt::Debug;
 
@@ -47,7 +47,7 @@ where
     let width = layout.size.width;
     let height = layout.size.height;
 
-    let mut widget_children = vec![];
+    let mut widget_children: Vec<GtkWidget> = vec![];
     for child in children.iter() {
         let gtk_child = from_node_tree(program, &child);
         widget_children.push(gtk_child);
@@ -261,6 +261,25 @@ where
                 .unwrap_or_default();
 
             let event_box = EventBox::new();
+            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs)
+            {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    // should be on the click event,
+                    // TODO: find a way to expresse
+                    // click event using button_press and button_release
+                    event_box.connect_button_press_event(
+                        move |_view, event| {
+                            println!("btn is clicked..");
+                            let mouse_event = MouseEvent::default();
+                            let msg = cb_clone.emit(mouse_event);
+                            program_clone.dispatch(msg);
+                            Inhibit(false)
+                        },
+                    );
+                }
+            }
             if let Some(callbacks) = find_callback(AttribKey::MouseDown, &attrs)
             {
                 for cb in callbacks {
@@ -536,6 +555,98 @@ where
                 }
             }
             GtkWidget::HeaderBar(header_bar)
+        }
+        Widget::MenuBar => {
+            let menu_bar = MenuBar::new();
+
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    menu_bar.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
+            GtkWidget::MenuBar(menu_bar)
+        }
+        Widget::Menu => {
+            let menu = Menu::new();
+
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    menu.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
+            GtkWidget::Menu(menu)
+        }
+        Widget::MenuItem => {
+            let menu_item = MenuItem::new();
+
+            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs)
+            {
+                println!("menu item has click event");
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    menu_item.connect_activate(move |_| {
+                        println!("menu item is clicked..");
+                        let mouse_event = MouseEvent::default();
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
+            } else {
+                println!("No click event for menu item");
+            }
+
+            for child in widget_children.iter() {
+                match child {
+                    GtkWidget::Menu(sub_menu) => {
+                        menu_item.set_submenu(Some(sub_menu));
+                    }
+                    _ => {
+                        if let Some(child_widget) = child.as_widget() {
+                            menu_item.add(child_widget);
+                        } else {
+                            println!(
+                                "was not able to add child widget: {:?}",
+                                child.as_widget()
+                            );
+                        }
+                    }
+                }
+            }
+            GtkWidget::MenuItem(menu_item)
+        }
+        Widget::SearchInput => {
+            let value = find_value(AttribKey::Value, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+
+            let entry = SearchEntry::new();
+
+            if let Some(callbacks) =
+                find_callback(AttribKey::InputEvent, &attrs)
+            {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    entry.connect_property_text_notify(move |entry| {
+                        let input_event =
+                            InputEvent::new(entry.get_buffer().get_text());
+                        let msg = cb_clone.emit(input_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
+            }
+            GtkWidget::SearchInput(entry)
         }
     }
 }

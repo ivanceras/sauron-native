@@ -3,10 +3,11 @@ use super::Dispatch;
 use crate::widget::layout::compute_node_layout;
 use crate::{AttribKey, Backend, Component, Node};
 use gio::{prelude::*, ApplicationFlags};
+pub use gtk;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container,
-    Entry, EventBox, Frame, HeaderBar, Image, Overlay, Paned, RadioButton,
-    ScrolledWindow, TextView, WidgetExt,
+    Entry, EventBox, Frame, HeaderBar, Image, Menu, MenuBar, MenuItem, Overlay,
+    Paned, RadioButton, ScrolledWindow, SearchEntry, TextView, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
@@ -48,6 +49,10 @@ pub(crate) enum GtkWidget {
     TextViewScrollable(ScrolledWindow),
     Overlay(Overlay),
     HeaderBar(HeaderBar),
+    MenuBar(MenuBar),
+    Menu(Menu),
+    MenuItem(MenuItem),
+    SearchInput(SearchEntry),
 }
 
 impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
@@ -209,7 +214,7 @@ where
     // https://developer.gnome.org/gtk3/stable/chap-css-properties.html
     fn setup_css() {
         let STYLE: &'static str = r#"
-            #label {
+            #special_label {
                 font-family: monospace;
             }
         "#;
@@ -311,6 +316,22 @@ impl GtkWidget {
             }
             GtkWidget::HeaderBar(header_bar) => {
                 let widget: &gtk::Widget = header_bar.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::MenuBar(menu_bar) => {
+                let widget: &gtk::Widget = menu_bar.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::Menu(menu) => {
+                let widget: &gtk::Widget = menu.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::MenuItem(menu_item) => {
+                let widget: &gtk::Widget = menu_item.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::SearchInput(entry) => {
+                let widget: &gtk::Widget = entry.upcast_ref();
                 Some(widget)
             }
         }

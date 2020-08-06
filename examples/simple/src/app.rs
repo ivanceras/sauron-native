@@ -58,6 +58,42 @@ impl Component<Msg> for App {
         column(
             vec![],
             vec![
+                menu_bar(
+                    vec![],
+                    vec![
+                        menu_item(
+                            vec![],
+                            vec![
+                                text_label(vec![value("File")]),
+                                menu(
+                                    vec![],
+                                    vec![
+                                        menu_item(
+                                            vec![],
+                                            vec![text_label(vec![value(
+                                                "Open",
+                                            )])],
+                                        ),
+                                        menu_item(
+                                            vec![],
+                                            vec![text_label(vec![value(
+                                                "Close",
+                                            )])],
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                        menu_item(
+                            vec![],
+                            vec![text_label(vec![value("About")])],
+                        ),
+                        menu_item(
+                            vec![],
+                            vec![text_label(vec![value("Quit")])],
+                        ),
+                    ],
+                ),
                 header_bar(
                     vec![],
                     vec![

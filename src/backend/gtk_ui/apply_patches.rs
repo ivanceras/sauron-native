@@ -6,7 +6,7 @@ use crate::{
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gtk::{
     prelude::*, Button, Container, ContainerExt, EventBox, Image, Label,
-    Overlay, TextView, Widget,
+    MenuItem, Overlay, TextView, Widget,
 };
 use std::{collections::HashMap, fmt::Debug};
 
@@ -241,24 +241,50 @@ where
         | crate::Widget::Hbox
         | crate::Widget::GroupBox
         | crate::Widget::HeaderBar
+        | crate::Widget::MenuBar
+        | crate::Widget::Menu
+        | crate::Widget::MenuItem
         | crate::Widget::Overlay => {
             let node_children =
                 node.get_children().expect("must have children");
 
-            //GroupBox(Frame(Box))
-            let widget_children = if *tag == crate::Widget::GroupBox {
-                let frame_children = container.get_children();
-                let gbox_widget =
-                    frame_children.get(0).expect("must have one child");
-                let container = gbox_widget
-                    .downcast_ref::<Container>()
-                    .expect("must be a container");
-                container.get_children()
-            } else {
-                container.get_children()
+            let widget_children = match *tag {
+                // special case for GroupBox since GroupBox have a frame wrapper
+                // GroupBox(Frame(Box))
+                crate::Widget::GroupBox => {
+                    let frame_children = container.get_children();
+                    let gbox_widget =
+                        frame_children.get(0).expect("must have one child");
+                    let container = gbox_widget
+                        .downcast_ref::<Container>()
+                        .expect("must be a container");
+                    container.get_children()
+                }
+                // special case for SubMenu in MenuItem since
+                // sub_menu is not returned as children for the menu_item
+                // instead, we get the sub menu as part of it's children
+                //
+                // WARNING: The submenu should be at the last part of the menu_item
+                // so as to match the NodeIdx arrangement when applying patches
+                crate::Widget::MenuItem => {
+                    let mut widgets = container.get_children();
+                    let menu_item = container
+                        .downcast_ref::<MenuItem>()
+                        .expect("must be castable to menu item");
+                    if let Some(sub_menu) = menu_item.get_submenu() {
+                        widgets.push(sub_menu);
+                    }
+                    widgets
+                }
+                _ => container.get_children(),
             };
 
-            assert_eq!(node_children.len(), widget_children.len());
+            assert_eq!(
+                node_children.len(),
+                widget_children.len(),
+                "must have the same children len, in widget: {:?}",
+                tag
+            );
             for (child_node, widget_child) in
                 node_children.iter().zip(widget_children.iter())
             {
