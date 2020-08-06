@@ -57,26 +57,35 @@ impl Component<Msg> for App {
     fn view(&self) -> Node<Msg> {
         column(
             vec![],
-            vec![column(
-                vec![],
-                vec![
-                    textarea(vec![
-                        value(self.text.clone()),
-                        on_input(|input| {
-                            Msg::ParagraphChanged(
-                                input
-                                    .value
-                                    .as_str()
-                                    .expect("must be a string")
-                                    .to_owned(),
-                            )
-                        }),
-                    ]),
-                    button(vec![label("btn1")]),
-                    button(vec![label("btn2")]),
-                    textarea(vec![value(self.paragraph_text.clone())]),
-                ],
-            )],
+            vec![
+                header_bar(
+                    vec![],
+                    vec![
+                        button(vec![label("Header button1")]),
+                        button(vec![label("Header button2")]),
+                    ],
+                ),
+                column(
+                    vec![],
+                    vec![
+                        textarea(vec![
+                            value(self.text.clone()),
+                            on_input(|input| {
+                                Msg::ParagraphChanged(
+                                    input
+                                        .value
+                                        .as_str()
+                                        .expect("must be a string")
+                                        .to_owned(),
+                                )
+                            }),
+                        ]),
+                        button(vec![label("btn1")]),
+                        button(vec![label("btn2")]),
+                        textarea(vec![value(self.paragraph_text.clone())]),
+                    ],
+                ),
+            ],
         )
     }
 }

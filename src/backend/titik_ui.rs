@@ -18,7 +18,7 @@ use std::{
 };
 use titik::{
     renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image,
-    Radio, SvgImage, TextArea, TextInput, Widget as Control,
+    Radio, TextArea, TextInput, Widget as Control,
 };
 
 mod apply_patches;
@@ -184,16 +184,7 @@ where
             );
             Box::new(img)
         }
-        Widget::Svg => {
-            let empty = vec![];
-            let bytes = find_value(AttribKey::Data, &attrs)
-                .map(|v| v.as_bytes())
-                .flatten()
-                .unwrap_or(&empty);
-            let svg =
-                String::from_utf8(bytes.to_vec()).unwrap_or(String::new());
-            Box::new(SvgImage::new(svg))
-        }
+        Widget::Svg => todo!(),
         Widget::TextArea => {
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())

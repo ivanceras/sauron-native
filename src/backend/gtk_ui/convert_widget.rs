@@ -12,7 +12,7 @@ use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::prelude::*;
 use gtk::{
     prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
-    Frame, Image, Label, LabelBuilder, Orientation, Overlay, Paned,
+    Frame, HeaderBar, Image, Label, LabelBuilder, Orientation, Overlay, Paned,
     RadioButton, ScrolledWindow, TextBuffer, TextBufferExt, TextTagTable,
     TextView, TextViewExt, WidgetExt,
 };
@@ -521,6 +521,21 @@ where
             overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)
+        }
+        Widget::HeaderBar => {
+            let header_bar = HeaderBar::new();
+
+            for child in widget_children.iter() {
+                if let Some(child_widget) = child.as_widget() {
+                    header_bar.add(child_widget);
+                } else {
+                    println!(
+                        "was not able to add child widget: {:?}",
+                        child.as_widget()
+                    );
+                }
+            }
+            GtkWidget::HeaderBar(header_bar)
         }
     }
 }

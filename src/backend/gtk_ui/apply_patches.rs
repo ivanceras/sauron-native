@@ -240,6 +240,7 @@ where
         | crate::Widget::Vbox
         | crate::Widget::Hbox
         | crate::Widget::GroupBox
+        | crate::Widget::HeaderBar
         | crate::Widget::Overlay => {
             let node_children =
                 node.get_children().expect("must have children");

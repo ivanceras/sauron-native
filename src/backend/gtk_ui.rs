@@ -5,8 +5,8 @@ use crate::{AttribKey, Backend, Component, Node};
 use gio::{prelude::*, ApplicationFlags};
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container,
-    Entry, EventBox, Frame, Image, Overlay, Paned, RadioButton, ScrolledWindow,
-    TextView, WidgetExt,
+    Entry, EventBox, Frame, HeaderBar, Image, Overlay, Paned, RadioButton,
+    ScrolledWindow, TextView, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
@@ -31,6 +31,7 @@ where
     _phantom_msg: PhantomData<MSG>,
 }
 
+/// GtkWidget is an enum wrapper for gtk compoments
 pub(crate) enum GtkWidget {
     GBox(gtk::Box),
     GroupBox(Frame),
@@ -46,6 +47,7 @@ pub(crate) enum GtkWidget {
     TextView(TextView),
     TextViewScrollable(ScrolledWindow),
     Overlay(Overlay),
+    HeaderBar(HeaderBar),
 }
 
 impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
@@ -305,6 +307,10 @@ impl GtkWidget {
             }
             GtkWidget::Overlay(overlay) => {
                 let widget: &gtk::Widget = overlay.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::HeaderBar(header_bar) => {
+                let widget: &gtk::Widget = header_bar.upcast_ref();
                 Some(widget)
             }
         }

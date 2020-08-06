@@ -56,6 +56,9 @@ pub enum Widget {
     Overlay,
     /// groupbox
     GroupBox,
+    /// headerbar, such as in gtk where it can contains
+    /// menu buttons
+    HeaderBar,
 }
 
 /// a helper function to create widget elements
@@ -413,15 +416,6 @@ pub fn checkbox<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
-    /*
-    attrs.push(style(Style {
-        size: Size {
-            width: Dimension::Points(50.0),
-            height: Dimension::Points(20.0),
-        },
-        ..Default::default()
-    }));
-    */
     widget(Widget::Checkbox, attrs, vec![])
 }
 
@@ -430,15 +424,6 @@ pub fn radio<MSG>(attrs: Vec<Attribute<MSG>>) -> Node<MSG>
 where
     MSG: 'static,
 {
-    /*
-    attrs.push(style(Style {
-        size: Size {
-            width: Dimension::Points(50.0),
-            height: Dimension::Points(20.0),
-        },
-        ..Default::default()
-    }));
-    */
     widget(Widget::Radio, attrs, vec![])
 }
 
@@ -536,4 +521,45 @@ where
         ..Default::default()
     }));
     widget(Widget::Label, attrs, vec![])
+}
+
+pub fn header_bar<MSG>(
+    mut attrs: Vec<Attribute<MSG>>,
+    children: Vec<Node<MSG>>,
+) -> Node<MSG>
+where
+    MSG: 'static,
+{
+    let spec_width = find_value(AttribKey::Width, &attrs)
+        .map(|w| w.as_f64())
+        .flatten();
+    let spec_height = find_value(AttribKey::Height, &attrs)
+        .map(|w| w.as_f64())
+        .flatten();
+
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
+    attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            spec_position
+        } else {
+            Default::default()
+        },
+        size: Size {
+            width: if let Some(width) = spec_width {
+                Dimension::Points(width as f32)
+            } else {
+                Dimension::Percent(1.0)
+            },
+            height: if let Some(height) = spec_height {
+                Dimension::Points(height as f32)
+            } else {
+                Dimension::Auto
+            },
+        },
+        ..Default::default()
+    }));
+    widget(Widget::HeaderBar, attrs, children)
 }
