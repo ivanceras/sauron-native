@@ -41,3 +41,16 @@ I hope someone is able to get to 1 + 2.1 + 3.1 someday.
 
 I'll use that.
 ```
+
+## Gtk list store
+
+Gtk cell renderer is limited to :
+- CellRendererAccel
+- CellRendererCombo (combo box)
+- CellRendererPixbuf (images)
+- CellRendererProgress (progress bars)
+- CellRendererSpin (number spin?)
+- CellRendererSpinner (spinner)
+- CellRendererText (text entry)
+- CellRendererToggle (checkboxes)
+
