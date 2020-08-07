@@ -115,9 +115,6 @@ where
             let child1_attrs =
                 children[0].get_attributes().expect("must have attributes");
 
-            let child2_attrs =
-                children[1].get_attributes().expect("must have attributes");
-
             let hpane = Paned::new(Orientation::Horizontal);
             if widget_children.len() != 2 {
                 log::warn!("pane should have 2 children");
@@ -138,6 +135,8 @@ where
             if let Some(child2) =
                 widget_children.get(1).map(|c| c.as_widget()).flatten()
             {
+                let child2_attrs =
+                    children[1].get_attributes().expect("must have attributes");
                 let is_resizable =
                     find_value(AttribKey::Resizable, &child2_attrs)
                         .map(|v| v.as_bool())

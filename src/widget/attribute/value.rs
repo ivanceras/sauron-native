@@ -91,7 +91,61 @@ impl From<String> for Value {
 
 impl From<f32> for Value {
     fn from(v: f32) -> Self {
-        Value::F64(v.into())
+        Value::F64(v as f64)
+    }
+}
+
+impl From<f64> for Value {
+    fn from(v: f64) -> Self {
+        Value::F64(v)
+    }
+}
+
+impl From<u8> for Value {
+    fn from(v: u8) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<u16> for Value {
+    fn from(v: u16) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<u32> for Value {
+    fn from(v: u32) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<u64> for Value {
+    fn from(v: u64) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<i8> for Value {
+    fn from(v: i8) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<i16> for Value {
+    fn from(v: i16) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<i32> for Value {
+    fn from(v: i32) -> Self {
+        Value::F64(v as f64)
+    }
+}
+
+impl From<i64> for Value {
+    fn from(v: i64) -> Self {
+        Value::F64(v as f64)
     }
 }
 
