@@ -248,36 +248,9 @@ where
             let node_children =
                 node.get_children().expect("must have children");
 
-            let widget_children = match *tag {
-                // special case for GroupBox since GroupBox have a frame wrapper
-                // GroupBox(Frame(Box))
-                crate::Widget::GroupBox => {
-                    let frame_children = container.get_children();
-                    let gbox_widget =
-                        frame_children.get(0).expect("must have one child");
-                    let container = gbox_widget
-                        .downcast_ref::<Container>()
-                        .expect("must be a container");
-                    container.get_children()
-                }
-                // special case for SubMenu in MenuItem since
-                // sub_menu is not returned as children for the menu_item
-                // instead, we get the sub menu as part of it's children
-                //
-                // WARNING: The submenu should be at the last part of the menu_item
-                // so as to match the NodeIdx arrangement when applying patches
-                crate::Widget::MenuItem => {
-                    let mut widgets = container.get_children();
-                    let menu_item = container
-                        .downcast_ref::<MenuItem>()
-                        .expect("must be castable to menu item");
-                    if let Some(sub_menu) = menu_item.get_submenu() {
-                        widgets.push(sub_menu);
-                    }
-                    widgets
-                }
-                _ => container.get_children(),
-            };
+            let attrs =
+                node.get_attributes().expect("must have have attributes");
+            let widget_children = get_widget_children(tag, container, &attrs);
 
             assert_eq!(
                 node_children.len(),
@@ -291,72 +264,16 @@ where
                 *cur_node_idx += 1;
                 let child_tag =
                     child_node.tag().expect("must have a child tag");
-                let attrs =
-                    child_node.get_attributes().expect("must have attributes");
                 if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
-                    match child_tag {
-                        crate::Widget::TextArea => {
-                            if is_scrollable(&attrs) {
-                                // ScrolledWindow -> TextArea
-                                let scrolled_window = widget_child
-                                    .downcast_ref::<Container>()
-                                    .expect(
-                                        "must be a scrolled window container",
-                                    );
-                                let scrolled_window_children =
-                                    scrolled_window.get_children();
-                                let text_area = scrolled_window_children
-                                    .get(0)
-                                    .expect("must have a child");
-                                let text_area: Widget =
-                                    text_area.clone().upcast();
-                                nodes_to_patch.insert(*cur_node_idx, text_area);
-                            } else {
-                                let text_area: Widget =
-                                    widget_child.clone().upcast();
-                                nodes_to_patch.insert(*cur_node_idx, text_area);
-                            }
-                        }
-                        crate::Widget::Svg => {
-                            if is_scrollable(&attrs) {
-                                // ScrolledWindow -> ViewPort -> Image
-                                let scrolled_window = widget_child
-                                    .downcast_ref::<Container>()
-                                    .expect(
-                                        "must be a scrolled window container",
-                                    );
-
-                                let scrolled_window_children =
-                                    scrolled_window.get_children();
-                                let view_port =
-                                    scrolled_window_children.get(0).expect(
-                                        "scrolled window must have a child",
-                                    );
-                                let view_port = view_port
-                                    .downcast_ref::<Container>()
-                                    .expect("must be a viewport container");
-
-                                let view_port_children =
-                                    view_port.get_children();
-                                let svg_image = view_port_children
-                                    .get(0)
-                                    .expect(
-                                    "view port must have svg image as child",
-                                );
-                                let svg_image: Widget =
-                                    svg_image.clone().upcast();
-                                nodes_to_patch.insert(*cur_node_idx, svg_image);
-                            } else {
-                                let svg_image: Widget =
-                                    widget_child.clone().upcast();
-                                nodes_to_patch.insert(*cur_node_idx, svg_image);
-                            }
-                        }
-                        _ => {
-                            let widget: Widget = widget_child.clone().upcast();
-                            nodes_to_patch.insert(*cur_node_idx, widget);
-                        }
-                    }
+                    let child_attrs = child_node
+                        .get_attributes()
+                        .expect("must have attributes");
+                    let widget: Widget = get_actual_node_to_patch(
+                        child_tag,
+                        widget_child,
+                        &child_attrs,
+                    );
+                    nodes_to_patch.insert(*cur_node_idx, widget);
                 }
                 match child_tag {
                     crate::Widget::TextArea | crate::Widget::Svg => {
@@ -381,4 +298,151 @@ where
         _ => println!("todo for: {:?}", tag),
     }
     nodes_to_patch
+}
+
+/// return the actual node to be patched
+/// dealing with widgets that is wrapped with scrolled window
+fn get_actual_node_to_patch<MSG>(
+    child_tag: &crate::Widget,
+    widget_child: &Widget,
+    attrs: &[crate::Attribute<MSG>],
+) -> Widget
+where
+    MSG: 'static,
+{
+    match child_tag {
+        crate::Widget::TextArea => {
+            if is_scrollable(&attrs) {
+                // ScrolledWindow -> TextArea
+                let scrolled_window = widget_child
+                    .downcast_ref::<Container>()
+                    .expect("must be a scrolled window container");
+                let scrolled_window_children = scrolled_window.get_children();
+                let text_area =
+                    scrolled_window_children.get(0).expect("must have a child");
+                let text_area: Widget = text_area.clone().upcast();
+                text_area
+            } else {
+                let text_area: Widget = widget_child.clone().upcast();
+                text_area
+            }
+        }
+        crate::Widget::Svg => {
+            if is_scrollable(&attrs) {
+                // ScrolledWindow -> ViewPort -> Image
+                let scrolled_window = widget_child
+                    .downcast_ref::<Container>()
+                    .expect("must be a scrolled window container");
+
+                let scrolled_window_children = scrolled_window.get_children();
+                let view_port = scrolled_window_children
+                    .get(0)
+                    .expect("scrolled window must have a child");
+                let view_port = view_port
+                    .downcast_ref::<Container>()
+                    .expect("must be a viewport container");
+
+                let view_port_children = view_port.get_children();
+                let svg_image = view_port_children
+                    .get(0)
+                    .expect("view port must have svg image as child");
+                let svg_image: Widget = svg_image.clone().upcast();
+                svg_image
+            } else {
+                let svg_image: Widget = widget_child.clone().upcast();
+                svg_image
+            }
+        }
+        _ => {
+            let widget: Widget = widget_child.clone().upcast();
+            widget
+        }
+    }
+}
+
+/// return the children of this widget
+/// dealing with special case where widgets are wrapped with scrolled window
+fn get_widget_children<MSG>(
+    tag: &crate::Widget,
+    container: &Container,
+    attrs: &[crate::Attribute<MSG>],
+) -> Vec<Widget>
+where
+    MSG: 'static,
+{
+    match *tag {
+        // special case for GroupBox since GroupBox have a frame wrapper
+        // GroupBox(Frame(Box))
+        crate::Widget::GroupBox => {
+            let frame_children = container.get_children();
+            let gbox_widget =
+                frame_children.get(0).expect("must have one child");
+            let container = gbox_widget
+                .downcast_ref::<Container>()
+                .expect("must be a container");
+            container.get_children()
+        }
+        crate::Widget::Vbox => {
+            if is_scrollable(attrs) {
+                println!("VBOX is SCROLLABLE..");
+                container.downcast_ref::<gtk::ScrolledWindow>()
+                            .unwrap_or_else(|| {
+                                panic!(
+                                    "container must be a ScrolledWindow, but found: {:?}",
+                                    container
+                                )
+                            });
+
+                // ScrolledWindow -> VBox
+                let scrolled_children = container.get_children();
+                assert_eq!(
+                    scrolled_children.len(),
+                    1,
+                    "There should only be one children.. that is the real vbox"
+                );
+                let scrolled_widget =
+                    scrolled_children.get(0).expect("must have one child");
+                let view_port = scrolled_widget
+                    .downcast_ref::<gtk::Viewport>()
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "must be a view port, but found: {:?}",
+                            scrolled_widget
+                        )
+                    });
+                let viewport_children = view_port.get_children();
+                let vbox_widget =
+                    viewport_children.get(0).expect("must have 1 child");
+
+                let vbox_container = vbox_widget
+                    .downcast_ref::<gtk::Box>()
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "must be a gtk::Box.. but found: {:?}",
+                            vbox_widget,
+                        )
+                    });
+                vbox_container.get_children()
+            } else {
+                container.get_children()
+            }
+        }
+        // special case for SubMenu in MenuItem since
+        // sub_menu is not returned as children for the menu_item
+        // instead, we get the sub menu as part of it's children
+        //
+        // WARNING: The submenu should be at the last part of the menu_item
+        // so as to match the NodeIdx arrangement when applying patches
+        crate::Widget::MenuItem => {
+            let mut widgets = container.get_children();
+            let menu_item = container
+                .downcast_ref::<MenuItem>()
+                .expect("must be castable to menu item");
+            if let Some(sub_menu) = menu_item.get_submenu() {
+                widgets.push(sub_menu);
+            }
+            widgets
+        }
+        _ => container.get_children(),
+    }
 }

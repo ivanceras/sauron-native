@@ -69,8 +69,19 @@ where
                     );
                 }
             }
-            vbox.set_size_request(width as i32, height as i32);
-            GtkWidget::GBox(vbox)
+            if is_scrollable(&attrs) {
+                println!("wrapping the vbox with ScrolledWindow");
+                let scroll = ScrolledWindow::new(
+                    None::<&Adjustment>,
+                    None::<&Adjustment>,
+                );
+                scroll.set_size_request(width as i32, height as i32);
+                scroll.add(&vbox);
+                vbox.set_size_request(width as i32, height as i32);
+                GtkWidget::GBoxScrollable(scroll)
+            } else {
+                GtkWidget::GBox(vbox)
+            }
         }
         // hbox can have many children
         Widget::Hbox => {

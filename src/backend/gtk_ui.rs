@@ -35,6 +35,7 @@ where
 /// GtkWidget is an enum wrapper for gtk compoments
 pub(crate) enum GtkWidget {
     GBox(gtk::Box),
+    GBoxScrollable(ScrolledWindow),
     GroupBox(Frame),
     Paned(Paned),
     Button(Button),
@@ -271,6 +272,10 @@ impl GtkWidget {
             }
             GtkWidget::GBox(cbox) => {
                 let widget: &gtk::Widget = cbox.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::GBoxScrollable(scroll) => {
+                let widget: &gtk::Widget = scroll.upcast_ref();
                 Some(widget)
             }
             GtkWidget::GroupBox(group_box) => {
