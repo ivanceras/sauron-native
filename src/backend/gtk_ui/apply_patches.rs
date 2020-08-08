@@ -315,7 +315,7 @@ where
             if is_scrollable(&attrs) {
                 // ScrolledWindow -> TextArea
                 let scrolled_window = widget_child
-                    .downcast_ref::<Container>()
+                    .downcast_ref::<gtk::ScrolledWindow>()
                     .expect("must be a scrolled window container");
                 let scrolled_window_children = scrolled_window.get_children();
                 let text_area =
@@ -331,7 +331,7 @@ where
             if is_scrollable(&attrs) {
                 // ScrolledWindow -> ViewPort -> Image
                 let scrolled_window = widget_child
-                    .downcast_ref::<Container>()
+                    .downcast_ref::<gtk::ScrolledWindow>()
                     .expect("must be a scrolled window container");
 
                 let scrolled_window_children = scrolled_window.get_children();
@@ -339,7 +339,7 @@ where
                     .get(0)
                     .expect("scrolled window must have a child");
                 let view_port = view_port
-                    .downcast_ref::<Container>()
+                    .downcast_ref::<gtk::Viewport>()
                     .expect("must be a viewport container");
 
                 let view_port_children = view_port.get_children();
@@ -377,12 +377,12 @@ where
             let frame_children = container.get_children();
             let gbox_widget =
                 frame_children.get(0).expect("must have one child");
-            let container = gbox_widget
-                .downcast_ref::<Container>()
+            let gbox = gbox_widget
+                .downcast_ref::<gtk::Box>()
                 .expect("must be a container");
-            container.get_children()
+            gbox.get_children()
         }
-        crate::Widget::Vbox => {
+        crate::Widget::Vbox | crate::Widget::Hbox => {
             if is_scrollable(attrs) {
                 println!("VBOX is SCROLLABLE..");
                 container.downcast_ref::<gtk::ScrolledWindow>()
@@ -411,18 +411,18 @@ where
                         )
                     });
                 let viewport_children = view_port.get_children();
-                let vbox_widget =
+                let box_widget =
                     viewport_children.get(0).expect("must have 1 child");
 
-                let vbox_container = vbox_widget
+                let box_container = box_widget
                     .downcast_ref::<gtk::Box>()
                     .unwrap_or_else(|| {
                         panic!(
                             "must be a gtk::Box.. but found: {:?}",
-                            vbox_widget,
+                            box_widget,
                         )
                     });
-                vbox_container.get_children()
+                box_container.get_children()
             } else {
                 container.get_children()
             }
