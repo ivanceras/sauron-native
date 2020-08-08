@@ -235,67 +235,47 @@ where
         nodes_to_patch.insert(*cur_node_idx, container_widget);
     }
 
-    match tag {
-        crate::Widget::Hpane
-        | crate::Widget::Vbox
-        | crate::Widget::Hbox
-        | crate::Widget::GroupBox
-        | crate::Widget::HeaderBar
-        | crate::Widget::MenuBar
-        | crate::Widget::Menu
-        | crate::Widget::MenuItem
-        | crate::Widget::Overlay => {
-            let node_children =
-                node.get_children().expect("must have children");
+    if tag.is_container() {
+        let node_children = node.get_children().expect("must have children");
 
-            let attrs =
-                node.get_attributes().expect("must have have attributes");
-            let widget_children = get_widget_children(tag, container, &attrs);
+        let attrs = node.get_attributes().expect("must have have attributes");
+        let widget_children = get_widget_children(tag, container, &attrs);
 
-            assert_eq!(
-                node_children.len(),
-                widget_children.len(),
-                "must have the same children len, in widget: {:?}",
-                tag
-            );
-            for (child_node, widget_child) in
-                node_children.iter().zip(widget_children.iter())
-            {
-                *cur_node_idx += 1;
-                let child_tag =
-                    child_node.tag().expect("must have a child tag");
-                if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
-                    let child_attrs = child_node
-                        .get_attributes()
-                        .expect("must have attributes");
-                    let widget: Widget = get_actual_node_to_patch(
-                        child_tag,
-                        widget_child,
-                        &child_attrs,
+        assert_eq!(
+            node_children.len(),
+            widget_children.len(),
+            "must have the same children len, in widget: {:?}",
+            tag
+        );
+        for (child_node, widget_child) in
+            node_children.iter().zip(widget_children.iter())
+        {
+            *cur_node_idx += 1;
+            let child_tag = child_node.tag().expect("must have a child tag");
+            if let Some(_patch_tag) = nodes_to_find.get(&cur_node_idx) {
+                let child_attrs =
+                    child_node.get_attributes().expect("must have attributes");
+                let widget: Widget = get_actual_node_to_patch(
+                    child_tag,
+                    widget_child,
+                    &child_attrs,
+                );
+                nodes_to_patch.insert(*cur_node_idx, widget);
+            }
+            if child_tag.is_container() {
+                if let Some(container) =
+                    widget_child.downcast_ref::<Container>()
+                {
+                    let child_nodes_to_patch = find_nodes_recursive(
+                        child_node,
+                        container,
+                        cur_node_idx,
+                        nodes_to_find,
                     );
-                    nodes_to_patch.insert(*cur_node_idx, widget);
-                }
-                match child_tag {
-                    crate::Widget::TextArea | crate::Widget::Svg => {
-                        println!("skipping leaf widgets that are containers..");
-                    }
-                    _ => {
-                        if let Some(container) =
-                            widget_child.downcast_ref::<Container>()
-                        {
-                            let child_nodes_to_patch = find_nodes_recursive(
-                                child_node,
-                                container,
-                                cur_node_idx,
-                                nodes_to_find,
-                            );
-                            nodes_to_patch.extend(child_nodes_to_patch);
-                        }
-                    }
+                    nodes_to_patch.extend(child_nodes_to_patch);
                 }
             }
         }
-        _ => println!("todo for: {:?}", tag),
     }
     nodes_to_patch
 }
