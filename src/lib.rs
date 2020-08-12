@@ -15,7 +15,6 @@ pub use widget::{
 
 pub mod backend;
 mod component;
-mod util;
 pub mod widget;
 
 /// It is an abstracted event to allow conversion

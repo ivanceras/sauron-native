@@ -1,10 +1,9 @@
 use super::images;
 use super::Dispatch;
 use super::GtkWidget;
-use crate::widget::attribute::event::{InputEvent, MouseEvent};
 use crate::widget::attribute::util::get_layout;
+use crate::widget::event::{InputEvent, MouseEvent};
 use crate::{
-    util,
     widget::attribute::{find_callback, find_value, util::is_scrollable},
     AttribKey, Attribute, Widget,
 };
@@ -54,14 +53,19 @@ where
     }
 
     match widget {
-        // vbox can have many children
-        Widget::Vbox => {
-            let vbox = gtk::Box::new(Orientation::Vertical, 0);
+        // gbox can have many children
+        Widget::Vbox | Widget::Hbox => {
+            let orientation = match widget {
+                Widget::Vbox => Orientation::Vertical,
+                Widget::Hbox => Orientation::Horizontal,
+                _ => unreachable!(),
+            };
+            let gbox = gtk::Box::new(orientation, 0);
 
             for child in widget_children.iter() {
                 if let Some(child_widget) = child.as_widget() {
                     //container.pack_start(child_widget, false, false, 0);
-                    vbox.add(child_widget);
+                    gbox.add(child_widget);
                 } else {
                     println!(
                         "was not able to add child widget: {:?}",
@@ -70,34 +74,21 @@ where
                 }
             }
             if is_scrollable(&attrs) {
-                println!("wrapping the vbox with ScrolledWindow");
+                println!("wrapping the gbox with ScrolledWindow");
                 let scroll = ScrolledWindow::new(
                     None::<&Adjustment>,
                     None::<&Adjustment>,
                 );
+                println!("gbox size: ({},{})", width, height);
+                scroll.add(&gbox);
                 scroll.set_size_request(width as i32, height as i32);
-                scroll.add(&vbox);
-                vbox.set_size_request(width as i32, height as i32);
+                scroll.set_propagate_natural_height(true);
+                gbox.set_size_request(width as i32, height as i32);
                 GtkWidget::GBoxScrollable(scroll)
             } else {
-                GtkWidget::GBox(vbox)
+                gbox.set_size_request(width as i32, height as i32);
+                GtkWidget::GBox(gbox)
             }
-        }
-        // hbox can have many children
-        Widget::Hbox => {
-            let hbox = gtk::Box::new(Orientation::Horizontal, 0);
-            for child in widget_children.iter() {
-                if let Some(child_widget) = child.as_widget() {
-                    hbox.add(child_widget);
-                } else {
-                    println!(
-                        "was not able to add child widget: {:?}",
-                        child.as_widget()
-                    );
-                }
-            }
-            hbox.set_size_request(width as i32, height as i32);
-            GtkWidget::GBox(hbox)
         }
         Widget::GroupBox => {
             let label = find_value(AttribKey::Label, &attrs)
@@ -390,7 +381,7 @@ where
                 .flatten()
                 .unwrap_or(&[]);
             let image = Image::new();
-            let mime = util::image_mime_type(&bytes)
+            let mime = images::image_mime_type(&bytes)
                 .expect("unsupported have mime type");
             let pixbuf_loader =
                 PixbufLoader::new_with_mime_type(mime).expect("error loader");

@@ -1,14 +1,13 @@
 //! Provides functions for attributes of sauron native widgets
 //!
+pub use super::event::Event;
 use crate::Attribute;
-pub use event::Event;
 use mt_dom::attr;
 use std::fmt;
 use stretch::style::Style;
 pub use util::{find_callback, find_value, get_style};
 pub use value::Value;
 
-pub mod event;
 pub mod util;
 mod value;
 

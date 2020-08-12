@@ -54,3 +54,6 @@ Gtk cell renderer is limited to :
 - CellRendererText (text entry)
 - CellRendererToggle (checkboxes)
 
+## Styling gtk widgets with css
+- https://shallowsky.com/blog/programming/styling-gtk3-with-css-python.html
+- https://developer.gnome.org/gtk3/stable/chap-css-properties.html

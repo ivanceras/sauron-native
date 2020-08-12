@@ -4,7 +4,6 @@
 use crate::widget::attribute::style;
 use crate::widget::attribute::util::find_value;
 use crate::{AttribKey, Attribute, Node, Value};
-pub use attribute::event;
 pub use builder::*;
 use mt_dom::{attr, element};
 use std::fmt::Debug;
@@ -16,6 +15,7 @@ use stretch::style::Style;
 
 pub mod attribute;
 mod builder;
+pub mod event;
 pub(crate) mod layout;
 
 /// TODO: Each widget variant will need to have more details

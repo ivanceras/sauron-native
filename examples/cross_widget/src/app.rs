@@ -1,5 +1,5 @@
 use sauron_native::{
-    widget::{attribute::event::*, attribute::*, *},
+    widget::{attribute::*, event::*, *},
     Component, Node,
 };
 

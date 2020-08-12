@@ -78,7 +78,7 @@ where
     fn new(app: APP) {
         let app_title = app.title();
 
-        let (initial_width, initial_height) = (800, 1000);
+        let (initial_width, initial_height) = (800, 600);
         let current_vdom =
             Self::calculate_view_layout(&app, (initial_width, initial_height));
         let root_vdom = current_vdom.clone();
@@ -132,7 +132,7 @@ where
                 );
                 *backend_clone2.window_size.borrow_mut() =
                     (rect.width, rect.height);
-                backend_clone2.redraw();
+                //backend_clone2.redraw();
             });
 
             application_window.show_all();
