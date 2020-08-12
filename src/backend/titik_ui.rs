@@ -18,7 +18,7 @@ use std::{
 };
 use titik::{
     renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image,
-    Radio, TextArea, TextInput, TextLabel, Widget as Control,
+    Link, Radio, TextArea, TextInput, TextLabel, Widget as Control,
 };
 
 mod apply_patches;
@@ -278,6 +278,18 @@ where
             // TODO: make a search input equivalent in titik
             let mut search_input = TextInput::new("");
             Box::new(search_input)
+        }
+        Widget::Link => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let uri = find_value(AttribKey::Uri, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or(String::new());
+
+            let mut link = Link::new(uri, label);
+            Box::new(link)
         }
     }
 }

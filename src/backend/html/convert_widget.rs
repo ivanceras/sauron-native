@@ -229,6 +229,10 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or_default();
 
+            let widget_name = find_value(AttribKey::Name, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+
             let svg_image_data = find_value(AttribKey::SvgImage, &attrs)
                 .map(|v| v.as_bytes().map(|v| v.to_vec()))
                 .flatten();
@@ -251,6 +255,7 @@ where
             button(
                 vec![
                     class("Button"),
+                    name(widget_name),
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
@@ -300,6 +305,14 @@ where
                             let cb = cb.clone();
                             attributes.push(on_input(move |ev| {
                                 cb.emit(convert_event::to_input_event(ev))
+                            }));
+                        }
+                    }
+                    AttribKey::KeyEvent => {
+                        for cb in att.get_callback() {
+                            let cb = cb.clone();
+                            attributes.push(on_keypress(move |ke| {
+                                cb.emit(convert_event::to_key_event(&ke))
                             }));
                         }
                     }
@@ -493,6 +506,43 @@ where
         Widget::MenuItem => div(vec![], vec![text("menu item")]),
         Widget::SearchInput => {
             div(vec![], vec![input(vec![type_("text")], vec![])])
+        }
+        Widget::Link => {
+            let label = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+
+            let uri = find_value(AttribKey::Uri, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+
+            let mut attributes = vec![];
+            for att in attrs {
+                match att.name() {
+                    AttribKey::ClickEvent => {
+                        for cb in att.get_callback() {
+                            let cb = cb.clone();
+                            attributes.push(on_click(move |ev| {
+                                cb.emit(convert_event::from_mouse_event(ev))
+                            }))
+                        }
+                    }
+                    _ => (),
+                }
+            }
+
+            a(
+                vec![
+                    class("Link"),
+                    href(uri),
+                    styles([
+                        ("width", px(layout.size.width)),
+                        ("height", px(layout.size.height)),
+                    ]),
+                ],
+                vec![text(label)],
+            )
+            .add_attributes(attributes)
         }
     }
 }

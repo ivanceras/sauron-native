@@ -79,6 +79,7 @@ with-titik = ["titik"]
 members = [
     "examples/cross_widget",
     "examples/simple",
+    "examples/todomvc",
 ]
 
 

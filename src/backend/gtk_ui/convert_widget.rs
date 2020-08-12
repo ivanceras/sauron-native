@@ -12,9 +12,10 @@ use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::prelude::*;
 use gtk::{
     prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
-    Frame, HeaderBar, Image, Label, LabelBuilder, Menu, MenuBar, MenuItem,
-    Orientation, Overlay, Paned, RadioButton, ScrolledWindow, SearchEntry,
-    TextBuffer, TextBufferExt, TextTagTable, TextView, TextViewExt, WidgetExt,
+    Frame, HeaderBar, Image, Label, LabelBuilder, LinkButton, Menu, MenuBar,
+    MenuItem, Orientation, Overlay, Paned, RadioButton, ScrolledWindow,
+    SearchEntry, TextBuffer, TextBufferExt, TextTagTable, TextView,
+    TextViewExt, WidgetExt,
 };
 use std::fmt::Debug;
 
@@ -649,6 +650,36 @@ where
                 }
             }
             GtkWidget::SearchInput(entry)
+        }
+        Widget::Link => {
+            let label: Option<&str> = find_value(AttribKey::Label, &attrs)
+                .map(|v| v.as_str())
+                .flatten();
+
+            let uri = find_value(AttribKey::Uri, &attrs)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
+
+            let link_btn = LinkButton::new_with_label(&uri, label);
+            if let Some(label) = label {
+                link_btn.set_label(&label);
+            }
+            if let Some(callbacks) = find_callback(AttribKey::ClickEvent, attrs)
+            {
+                for cb in callbacks {
+                    let cb_clone = cb.clone();
+                    let program_clone = program.clone();
+                    link_btn.connect_clicked(move |_| {
+                        println!("btn is clicked..");
+                        let mouse_event = MouseEvent::default();
+                        let msg = cb_clone.emit(mouse_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
+            }
+
+            link_btn.set_size_request(width as i32, height as i32);
+            GtkWidget::LinkButton(link_btn)
         }
     }
 }

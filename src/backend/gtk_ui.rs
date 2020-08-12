@@ -6,8 +6,9 @@ use gio::{prelude::*, ApplicationFlags};
 pub use gtk;
 use gtk::{
     prelude::*, Application, ApplicationWindow, Button, CheckButton, Container,
-    Entry, EventBox, Frame, HeaderBar, Image, Menu, MenuBar, MenuItem, Overlay,
-    Paned, RadioButton, ScrolledWindow, SearchEntry, TextView, WidgetExt,
+    Entry, EventBox, Frame, HeaderBar, Image, LinkButton, Menu, MenuBar,
+    MenuItem, Overlay, Paned, RadioButton, ScrolledWindow, SearchEntry,
+    TextView, WidgetExt,
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
@@ -39,6 +40,7 @@ pub(crate) enum GtkWidget {
     GroupBox(Frame),
     Paned(Paned),
     Button(Button),
+    LinkButton(LinkButton),
     Label(EventBox),
     Paragraph(TextView),
     TextInput(Entry),
@@ -263,6 +265,10 @@ impl GtkWidget {
     fn as_widget(&self) -> Option<&gtk::Widget> {
         match self {
             GtkWidget::Button(btn) => {
+                let widget: &gtk::Widget = btn.upcast_ref();
+                Some(widget)
+            }
+            GtkWidget::LinkButton(btn) => {
                 let widget: &gtk::Widget = btn.upcast_ref();
                 Some(widget)
             }

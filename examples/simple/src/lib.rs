@@ -1,9 +1,7 @@
-use app::{App, Msg};
-use log::*;
+#![deny(warnings)]
 #[cfg(feature = "with-html")]
 use sauron_native::backend::HtmlApp;
-use sauron_native::Backend;
-use std::rc::Rc;
+#[cfg(feature = "with-html")]
 use wasm_bindgen::prelude::*;
 
 pub mod app;
@@ -13,5 +11,5 @@ pub mod app;
 pub fn initialize(initial_state: &str) {
     console_log::init_with_level(Level::Debug);
     trace!("Initial state: {}", initial_state);
-    HtmlApp::init(App::new(1));
+    HtmlApp::init(app::App::new(1));
 }

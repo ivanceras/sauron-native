@@ -64,6 +64,12 @@ pub enum AttribKey {
     MouseMove,
     /// Input event
     InputEvent,
+    /// keyboard events
+    KeyEvent,
+    /// doubleclick event
+    DoubleClickEvent,
+    /// on blur event
+    BlurEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
     /// the calculated layout of this widget
@@ -82,6 +88,12 @@ pub enum AttribKey {
     Selectable,
     /// whether to assume the content to be pre-formatted or not
     Preformatted,
+    /// widgets can have a name and can be styled
+    Name,
+    /// Uri used in link buttons
+    Uri,
+    /// Placeholder is used in text input, search input, and text_area
+    Placeholder,
 }
 
 declare_attr! {
@@ -110,6 +122,16 @@ declare_attr! {
     selectable => Selectable;
     /// preformatted
     preformatted => Preformatted;
+    /// name
+    name => Name;
+    /// uri
+    uri => Uri;
+    /// checked
+    checked => Checked;
+    /// placeholder
+    placeholder => Placeholder;
+    /// key
+    key => Key;
 }
 
 impl fmt::Display for AttribKey {

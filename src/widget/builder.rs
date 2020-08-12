@@ -663,3 +663,46 @@ where
     }));
     widget(Widget::SearchInput, attrs, vec![])
 }
+
+/// create a link button
+pub fn link<MSG>(mut attrs: Vec<Attribute<MSG>>) -> Node<MSG>
+where
+    MSG: 'static,
+{
+    let spec_width = find_value(AttribKey::Width, &attrs)
+        .map(|w| w.as_f64())
+        .flatten();
+    let spec_height = find_value(AttribKey::Height, &attrs)
+        .map(|w| w.as_f64())
+        .flatten();
+
+    let spec_position = find_value(AttribKey::PositionType, &attrs)
+        .map(|w| w.as_position_type())
+        .flatten();
+
+    attrs.push(style(Style {
+        position_type: if let Some(spec_position) = spec_position {
+            spec_position
+        } else {
+            Default::default()
+        },
+        size: Size {
+            width: if let Some(width) = spec_width {
+                Dimension::Points(width as f32)
+            } else {
+                Dimension::Percent(1.0)
+            },
+            height: if let Some(height) = spec_height {
+                Dimension::Points(height as f32)
+            } else {
+                Dimension::Percent(1.0)
+            },
+        },
+        min_size: Size {
+            height: Dimension::Points(30.0),
+            ..Default::default()
+        },
+        ..Default::default()
+    }));
+    widget(Widget::Link, attrs, vec![])
+}

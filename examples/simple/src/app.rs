@@ -1,18 +1,11 @@
-use log::*;
 use sauron_native::{
     widget::{attribute::*, event::*, *},
-    Attribute, Callback, Component, Event, Node, Value,
-};
-use std::{
-    cell::{Cell, RefCell},
-    rc::Rc,
+    Component, Node,
 };
 
 pub struct App {
     click_count: u32,
     text: String,
-    events: Vec<String>,
-    debug: Vec<String>,
     paragraph_text: String,
 }
 
@@ -29,8 +22,6 @@ impl App {
         App {
             click_count: count,
             text: String::from("Some text"),
-            events: vec![],
-            debug: vec![],
             paragraph_text: String::from("paragraph text"),
         }
     }

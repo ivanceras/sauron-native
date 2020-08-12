@@ -69,6 +69,8 @@ pub enum Widget {
     MenuItem,
     /// Search entry
     SearchInput,
+    /// Link button
+    Link,
 }
 
 impl Widget {
@@ -95,6 +97,7 @@ impl Widget {
             | Widget::Radio
             | Widget::Image
             | Widget::Svg
+            | Widget::Link
             | Widget::TextArea => false,
         }
     }

@@ -262,6 +262,25 @@ impl Modifier {
             ..Default::default()
         }
     }
+    pub fn alt() -> Self {
+        Modifier {
+            alt_key: true,
+            ..Default::default()
+        }
+    }
+
+    pub fn shift() -> Self {
+        Modifier {
+            shift_key: true,
+            ..Default::default()
+        }
+    }
+
+    pub fn none() -> Self {
+        Modifier {
+            ..Default::default()
+        }
+    }
 }
 
 /// creates an attribute with name `event` with a value of a callback derive from the function
@@ -317,6 +336,28 @@ where
     })
 }
 
+/// TODO:
+pub fn on_doubleclick<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::DoubleClickEvent, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
+/// TODO:
+pub fn on_blur<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(MouseEvent) -> MSG + 'static,
+{
+    on(AttribKey::BlurEvent, move |ev: Event| match ev {
+        Event::MouseEvent(me) => func(me),
+        _ => unreachable!(),
+    })
+}
+
 /// create an attribute which attach a callback to the on_mousemove event
 pub fn on_input<F, MSG>(func: F) -> Attribute<MSG>
 where
@@ -324,6 +365,16 @@ where
 {
     on(AttribKey::InputEvent, move |ev: Event| match ev {
         Event::InputEvent(input) => func(input),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_keypress<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(KeyEvent) -> MSG + 'static,
+{
+    on(AttribKey::KeyEvent, move |ev: Event| match ev {
+        Event::KeyEvent(ke) => func(ke),
         _ => unreachable!(),
     })
 }
