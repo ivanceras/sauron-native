@@ -1,6 +1,7 @@
 use super::convert_event;
+use crate::image_util;
 use crate::widget::attribute::util::get_layout;
-use crate::{util, widget::attribute::find_value, AttribKey, Widget};
+use crate::{widget::attribute::find_value, AttribKey, Widget};
 use sauron::{
     html::{attributes::*, div, img, input, text},
     prelude::*,
@@ -433,7 +434,7 @@ where
                 .unwrap_or(&empty);
 
             let mime_type =
-                util::image_mime_type(bytes).expect("unsupported image");
+                image_util::image_mime_type(bytes).expect("unsupported image");
             div(
                 vec![
                     class("Image"),
@@ -476,6 +477,22 @@ where
                     vec![],
                 )],
             )
+        }
+        Widget::HeaderBar => div(
+            vec![
+                class("HeaderBar"),
+                styles([
+                    ("width", px(layout.size.width)),
+                    ("height", px(layout.size.height)),
+                ]),
+            ],
+            html_children,
+        ),
+        Widget::MenuBar => div(vec![], vec![text("menu bar")]),
+        Widget::Menu => div(vec![], vec![text("menu")]),
+        Widget::MenuItem => div(vec![], vec![text("menu item")]),
+        Widget::SearchInput => {
+            div(vec![], vec![input(vec![type_("text")], vec![])])
         }
     }
 }

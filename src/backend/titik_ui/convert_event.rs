@@ -1,7 +1,7 @@
-use crate::widget::attribute::event::{
+use crate::widget::attribute::Value;
+use crate::widget::event::{
     InputEvent, KeyCode, KeyEvent, Modifier, MouseEvent,
 };
-use crate::widget::attribute::Value;
 use crate::Event;
 
 fn from_titik_value(t_value: titik::Value) -> Value {

@@ -1,4 +1,4 @@
-use crate::widget::attribute::event::{
+use crate::widget::event::{
     Coordinate, InputEvent, Modifier, MouseButton, MouseEvent,
 };
 use wasm_bindgen::JsCast;

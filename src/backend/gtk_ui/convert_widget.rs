@@ -1,6 +1,7 @@
 use super::images;
 use super::Dispatch;
 use super::GtkWidget;
+use crate::image_util;
 use crate::widget::attribute::util::get_layout;
 use crate::widget::event::{InputEvent, MouseEvent};
 use crate::{
@@ -381,7 +382,7 @@ where
                 .flatten()
                 .unwrap_or(&[]);
             let image = Image::new();
-            let mime = images::image_mime_type(&bytes)
+            let mime = image_util::image_mime_type(&bytes)
                 .expect("unsupported have mime type");
             let pixbuf_loader =
                 PixbufLoader::new_with_mime_type(mime).expect("error loader");

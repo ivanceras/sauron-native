@@ -15,6 +15,7 @@ pub use widget::{
 
 pub mod backend;
 mod component;
+pub(crate) mod image_util;
 pub mod widget;
 
 /// It is an abstracted event to allow conversion

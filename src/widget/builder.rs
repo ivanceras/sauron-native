@@ -508,6 +508,10 @@ where
                 Dimension::Auto
             },
         },
+        min_size: Size {
+            height: Dimension::Points(30.0),
+            ..Default::default()
+        },
         ..Default::default()
     }));
     widget(Widget::HeaderBar, attrs, children)

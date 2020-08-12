@@ -18,7 +18,7 @@ use std::{
 };
 use titik::{
     renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image,
-    Radio, TextArea, TextInput, Widget as Control,
+    Radio, TextArea, TextInput, TextLabel, Widget as Control,
 };
 
 mod apply_patches;
@@ -216,19 +216,68 @@ where
             let value = find_value(AttribKey::Value, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
+            let mut text_input = TextLabel::new(value);
+            Box::new(text_input)
+        }
+        Widget::Overlay => {
+            let flex = FlexBox::new();
+            Box::new(flex)
+        }
+        Widget::HeaderBar => {
+            //TODO: make a header bar equivalent in titik ui
+            let mut flex = FlexBox::new();
             let height = find_value(AttribKey::Height, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
             let width = find_value(AttribKey::Width, &attrs)
                 .map(|v| v.as_f64().map(|v| v as f32))
                 .flatten();
-            let mut textarea = TextArea::new(value);
-            textarea.set_size(width, height);
-            Box::new(textarea)
-        }
-        Widget::Overlay => {
-            let flex = FlexBox::new();
+            flex.set_size(width, height);
             Box::new(flex)
+        }
+        Widget::MenuBar => {
+            let mut flex = FlexBox::new();
+            flex.set_border(true);
+            flex.horizontal();
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            flex.set_size(width, height);
+            Box::new(flex)
+        }
+        Widget::Menu => {
+            let mut flex = FlexBox::new();
+            flex.set_border(true);
+            flex.vertical();
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            flex.set_size(width, height);
+            Box::new(flex)
+        }
+        Widget::MenuItem => {
+            let mut flex = FlexBox::new();
+            flex.set_border(true);
+            flex.vertical();
+            let height = find_value(AttribKey::Height, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            let width = find_value(AttribKey::Width, &attrs)
+                .map(|v| v.as_f64().map(|v| v as f32))
+                .flatten();
+            flex.set_size(width, height);
+            Box::new(flex)
+        }
+        Widget::SearchInput => {
+            // TODO: make a search input equivalent in titik
+            let mut search_input = TextInput::new("");
+            Box::new(search_input)
         }
     }
 }
