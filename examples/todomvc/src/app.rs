@@ -189,7 +189,7 @@ impl Model {
     }
 
     fn view_input(&self) -> Node<Msg> {
-        header_bar(
+        column(
             vec![],
             vec![
                 text_label(vec![value("todos")]),
@@ -268,7 +268,7 @@ impl Model {
         let item = if entries_left == 1 { " item" } else { " items" };
 
         row(
-            vec![name("footer"), height(100)],
+            vec![name("footer")],
             vec![
                 row(
                     vec![name("todo-count")],
@@ -296,20 +296,20 @@ impl Model {
 
     fn info_footer(&self) -> Node<Msg> {
         column(
-            vec![name("info"), height(100)],
+            vec![name("info")],
             vec![
-                paragraph("Double-click to edit a todo"),
-                row(
+                text_label(vec![value("Double-click to edit a todo")]),
+                column(
                     vec![],
                     vec![
                         text_label(vec![value("Written by ")]),
                         link(vec![
                             uri("https://github.com/ivanceras/"),
-                            label("Jovansonlee Cesar"),
+                            label("Jovansonlee Cesar".to_string()),
                         ]),
                     ],
                 ),
-                row(
+                column(
                     vec![],
                     vec![
                         text_label(vec![value("Part of ")]),

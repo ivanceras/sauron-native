@@ -283,10 +283,13 @@ where
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
+            println!("link label: {}", label);
 
             let uri = find_value(AttribKey::Uri, &attrs)
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
+
+            println!("link uri: {}", uri);
 
             let mut link = Link::new(uri, label);
             Box::new(link)

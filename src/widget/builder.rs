@@ -698,10 +698,12 @@ where
                 Dimension::Percent(1.0)
             },
         },
+        /*
         min_size: Size {
             height: Dimension::Points(30.0),
             ..Default::default()
         },
+        */
         ..Default::default()
     }));
     widget(Widget::Link, attrs, vec![])
