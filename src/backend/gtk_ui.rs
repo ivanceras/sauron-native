@@ -11,7 +11,7 @@ use gtk::{
     TextView, WidgetExt,
 };
 use log::*;
-use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 use stretch::geometry::Size;
 use stretch::number::Number;
 
@@ -30,7 +30,6 @@ where
     application: Application,
     application_window: Rc<RefCell<Option<ApplicationWindow>>>,
     window_size: Rc<RefCell<(i32, i32)>>,
-    _phantom_msg: PhantomData<MSG>,
 }
 
 /// GtkWidget is an enum wrapper for gtk compoments
@@ -67,7 +66,6 @@ impl<APP, MSG> Clone for GtkBackend<APP, MSG> {
             application: self.application.clone(),
             application_window: self.application_window.clone(),
             window_size: self.window_size.clone(),
-            _phantom_msg: PhantomData,
         }
     }
 }
@@ -103,7 +101,6 @@ where
             application_window: Rc::new(RefCell::new(None)),
             application,
             window_size: Rc::new(RefCell::new((initial_width, initial_height))),
-            _phantom_msg: PhantomData,
         };
 
         let root_widget = convert_widget::from_node_tree(&backend, &root_vdom);

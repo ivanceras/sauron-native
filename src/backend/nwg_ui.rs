@@ -11,7 +11,7 @@ use nwg::{
     Bitmap, Button, CheckBox, FlexboxLayout, ImageFrame, Label, RadioButton,
     RichTextBox, TextBox, TextInput, Window,
 };
-use std::{cell::RefCell, fmt, fmt::Debug, marker::PhantomData, rc::Rc};
+use std::{cell::RefCell, fmt, fmt::Debug, rc::Rc};
 use stretch::style::FlexDirection;
 
 /// native windows Gui backend
@@ -25,7 +25,6 @@ where
     current_vdom: Rc<RefCell<Node<MSG>>>,
     root_node: Rc<RefCell<Option<NwgWidget>>>,
     window: Rc<Window>,
-    _phantom_msg: PhantomData<MSG>,
 }
 
 impl<APP, MSG> NwgBackend<APP, MSG> {
@@ -61,7 +60,6 @@ impl<APP, MSG> NwgBackend<APP, MSG> {
             current_vdom: Rc::new(RefCell::new(current_vdom)),
             root_node: Rc::new(RefCell::new(root_widget)),
             window: Rc::new(window),
-            _phantom_msg: PhantomData,
         };
 
         println!("3 new");
