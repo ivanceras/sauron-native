@@ -11,11 +11,11 @@ use crate::{
 use gdk_pixbuf::{PixbufLoader, PixbufLoaderExt};
 use gio::prelude::*;
 use gtk::{
-    prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer, EventBox,
-    Frame, HeaderBar, Image, Label, LabelBuilder, LinkButton, Menu, MenuBar,
-    MenuItem, Orientation, Overlay, Paned, RadioButton, ScrolledWindow,
-    SearchEntry, TextBuffer, TextBufferExt, TextTagTable, TextView,
-    TextViewExt, WidgetExt,
+    prelude::*, Adjustment, Button, CheckButton, Entry, EntryBuffer,
+    EntryBuilder, EventBox, Frame, HeaderBar, Image, Label, LabelBuilder,
+    LinkButton, Menu, MenuBar, MenuItem, Orientation, Overlay, Paned,
+    RadioButton, ScrolledWindow, SearchEntry, TextBuffer, TextBufferExt,
+    TextTagTable, TextView, TextViewExt, WidgetExt,
 };
 use std::fmt::Debug;
 
@@ -240,7 +240,11 @@ where
                 .unwrap_or_default();
 
             let buffer = EntryBuffer::new(Some(&*value));
-            let entry = Entry::new_with_buffer(&buffer);
+            //let entry = Entry::new_with_buffer(&buffer);
+            let mut builder = EntryBuilder::new();
+            builder = builder.buffer(&buffer);
+            builder = builder.name("entry");
+            let entry = builder.build();
 
             if let Some(callbacks) =
                 find_callback(AttribKey::InputEvent, &attrs)

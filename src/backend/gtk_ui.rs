@@ -220,9 +220,33 @@ where
     // https://developer.gnome.org/gtk3/stable/chap-css-properties.html
     fn setup_css() {
         let STYLE: &'static str = r#"
-            #special_label {
+            #label {
                 font-family: monospace;
+                background-color: red;
             }
+
+            #entry {
+                background-color: red;
+                font-family: monospace;
+                border-color: green
+            }
+
+            .entry {
+              padding: 3;
+              background-color: blue;
+              color: yellow;
+            }
+
+            entry {
+                border-color: red;
+                background-color: red;
+            }
+
+            entry:selected {
+                border-color: red;
+                background-color: red;
+            }
+
         "#;
         let provider = gtk::CssProvider::new();
         provider
