@@ -8,6 +8,7 @@ use crate::{
     AttribKey, Attribute, Backend, Component, Node,
 };
 use image::GenericImageView;
+use mt_dom::Callback;
 use std::{
     cell::RefCell,
     fmt::Debug,
@@ -15,10 +16,9 @@ use std::{
     marker::PhantomData,
     rc::Rc,
 };
-use titik::Callback;
 use titik::{
-    renderer::Renderer, Button, Checkbox, FlexBox, GroupBox, Image, Link,
-    Radio, TextArea, TextInput, TextLabel, Widget as Control,
+    renderer::Renderer, Button, Checkbox, Dispatch, FlexBox, GroupBox, Image,
+    Link, Radio, TextArea, TextInput, TextLabel, Widget as Control,
 };
 
 mod apply_patches;
@@ -39,7 +39,9 @@ where
     APP: Component<MSG> + 'static,
     MSG: Debug + 'static,
 {
-    fn from_node_tree(widget_node: crate::Node<MSG>) -> Box<dyn titik::Widget>
+    fn from_node_tree(
+        widget_node: crate::Node<MSG>,
+    ) -> Box<dyn titik::Widget<MSG>>
     where
         MSG: Debug + 'static,
     {
@@ -60,7 +62,7 @@ where
 pub(crate) fn from_node<MSG>(
     widget: &Widget,
     attrs: &[Attribute<MSG>],
-) -> Box<dyn titik::Widget>
+) -> Box<dyn titik::Widget<MSG>>
 where
     MSG: Debug + 'static,
 {
@@ -99,7 +101,7 @@ where
                 .map(|v| v.to_string())
                 .unwrap_or(String::new());
 
-            let mut btn: Button = Button::new(&label);
+            let mut btn: Button<MSG> = Button::new(&label);
             if let Some(callbacks) =
                 find_callback(AttribKey::ClickEvent, &attrs)
             {
@@ -107,7 +109,7 @@ where
                     let cb = cb.clone();
                     btn.add_click_listener(Callback::from(
                         move |t_event: titik::Event| {
-                            cb.emit(convert_event::from_titik(t_event));
+                            cb.emit(convert_event::from_titik(t_event))
                         },
                     ));
                 }
@@ -146,7 +148,7 @@ where
                     let cb = cb.clone();
                     checkbox.add_input_listener(Callback::from(
                         move |t_event: titik::Event| {
-                            cb.emit(convert_event::from_titik(t_event));
+                            cb.emit(convert_event::from_titik(t_event))
                         },
                     ));
                 }
@@ -203,7 +205,7 @@ where
                     let cb = cb.clone();
                     textarea.add_input_listener(Callback::from(
                         move |t_event: titik::Event| {
-                            cb.emit(convert_event::from_titik(t_event));
+                            cb.emit(convert_event::from_titik(t_event))
                         },
                     ));
                 }
@@ -311,7 +313,36 @@ where
             current_dom: Rc::new(RefCell::new(current_dom)),
             _phantom_msg: PhantomData,
         };
-        let mut renderer = Renderer::new(&mut stdout, root_node.as_mut());
+        let mut renderer =
+            Renderer::new(&mut stdout, Some(&backend), root_node.as_mut());
         renderer.run().expect("must run");
+    }
+}
+
+impl<APP, MSG> Dispatch<MSG> for TitikBackend<APP, MSG>
+where
+    MSG: Debug + 'static,
+    APP: Component<MSG> + 'static,
+{
+    /// root_node is added as argument in this dispatch function so that they are in the same
+    /// borrow, otherwise an AlreadyBorrowedError will be invoke at runtime.
+    fn dispatch(&self, msg: MSG, root_node: &mut dyn titik::Widget<MSG>) {
+        eprintln!("dispatching... {:?}", msg);
+        self.app.borrow_mut().update(msg);
+        let new_view = self.app.borrow().view();
+        let current_view = self.app.borrow().view();
+
+        {
+            let previous_dom = self.current_dom.borrow();
+            let diff = mt_dom::diff_with_key(
+                &previous_dom,
+                &new_view,
+                &AttribKey::Key,
+            );
+            eprintln!("diff: {:#?}", diff);
+            apply_patches::apply_patches(&self, root_node, &diff);
+        }
+
+        *self.current_dom.borrow_mut() = current_view;
     }
 }

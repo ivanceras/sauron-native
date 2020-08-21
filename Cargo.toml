@@ -15,11 +15,11 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 sauron = { version = "0.29", optional = true }
-mt-dom = { version = "0.4"}
+mt-dom = { version = "0.3"}
 stretch = "0.3"
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
-gtk = { version = "0.8", optional = true, features = ["v3_22", "embed-lgpl-docs"] }
+gtk = { version = "0.8", optional = true }
 gdk = { version = "0.12", optional = true }
 gio = { version = "0.8", optional = true }
 glib = { version = "0.9", optional = true }

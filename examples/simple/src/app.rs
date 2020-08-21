@@ -95,7 +95,6 @@ impl Component<Msg> for App {
                 column(
                     vec![],
                     vec![
-                        text_input(vec![value("Hello")]),
                         textarea(vec![
                             value(self.text.clone()),
                             on_input(|input| {

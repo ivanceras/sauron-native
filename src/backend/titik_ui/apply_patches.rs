@@ -4,14 +4,14 @@ use titik::{Button, TextArea};
 
 pub fn apply_patches<MSG, DSP>(
     _program: &DSP,
-    root_node: &mut dyn titik::Widget,
+    root_node: &mut dyn titik::Widget<MSG>,
     patches: &[Patch<MSG>],
 ) where
     MSG: Debug + 'static,
 {
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-        let widget: &mut dyn titik::Widget =
+        let widget: &mut dyn titik::Widget<MSG> =
             titik::find_widget_mut(root_node, patch_node_idx)
                 .expect("must have a node to patch");
         match patch {
@@ -50,12 +50,12 @@ pub fn apply_patches<MSG, DSP>(
 
 fn set_widget_attributes<MSG: 'static>(
     tag: &crate::Widget,
-    widget: &mut dyn titik::Widget,
+    widget: &mut dyn titik::Widget<MSG>,
     attrs: &[&Attribute<MSG>],
 ) {
     match tag {
         Widget::TextArea => {
-            let text_area: &mut TextArea = widget
+            let text_area: &mut TextArea<MSG> = widget
                 .as_any_mut()
                 .downcast_mut()
                 .expect("must be a textarea");
@@ -71,7 +71,7 @@ fn set_widget_attributes<MSG: 'static>(
             }
         }
         Widget::Button => {
-            let btn: &mut Button = widget
+            let btn: &mut Button<MSG> = widget
                 .as_any_mut()
                 .downcast_mut()
                 .expect("must be a button");
