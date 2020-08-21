@@ -1,3 +1,4 @@
+use super::convert_widget;
 use crate::{AttribKey, Attribute, Patch, Widget};
 use std::fmt::Debug;
 use titik::{Button, TextArea};
@@ -24,7 +25,7 @@ pub fn apply_patches<MSG, DSP>(
                 for child in children {
                     let child_element =
                         child.as_element_ref().expect("must be an element");
-                    let child_widget = super::from_node(
+                    let child_widget = convert_widget::from_node(
                         &child_element.tag,
                         &child_element.attrs,
                     );
