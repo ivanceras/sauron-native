@@ -12,6 +12,7 @@ use std::{
     cell::RefCell,
     fmt::Debug,
     io::{self},
+    marker::PhantomData,
     rc::Rc,
 };
 use titik::Callback;
@@ -30,6 +31,7 @@ where
 {
     app: Rc<RefCell<APP>>,
     current_dom: Rc<RefCell<Node<MSG>>>,
+    _phantom_msg: PhantomData<MSG>,
 }
 
 impl<APP, MSG> TitikBackend<APP, MSG>
@@ -52,28 +54,6 @@ where
             }
             crate::Node::Text(_txt) => unreachable!(),
         }
-    }
-
-    /// root_node is added as argument in this dispatch function so that they are in the same
-    /// borrow, otherwise an AlreadyBorrowedError will be invoke at runtime.
-    fn dispatch(&self, msg: MSG, root_node: &mut dyn titik::Widget) {
-        eprintln!("dispatching... {:?}", msg);
-        self.app.borrow_mut().update(msg);
-        let new_view = self.app.borrow().view();
-        let current_view = self.app.borrow().view();
-
-        {
-            let previous_dom = self.current_dom.borrow();
-            let diff = mt_dom::diff_with_key(
-                &previous_dom,
-                &new_view,
-                &AttribKey::Key,
-            );
-            eprintln!("diff: {:#?}", diff);
-            apply_patches::apply_patches(&self, root_node, &diff);
-        }
-
-        *self.current_dom.borrow_mut() = current_view;
     }
 }
 
@@ -329,6 +309,7 @@ where
         let backend = TitikBackend {
             app: Rc::new(RefCell::new(app)),
             current_dom: Rc::new(RefCell::new(current_dom)),
+            _phantom_msg: PhantomData,
         };
         let mut renderer = Renderer::new(&mut stdout, root_node.as_mut());
         renderer.run().expect("must run");
