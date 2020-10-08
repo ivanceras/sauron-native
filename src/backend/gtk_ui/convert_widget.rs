@@ -241,6 +241,8 @@ where
 
             let buffer = EntryBuffer::new(Some(&*value));
             let entry = Entry::new_with_buffer(&buffer);
+            let style_context = entry.get_style_context();
+            style_context.add_class("text_input");
 
             if let Some(callbacks) =
                 find_callback(AttribKey::InputEvent, &attrs)

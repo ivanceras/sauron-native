@@ -20,7 +20,7 @@ where
         crate::Node::Element(widget) => widget_to_html(widget, cur_node_idx),
         crate::Node::Text(txt) => {
             *cur_node_idx += 1;
-            text(txt)
+            text(&txt.text)
         }
     }
 }
@@ -261,20 +261,20 @@ where
                         ("height", px(layout.size.height)),
                     ]),
                 ],
-                vec![
-                    text(label),
-                    if let Some(svg_image_data) = svg_image_data {
+                if let Some(svg_image_data) = svg_image_data {
+                    vec![
+                        text(label),
                         img(
                             vec![src(format!(
                                 "data:image/svg+xml;base64,{}",
                                 base64::encode(&svg_image_data)
                             ))],
                             vec![],
-                        )
-                    } else {
-                        text("")
-                    },
-                ],
+                        ),
+                    ]
+                } else {
+                    vec![text(label)]
+                },
             )
             .add_attributes(attributes)
         }

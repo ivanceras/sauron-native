@@ -14,8 +14,8 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.29", optional = true }
-mt-dom = { version = "0.4"}
+sauron = { version = "0.32", path = "../sauron", optional = true }
+mt-dom = { version = "0.5", path = "../mt-dom" }
 stretch = "0.3"
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
@@ -74,6 +74,7 @@ with-html = ["sauron", "web-sys", "wasm-bindgen", "console_log"]
 with-gtk = ["gtk/v3_22", "gio", "glib", "gdk", "gdk-pixbuf"]
 with-nwg = ["native-windows-gui", "resvg"]
 with-titik = ["titik"]
+with-debug = ["sauron/with-nodeidx-debug", "sauron/with-debug"]
 
 [workspace]
 members = [

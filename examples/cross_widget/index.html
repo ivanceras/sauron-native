@@ -9,7 +9,7 @@
     <script type=module>
         const { initialize } = wasm_bindgen;
         async function run() {
-            await wasm_bindgen('pkg/cross_widget_bg.wasm');
+            await wasm_bindgen('pkg/cross_widget_bg.wasm').catch(console.error);
             initialize("Hello");
         }
         run();

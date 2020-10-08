@@ -1,6 +1,8 @@
 
 # TODO
 - [X] Calculate layouts for TUI backend using stretch
+    - [ ] The layout calculation becomes redundant, since TUI, GTK, and html has it's own way of dealing with calculation
+        - The stretch calculation here, needs to be removed
 - Idea: Use raqote to render svg into BGRA
 	- [X] then convert it to rgba then use it in nwg bitmap
 	- [X] Use image crate to convert image to platform specific format: gtk
@@ -21,3 +23,24 @@
        - [ ] menu
        - [ ] header
        - [ ] tab_box
+- [ ] Make component return Cmd
+- [ ] Add styling support for gtk widgets
+- [ ] Make the conversion of a widget based on trait
+    - this allows creating custom widget from without having to be incorporated into the core logic code
+
+# Internal TODO:
+- convert sauron event into web_sys Event, so the user can control the event stop_propagation, and prevent_default
+
+# TODO widgets
+- [ ] Box
+- [ ] Pane
+- [ ] GroupBox
+- [ ] Editor
+    - [ ] text editor ( full text editor, such as gtksourceview )
+    - [ ] Searchbox
+    - [ ] Forms
+    - [ ] Dataviewer ( make a demo of data-viewer, which works in html, gtk, and titik)
+
+
+## Wishlist
+- [ ] femtovg backend

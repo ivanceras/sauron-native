@@ -1,5 +1,6 @@
 use super::convert_widget;
 use crate::{AttribKey, Attribute, Patch, Widget};
+use mt_dom::patch::{AddAttributes, AppendChildren, RemoveNode};
 use std::fmt::Debug;
 use titik::{Button, TextArea};
 
@@ -16,13 +17,22 @@ pub fn apply_patches<MSG, DSP>(
             titik::find_widget_mut(root_node, patch_node_idx)
                 .expect("must have a node to patch");
         match patch {
-            Patch::AddAttributes(tag, _node_idx, attrs) => {
+            Patch::AddAttributes(AddAttributes {
+                tag,
+                node_idx: _,
+                new_node_idx,
+                attrs,
+            }) => {
                 eprintln!("setting attributes...");
                 set_widget_attributes::<MSG>(tag, widget, attrs);
             }
-            Patch::AppendChildren(_tag, _node_idx, children) => {
+            Patch::AppendChildren(AppendChildren {
+                tag,
+                node_idx: _,
+                children,
+            }) => {
                 eprintln!("adding children..");
-                for child in children {
+                for (child_idx, child) in children {
                     let child_element =
                         child.as_element_ref().expect("must be an element");
                     let child_widget = convert_widget::from_node(
@@ -35,13 +45,8 @@ pub fn apply_patches<MSG, DSP>(
                     assert!(added);
                 }
             }
-            Patch::RemoveChildren(_tag, _node_idx, children_index) => {
-                eprintln!("truncating children..");
-                let mut sorted_children_index = children_index.clone();
-                sorted_children_index.sort();
-                for child_index in sorted_children_index.iter().rev() {
-                    widget.take_child(*child_index);
-                }
+            Patch::RemoveNode(RemoveNode { tag: _, node_idx }) => {
+                titik::remove_widget(root_node, *node_idx);
             }
             // todo for other patches here.
             _ => eprintln!("todo for: {:?}", patch),

@@ -8,6 +8,7 @@ use gtk::{
     prelude::*, Button, Container, ContainerExt, EventBox, Image, Label,
     MenuItem, Overlay, TextView, Widget,
 };
+use mt_dom::patch::{AddAttributes, AppendChildren, RemoveNode, ReplaceNode};
 use std::{collections::HashMap, fmt::Debug};
 
 pub fn apply_patches<MSG, DSP>(
@@ -27,17 +28,26 @@ pub fn apply_patches<MSG, DSP>(
             .get(&patch_node_idx)
             .expect("must have a node to patch");
         match patch {
-            Patch::AddAttributes(tag, _node_idx, attrs) => {
+            Patch::AddAttributes(AddAttributes {
+                tag,
+                node_idx: _,
+                new_node_idx: _,
+                attrs,
+            }) => {
                 set_widget_attributes(tag, widget, attrs);
             }
-            Patch::AppendChildren(tag, _node_idx, nodes) => {
+            Patch::AppendChildren(AppendChildren {
+                tag,
+                node_idx: _,
+                children,
+            }) => {
                 match tag {
                     crate::Widget::Overlay => {
                         let overlay = widget
                             .downcast_ref::<Overlay>()
                             .expect("must be an overlay");
-                        for node in nodes {
-                            if let Some(element) = node.as_element_ref() {
+                        for (child_idx, child) in children {
+                            if let Some(element) = child.as_element_ref() {
                                 let child =
                                     convert_widget::from_node(program, element);
                                 let widget = child
@@ -56,8 +66,8 @@ pub fn apply_patches<MSG, DSP>(
                         let container = widget
                             .downcast_ref::<Container>()
                             .expect("must be a container");
-                        for node in nodes {
-                            if let Some(element) = node.as_element_ref() {
+                        for (child_idx, child) in children {
+                            if let Some(element) = child.as_element_ref() {
                                 let child = convert_widget::from_node(
                                     program, &element,
                                 );
@@ -72,19 +82,23 @@ pub fn apply_patches<MSG, DSP>(
                     }
                 }
             }
-            Patch::RemoveChildren(_tag, _node_idx, children_index) => {
-                if let Some(container) = widget.downcast_ref::<Container>() {
-                    let children = container.get_children();
-                    for (i, _child) in children.iter().enumerate() {
-                        if children_index.contains(&i) {
-                            container.remove(&children[i]);
-                        }
-                    }
+            Patch::RemoveNode(RemoveNode {
+                tag: _,
+                node_idx: _,
+            }) => {
+                let parent = widget.get_parent().expect("must have a parent");
+                if let Some(container) = parent.downcast_ref::<Container>() {
+                    container.remove(widget);
                 }
             }
-            Patch::Replace(_tag, _node_idx, new_node) => {
+            Patch::ReplaceNode(ReplaceNode {
+                tag: _,
+                node_idx: _,
+                new_node_idx: _,
+                replacement,
+            }) => {
                 root_container.remove(widget);
-                if let Some(new_element) = new_node.as_element_ref() {
+                if let Some(new_element) = replacement.as_element_ref() {
                     let new_widget =
                         convert_widget::from_node(program, new_element);
                     let new_widget =

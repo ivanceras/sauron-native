@@ -218,10 +218,29 @@ where
 
     // https://shallowsky.com/blog/programming/styling-gtk3-with-css-python.html
     // https://developer.gnome.org/gtk3/stable/chap-css-properties.html
+    // https://stackoverflow.com/questions/44401069/how-can-i-trigger-or-force-a-css-transition-in-gtk
     fn setup_css() {
         let STYLE: &'static str = r#"
             #special_label {
                 font-family: monospace;
+            }
+
+            entry {
+                color: black;
+                text-decoration: underline;
+                font-style: italic;
+                background: white;
+                border: 1px solid #000;
+                outline-style: solid;
+                border-radius: 0;
+                -gtk-outline-radius: 0;
+            }
+            .text_input{
+                color: red;
+            }
+
+            textview{
+                color: blue;
             }
         "#;
         let provider = gtk::CssProvider::new();
