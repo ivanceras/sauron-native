@@ -9,7 +9,7 @@ use stretch::Stretch;
 /// calculate the layout of the nodes utilizing the styles set on each of the widget
 /// and its children widget styles
 #[allow(unused)]
-pub(crate) fn compute_node_layout<MSG>(
+pub fn compute_node_layout<MSG>(
     widget_node: &mut crate::Node<MSG>,
     parent_size: Size<Number>,
 ) {

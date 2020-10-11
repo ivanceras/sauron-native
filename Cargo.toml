@@ -32,6 +32,7 @@ console_log = { version = "0.1", optional = true }
 native-windows-gui = { path = "../native-windows-gui/native-windows-gui", optional = true, features = ["flexbox", "rich-textbox", "image-decoder", "textbox", "frame"] }
 titik = { version = "0.2", optional = true }
 resvg = { version = "0.9", features = ["raqote-backend"], optional = true }
+sauron-widget = { path = "crates/sauron-widget" }
 
 [dependencies.web-sys]
 version = "0.3"

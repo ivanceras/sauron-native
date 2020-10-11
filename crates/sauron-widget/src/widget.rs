@@ -16,7 +16,7 @@ use stretch::style::Style;
 pub mod attribute;
 mod builder;
 pub mod event;
-pub(crate) mod layout;
+pub mod layout;
 
 /// TODO: Each widget variant will need to have more details
 ///  such as attributes, that will be converted to their

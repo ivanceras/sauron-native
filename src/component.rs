@@ -1,4 +1,4 @@
-use crate::Node;
+use sauron_widget::Node;
 
 /// Applications must implement Component
 pub trait Component<MSG> {
