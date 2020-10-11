@@ -18,7 +18,7 @@ pretty_env_logger = "0.3"
 
 
 [features]
-with-html = ["sauron-native/with-html", "console_log"]
+with-web = ["sauron-native/with-web", "console_log"]
 with-titik = ["sauron-native/with-titik"]
 with-gtk = ["sauron-native/with-gtk"]
 with-nwg = ["sauron-native/with-nwg"]

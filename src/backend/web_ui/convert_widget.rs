@@ -51,10 +51,12 @@ where
             vec![
                 class("Vbox"),
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -62,10 +64,12 @@ where
             vec![
                 class("Hbox"),
                 styles(vec![("display", "flex"), ("flex-direction", "row")]),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -74,10 +78,12 @@ where
             vec![
                 class("Vpane"),
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -87,10 +93,12 @@ where
             vec![
                 class("Hpane"),
                 styles([("display", "flex"), ("flex-direction", "row")]),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -135,6 +143,7 @@ where
                         styles.push(Style::new("position", "absolute".into()));
                     }
 
+                    /*
                     // we override the child with
                     if let Some(style_width) =
                         styles.iter_mut().find(|st| st.name == "width")
@@ -150,7 +159,9 @@ where
                                 .into(),
                         ));
                     }
+                    */
 
+                    /*
                     // we override the child height
                     if let Some(style_height) =
                         styles.iter_mut().find(|st| st.name == "height")
@@ -163,6 +174,7 @@ where
                             px(child_layout.size.width as f32).into(),
                         ));
                     }
+                    */
 
                     // the styles are reconstructed and net to be set again rather than add
                     html_child.set_attributes_ref_mut(vec![mt_dom::attr(
@@ -173,10 +185,12 @@ where
             div(
                 vec![
                     class("Overlay"),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 html_children,
             )
@@ -184,10 +198,12 @@ where
         Widget::GroupBox => div(
             vec![
                 class("GroupBox"),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -216,10 +232,12 @@ where
                         ("font-family", "monospace", is_monospace),
                         ("white-space", "pre", is_preformatted),
                     ]),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 vec![text(value)],
             )
@@ -256,10 +274,12 @@ where
                 vec![
                     class("Button"),
                     name(widget_name),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 if let Some(svg_image_data) = svg_image_data {
                     vec![
@@ -285,10 +305,12 @@ where
             p(
                 vec![
                     class("Paragraph"),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 vec![text(txt_value)],
             )
@@ -324,10 +346,12 @@ where
                     class("TextInput"),
                     r#type("text"),
                     value(txt_value),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 vec![],
             )
@@ -376,10 +400,12 @@ where
                 vec![
                     class("TextArea"),
                     value(&txt_value),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                     styles_flag([
                         ("user-select", "none", !is_selectable),
                         ("font-family", "monospace", is_monospace),
@@ -451,10 +477,12 @@ where
             div(
                 vec![
                     class("Image"),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                     styles([("overflow", "auto")]),
                 ],
                 vec![img(
@@ -476,10 +504,12 @@ where
             div(
                 vec![
                     class("Svg"),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                     styles([("overflow", "auto")]),
                 ],
                 vec![img(
@@ -494,10 +524,12 @@ where
         Widget::HeaderBar => div(
             vec![
                 class("HeaderBar"),
+                /*
                 styles([
                     ("width", px(layout.size.width)),
                     ("height", px(layout.size.height)),
                 ]),
+                */
             ],
             html_children,
         ),
@@ -535,10 +567,12 @@ where
                 vec![
                     class("Link"),
                     href(uri),
+                    /*
                     styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ]),
+                    */
                 ],
                 vec![text(label)],
             )

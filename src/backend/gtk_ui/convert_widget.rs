@@ -83,12 +83,12 @@ where
                 );
                 println!("gbox size: ({},{})", width, height);
                 scroll.add(&gbox);
-                scroll.set_size_request(width as i32, height as i32);
+                //scroll.set_size_request(width as i32, height as i32);
                 scroll.set_propagate_natural_height(true);
-                gbox.set_size_request(width as i32, height as i32);
+                //gbox.set_size_request(width as i32, height as i32);
                 GtkWidget::GBoxScrollable(scroll)
             } else {
-                gbox.set_size_request(width as i32, height as i32);
+                //gbox.set_size_request(width as i32, height as i32);
                 GtkWidget::GBox(gbox)
             }
         }
@@ -98,7 +98,7 @@ where
                 .flatten();
             let frame = Frame::new(label);
             let vbox = gtk::Box::new(Orientation::Vertical, 0);
-            vbox.set_size_request(width as i32, height as i32);
+            //vbox.set_size_request(width as i32, height as i32);
 
             for child in widget_children.iter() {
                 if let Some(child_widget) = child.as_widget() {
@@ -156,7 +156,7 @@ where
                 hpane.set_position(child1_layout.size.width as i32);
             }
 
-            hpane.set_size_request(width as i32, height as i32);
+            //hpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(hpane)
         }
         Widget::Vpane => {
@@ -184,7 +184,7 @@ where
                     get_layout(first_child).expect("must have a layout");
                 vpane.set_position(child1_layout.size.width as i32);
             }
-            vpane.set_size_request(width as i32, height as i32);
+            //vpane.set_size_request(width as i32, height as i32);
             GtkWidget::Paned(vpane)
         }
         Widget::Button => {
@@ -219,7 +219,7 @@ where
                 btn.set_image(Some(&svg_image));
             }
 
-            btn.set_size_request(width as i32, height as i32);
+            //btn.set_size_request(width as i32, height as i32);
             GtkWidget::Button(btn)
         }
         Widget::Paragraph => {
@@ -401,7 +401,7 @@ where
                 &pixbuf.expect("error in pixbuf_loader"),
             ));
 
-            image.set_size_request(width as i32, height as i32);
+            //image.set_size_request(width as i32, height as i32);
             GtkWidget::Image(image)
         }
         Widget::Svg => {
@@ -443,7 +443,7 @@ where
                 }
             }
 
-            image.set_size_request(width as i32, height as i32);
+            //image.set_size_request(width as i32, height as i32);
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(
                     None::<&Adjustment>,
@@ -513,14 +513,14 @@ where
                 }
             }
 
-            text_view.set_size_request(width as i32, height as i32);
+            //text_view.set_size_request(width as i32, height as i32);
 
             if is_scrollable(&attrs) {
                 let scroll = ScrolledWindow::new(
                     None::<&Adjustment>,
                     None::<&Adjustment>,
                 );
-                scroll.set_size_request(width as i32, height as i32);
+                //scroll.set_size_request(width as i32, height as i32);
                 scroll.add(&text_view);
                 GtkWidget::TextViewScrollable(scroll)
             } else {
@@ -542,7 +542,7 @@ where
                     );
                 }
             }
-            overlay.set_size_request(width as i32, height as i32);
+            //overlay.set_size_request(width as i32, height as i32);
             overlay.show_all();
             GtkWidget::Overlay(overlay)
         }
@@ -680,7 +680,7 @@ where
                 }
             }
 
-            link_btn.set_size_request(width as i32, height as i32);
+            //link_btn.set_size_request(width as i32, height as i32);
             GtkWidget::LinkButton(link_btn)
         }
     }

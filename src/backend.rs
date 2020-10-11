@@ -2,10 +2,10 @@
 //!
 use crate::Component;
 
-#[cfg(feature = "with-html")]
-pub mod html;
-#[cfg(feature = "with-html")]
-pub use html::HtmlApp;
+#[cfg(feature = "with-web")]
+pub mod web_ui;
+#[cfg(feature = "with-web")]
+pub use web_ui::HtmlApp;
 
 #[cfg(feature = "with-titik")]
 pub mod titik_ui;

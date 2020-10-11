@@ -127,6 +127,7 @@ where
                     .expect("must be a widget"),
             );
             let backend_clone2 = backend_clone.clone();
+            /*
             application_window.connect_size_allocate(move |_win, rect| {
                 println!(
                     "moved in ({},{}) resized to ({},{})",
@@ -136,6 +137,7 @@ where
                     (rect.width, rect.height);
                 //backend_clone2.redraw();
             });
+            */
 
             application_window.show_all();
             *backend_clone.application_window.borrow_mut() =
