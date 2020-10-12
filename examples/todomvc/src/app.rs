@@ -68,6 +68,7 @@ impl Component<Msg> for Model {
                 });
             }
             Msg::Delete(id) => {
+                log::trace!("deleting {}", id);
                 self.entries.retain(|entry| entry.id != id);
             }
             Msg::ChangeVisibility(visibility) => {
@@ -198,13 +199,7 @@ impl Model {
                     placeholder("What needs to be done?"),
                     value(self.value.to_string()),
                     on_input(|v: InputEvent| Msg::Update(v.value.to_string())),
-                    on_keypress(|event: KeyEvent| {
-                        if event.key_code == KeyCode::Enter {
-                            Msg::Add
-                        } else {
-                            Msg::NoOp
-                        }
-                    }),
+                    on_enter(|event: KeyEvent| Msg::Add),
                 ]),
             ],
         )
@@ -229,9 +224,12 @@ impl Model {
                             name("toggle"),
                             checked(entry.completed),
                             on_click(move |_| Msg::Toggle(entry_id)),
+                            //label(&entry.description),
+                            id(entry_id.to_string()),
                         ]),
                         text_label(vec![
                             on_doubleclick(move |_| Msg::ToggleEdit(entry_id)),
+                            for_(entry_id.to_string()),
                             value(format!("{}", entry.description)),
                         ]),
                         button(vec![

@@ -3,7 +3,7 @@ use super::Dispatch;
 use super::GtkWidget;
 use crate::image_util;
 use crate::widget::attribute::util::get_layout;
-use crate::widget::event::{InputEvent, MouseEvent};
+use crate::widget::event::{InputEvent, KeyEvent, MouseEvent};
 use crate::{
     widget::attribute::{find_callback, find_value, util::is_scrollable},
     AttribKey, Attribute, Widget,
@@ -254,6 +254,18 @@ where
                         let input_event =
                             InputEvent::new(entry.get_buffer().get_text());
                         let msg = cb_clone.emit(input_event);
+                        program_clone.dispatch(msg);
+                    });
+                }
+            }
+            if let Some(callbacks) = find_callback(AttribKey::Activate, &attrs)
+            {
+                for cb in callbacks {
+                    let program_clone = program.clone();
+                    let cb_clone = cb.clone();
+                    entry.connect_activate(move |entry| {
+                        let key_event = KeyEvent::enter();
+                        let msg = cb_clone.emit(key_event);
                         program_clone.dispatch(msg);
                     });
                 }

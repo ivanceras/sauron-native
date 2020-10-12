@@ -21,6 +21,7 @@ serde_json = "1.0"
 
 [features]
 with-web = ["sauron-native/with-web", "console_log"]
+with-debug = ["sauron-native/with-debug"]
 with-titik = ["sauron-native/with-titik"]
 with-gtk = ["sauron-native/with-gtk"]
 with-nwg = ["sauron-native/with-nwg"]

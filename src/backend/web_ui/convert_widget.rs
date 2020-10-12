@@ -1,6 +1,7 @@
 use super::convert_event;
 use crate::image_util;
-use crate::widget::attribute::util::get_layout;
+use crate::widget::attribute::util::{get_id, get_key, get_layout};
+use crate::widget::event::KeyCode;
 use crate::{widget::attribute::find_value, AttribKey, Widget};
 use sauron::{
     html::{attributes::*, div, img, input, text},
@@ -36,7 +37,8 @@ where
     let attrs = element.get_attributes();
 
     let layout = get_layout(&element).expect("must have a layout");
-    //log::debug!("tag: {:?} layout: {:#?}", element.tag(), layout);
+    let widget_key = get_key(&element);
+    let widget_id = get_id(&element);
 
     let mut html_children = vec![];
     for widget_child in element.get_children().iter() {
@@ -50,6 +52,11 @@ where
         Widget::Vbox => div(
             vec![
                 class("Vbox"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
                 /*
                 styles([
@@ -63,6 +70,11 @@ where
         Widget::Hbox => div(
             vec![
                 class("Hbox"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 styles(vec![("display", "flex"), ("flex-direction", "row")]),
                 /*
                 styles([
@@ -77,6 +89,11 @@ where
         Widget::Vpane => div(
             vec![
                 class("Vpane"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 styles(vec![("display", "flex"), ("flex-direction", "column")]),
                 /*
                 styles([
@@ -92,6 +109,11 @@ where
         Widget::Hpane => div(
             vec![
                 class("Hpane"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 styles([("display", "flex"), ("flex-direction", "row")]),
                 /*
                 styles([
@@ -185,6 +207,11 @@ where
             div(
                 vec![
                     class("Overlay"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),
@@ -198,6 +225,11 @@ where
         Widget::GroupBox => div(
             vec![
                 class("GroupBox"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 /*
                 styles([
                     ("width", px(layout.size.width)),
@@ -224,14 +256,28 @@ where
                 .map(|v| v.as_bool())
                 .unwrap_or(true);
 
+            let label_for = find_value(AttribKey::For, &attrs)
+                .map(|v| v.as_str().map(|v| v.to_string()))
+                .flatten();
+
             label(
                 vec![
                     class("Label"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     styles_flag([
                         ("user-select", "none", !is_selectable),
                         ("font-family", "monospace", is_monospace),
                         ("white-space", "pre", is_preformatted),
                     ]),
+                    if let Some(label_for) = label_for {
+                        for_(label_for)
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),
@@ -273,6 +319,11 @@ where
             button(
                 vec![
                     class("Button"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     name(widget_name),
                     /*
                     styles([
@@ -305,6 +356,11 @@ where
             p(
                 vec![
                     class("Paragraph"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),
@@ -338,6 +394,16 @@ where
                             }));
                         }
                     }
+                    // on_enter
+                    AttribKey::Activate => {
+                        for cb in att.get_callback() {
+                            let cb = cb.clone();
+                            attributes.push(on_enter(move |e| {
+                                let ke = convert_event::to_key_event(&e);
+                                cb.emit(ke)
+                            }));
+                        }
+                    }
                     _ => (),
                 }
             }
@@ -345,6 +411,11 @@ where
                 vec![
                     class("TextInput"),
                     r#type("text"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     value(txt_value),
                     /*
                     styles([
@@ -399,6 +470,11 @@ where
             textarea(
                 vec![
                     class("TextArea"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     value(&txt_value),
                     /*
                     styles([
@@ -424,20 +500,41 @@ where
                 .map(|v| v.as_bool())
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
-            let widget_id = format!("checkbox_{}", cur_node_idx);
 
             div(
                 vec![
                     class("Checkbox"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ])*/
                 ],
                 vec![
-                    input(vec![type_("checkbox"), id(&widget_id)], vec![])
-                        .add_attributes(checked),
-                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
+                    input(
+                        vec![
+                            type_("checkbox"),
+                            if let Some(widget_id) = widget_id {
+                                id(&widget_id.to_string())
+                            } else {
+                                empty_attr()
+                            },
+                        ],
+                        vec![],
+                    )
+                    .add_attributes(checked),
+                    label(
+                        vec![if let Some(widget_id) = widget_id {
+                            for_(&widget_id.to_string())
+                        } else {
+                            empty_attr()
+                        }],
+                        vec![text(cb_label)],
+                    ),
                 ],
             )
         }
@@ -449,19 +546,40 @@ where
                 .map(|v| v.as_bool())
                 .unwrap_or(false);
             let checked = attrs_flag([("checked", "checked", cb_value)]);
-            let widget_id = format!("radio_{}", cur_node_idx);
             div(
                 vec![
                     class("Radio"),
+                    if let Some(widget_id) = widget_id {
+                        key(widget_id.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*styles([
                         ("width", px(layout.size.width)),
                         ("height", px(layout.size.height)),
                     ])*/
                 ],
                 vec![
-                    input(vec![type_("radio"), id(&widget_id)], vec![])
-                        .add_attributes(checked),
-                    label(vec![for_(&widget_id)], vec![text(cb_label)]),
+                    input(
+                        vec![
+                            type_("radio"),
+                            if let Some(widget_id) = widget_id {
+                                id(&widget_id.to_string())
+                            } else {
+                                empty_attr()
+                            },
+                        ],
+                        vec![],
+                    )
+                    .add_attributes(checked),
+                    label(
+                        vec![if let Some(widget_id) = widget_id {
+                            for_(&widget_id.to_string())
+                        } else {
+                            empty_attr()
+                        }],
+                        vec![text(cb_label)],
+                    ),
                 ],
             )
         }
@@ -477,6 +595,11 @@ where
             div(
                 vec![
                     class("Image"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),
@@ -504,6 +627,11 @@ where
             div(
                 vec![
                     class("Svg"),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),
@@ -524,6 +652,11 @@ where
         Widget::HeaderBar => div(
             vec![
                 class("HeaderBar"),
+                if let Some(widget_key) = widget_key {
+                    key(widget_key.to_string())
+                } else {
+                    empty_attr()
+                },
                 /*
                 styles([
                     ("width", px(layout.size.width)),
@@ -533,12 +666,38 @@ where
             ],
             html_children,
         ),
-        Widget::MenuBar => div(vec![], vec![text("menu bar")]),
-        Widget::Menu => div(vec![], vec![text("menu")]),
-        Widget::MenuItem => div(vec![], vec![text("menu item")]),
-        Widget::SearchInput => {
-            div(vec![], vec![input(vec![type_("text")], vec![])])
-        }
+        Widget::MenuBar => div(
+            vec![if let Some(widget_key) = widget_key {
+                key(widget_key.to_string())
+            } else {
+                empty_attr()
+            }],
+            vec![text("menu bar")],
+        ),
+        Widget::Menu => div(
+            vec![if let Some(widget_key) = widget_key {
+                key(widget_key.to_string())
+            } else {
+                empty_attr()
+            }],
+            vec![text("menu")],
+        ),
+        Widget::MenuItem => div(
+            vec![if let Some(widget_key) = widget_key {
+                key(widget_key.to_string())
+            } else {
+                empty_attr()
+            }],
+            vec![text("menu item")],
+        ),
+        Widget::SearchInput => div(
+            vec![if let Some(widget_key) = widget_key {
+                key(widget_key.to_string())
+            } else {
+                empty_attr()
+            }],
+            vec![input(vec![type_("text")], vec![])],
+        ),
         Widget::Link => {
             let label = find_value(AttribKey::Label, &attrs)
                 .map(|v| v.to_string())
@@ -567,6 +726,11 @@ where
                 vec![
                     class("Link"),
                     href(uri),
+                    if let Some(widget_key) = widget_key {
+                        key(widget_key.to_string())
+                    } else {
+                        empty_attr()
+                    },
                     /*
                     styles([
                         ("width", px(layout.size.width)),

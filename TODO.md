@@ -14,8 +14,8 @@
 - Nwg backend
    - [ ] deal with nwg, flexboxlayout can not be nestabled
    - [ ] events need to propagate
-- Html backend
-   - [ ] rename `with-html` to `with-webui`
+- Web backend
+   - [C] rename `with-html` to `with-webui`
    - [X] Make adding children to specific widgets customizable
    - [X] Calculate the layout using stretch
        - This is needed since the percent (50%) in css is hard to control
@@ -27,6 +27,7 @@
 - [ ] Add styling support for gtk widgets
 - [ ] Make the conversion of a widget based on trait
     - this allows creating custom widget from without having to be incorporated into the core logic code
+- [ ] translate the style such as FlexDirection to "flex-direction"
 
 # Internal TODO:
 - convert sauron event into web_sys Event, so the user can control the event stop_propagation, and prevent_default

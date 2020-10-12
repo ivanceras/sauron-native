@@ -10,7 +10,7 @@ pub use mt_dom;
 pub use sauron_widget::{
     attribute,
     attribute::{AttribKey, Value},
-    widget, Attribute, Element, Node, Patch, Widget,
+    widget, Attribute, Element, Event, Node, Patch, Widget,
 };
 pub use stretch;
 

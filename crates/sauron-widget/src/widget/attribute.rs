@@ -46,6 +46,8 @@ pub enum AttribKey {
     Alignment,
     /// If the key differ in the diff, all of the subtree will be discarded
     Key,
+    /// widget id
+    Id,
     /// whether or not the control is editable, used in text_view
     Editable,
     /// data, used in image blobs and svg
@@ -54,22 +56,6 @@ pub enum AttribKey {
     SvgImage,
     /// The style attribute
     Style,
-    /// Events
-    ClickEvent,
-    /// Mouse down event
-    MouseDown,
-    /// Mouse up event
-    MouseUp,
-    /// Mouse move event
-    MouseMove,
-    /// Input event
-    InputEvent,
-    /// keyboard events
-    KeyEvent,
-    /// doubleclick event
-    DoubleClickEvent,
-    /// on blur event
-    BlurEvent,
     /// whether or not a widget is scrollable, such as image, text_area
     Scrollable,
     /// the calculated layout of this widget
@@ -94,6 +80,27 @@ pub enum AttribKey {
     Uri,
     /// Placeholder is used in text input, search input, and text_area
     Placeholder,
+
+    /// Events
+    ClickEvent,
+    /// Mouse down event
+    MouseDown,
+    /// Mouse up event
+    MouseUp,
+    /// Mouse move event
+    MouseMove,
+    /// Input event
+    InputEvent,
+    /// keyboard events
+    KeyEvent,
+    /// doubleclick event
+    DoubleClickEvent,
+    /// on blur event
+    BlurEvent,
+    /// activate event, used in on_enter
+    Activate,
+    /// For
+    For,
 }
 
 declare_attr! {
@@ -132,6 +139,10 @@ declare_attr! {
     placeholder => Placeholder;
     /// key
     key => Key;
+    /// id
+    id => Id;
+    /// for
+    for_ => For;
 }
 
 impl fmt::Display for AttribKey {

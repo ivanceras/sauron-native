@@ -110,6 +110,15 @@ pub struct KeyEvent {
     pub modifier: Modifier,
 }
 
+impl KeyEvent {
+    pub fn enter() -> Self {
+        KeyEvent {
+            key_code: KeyCode::Enter,
+            modifier: Modifier::none(),
+        }
+    }
+}
+
 /// The keycode of the character pressed
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeyCode {
@@ -374,6 +383,16 @@ where
     F: Fn(KeyEvent) -> MSG + 'static,
 {
     on(AttribKey::KeyEvent, move |ev: Event| match ev {
+        Event::KeyEvent(ke) => func(ke),
+        _ => unreachable!(),
+    })
+}
+
+pub fn on_enter<F, MSG>(func: F) -> Attribute<MSG>
+where
+    F: Fn(KeyEvent) -> MSG + 'static,
+{
+    on(AttribKey::Activate, move |ev: Event| match ev {
         Event::KeyEvent(ke) => func(ke),
         _ => unreachable!(),
     })

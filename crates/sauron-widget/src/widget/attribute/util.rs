@@ -58,3 +58,17 @@ pub fn get_layout<MSG>(element: &Element<MSG>) -> Option<&Layout> {
         .flatten()
         .flatten()
 }
+
+pub fn get_key<MSG>(element: &Element<MSG>) -> Option<&Value> {
+    element
+        .get_attribute_value(&AttribKey::Key)
+        .map(|values| values.first().map(|v| *v))
+        .flatten()
+}
+
+pub fn get_id<MSG>(element: &Element<MSG>) -> Option<&Value> {
+    element
+        .get_attribute_value(&AttribKey::Id)
+        .map(|values| values.first().map(|v| *v))
+        .flatten()
+}
