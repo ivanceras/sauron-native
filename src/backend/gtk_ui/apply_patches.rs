@@ -296,6 +296,10 @@ where
 
 /// return the actual node to be patched
 /// dealing with widgets that is wrapped with scrolled window
+///
+/// TODO: need to improve the tree traversal on the widgets.
+/// Need to find a way to express the algorithm traversal for each widget variant.
+///
 fn get_actual_node_to_patch<MSG>(
     child_tag: &crate::Widget,
     widget_child: &Widget,

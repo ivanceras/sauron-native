@@ -16,7 +16,7 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 sauron = { version = "0.32", path = "../sauron", optional = true }
 mt-dom = { version = "0.6", path = "../mt-dom" }
-stretch = "0.3"
+stretch = { package = "expanse", version = "0.3"}
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
 gtk = { version = "0.8", optional = true }
@@ -88,6 +88,5 @@ members = [
 [patch.crates-io]
 sauron = { path = "../sauron" }
 mt-dom = { path = "../mt-dom" }
-stretch = { path = "../stretch" }
 titik = {path = "../titik" }
 native-windows-gui = { path = "../native-windows-gui/native-windows-gui" }
