@@ -28,6 +28,8 @@
 - [ ] Make the conversion of a widget based on trait
     - this allows creating custom widget from without having to be incorporated into the core logic code
 - [ ] translate the style such as FlexDirection to "flex-direction"
+- [ ] create `sauron-widget` crate which has a higher lavel wrapper for a sauron program, where each widget is a sauron program
+    with access to it's root node, differ and dom_updater
 
 # Internal TODO:
 - convert sauron event into web_sys Event, so the user can control the event stop_propagation, and prevent_default
