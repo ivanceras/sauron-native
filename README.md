@@ -58,7 +58,7 @@ cd examples/cross_widget
 
 ## TODO platforms
 - [X] Linux (gtk)
-- [X] Windows ([native-windows-gui](https://github.com/gabdube/native-windows-gu))
+- [X] Windows ([native-windows-gui](https://github.com/gabdube/native-windows-gui))
 - [ ] Mac ([appki-rs](https://github.com/ryanmcgrath/appkit-rs))
 
 - [X] Browser(html)
