@@ -15,7 +15,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 sauron = { version = "0.34", optional = true }
-mt-dom = { version = "0.6", path = "../mt-dom" }
+mt-dom = { version = "0.6" }
 expanse = { version = "0.3"}
 stretch = { version = "0.3"}
 termion = { version = "1.5", optional= true }
