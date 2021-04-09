@@ -11,4 +11,4 @@ script:
 - cargo test
 - cargo build --features "with-titik"
 - cargo build --features "with-web"
-- cargo build --features "with-gtk"
+  #- cargo build --features "with-gtk"
