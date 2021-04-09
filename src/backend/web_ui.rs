@@ -1,9 +1,9 @@
 //! html backend where all the functionalities is offloaded into sauron
 use crate::{widget::layout::compute_node_layout, Backend, Component};
+use expanse::geometry::Size;
+use expanse::number::Number;
 use sauron::prelude::*;
 use std::{fmt::Debug, marker::PhantomData};
-use stretch::geometry::Size;
-use stretch::number::Number;
 
 mod convert_event;
 mod convert_widget;
@@ -36,7 +36,7 @@ where
     APP: Component<MSG> + 'static,
 {
     fn new(app: APP) -> Self {
-        let browser_size = Browser::get_size();
+        let browser_size = Window::get_size();
         HtmlApp {
             app,
             browser_size,
@@ -52,7 +52,7 @@ where
 {
     fn init(&self) -> sauron::cmd::Cmd<sauron::Program<Self, BackendMsg<MSG>>> {
         log::debug!("init in HtmlApp..");
-        Browser::on_resize(BackendMsg::Resize)
+        Window::on_resize(BackendMsg::Resize)
     }
 
     fn update(

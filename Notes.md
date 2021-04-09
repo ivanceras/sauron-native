@@ -57,3 +57,13 @@ Gtk cell renderer is limited to :
 ## Styling gtk widgets with css
 - https://shallowsky.com/blog/programming/styling-gtk3-with-css-python.html
 - https://developer.gnome.org/gtk3/stable/chap-css-properties.html
+
+## Cross compilation for windows and running inside linux for the cross widget example
+```
+rustup target add x86_64-pc-windows-gnu
+sudo apt install g++-mingw-w64-x86-64
+sudo apt install wine
+
+cargo build --features "with-nwg" --target=x86_64-pc-windows-gnu
+wine ./target/x86_64-pc-windows-gnu/debug/cross_widget.exe
+```

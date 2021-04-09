@@ -2,6 +2,8 @@
 use super::Dispatch;
 use crate::widget::layout::compute_node_layout;
 use crate::{AttribKey, Backend, Component, Node};
+use expanse::geometry::Size;
+use expanse::number::Number;
 use gio::{prelude::*, ApplicationFlags};
 pub use gtk;
 use gtk::{
@@ -12,8 +14,6 @@ use gtk::{
 };
 use log::*;
 use std::{cell::RefCell, fmt::Debug, marker::PhantomData, rc::Rc};
-use stretch::geometry::Size;
-use stretch::number::Number;
 
 mod apply_patches;
 mod convert_widget;

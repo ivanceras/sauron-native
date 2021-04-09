@@ -568,38 +568,9 @@ impl NwgWidget {
 
                 NwgWidget::GroupBox(box_layout)
             }
-        }
-    }
-    /*
-    fn add_children(&self, children: &Vec<Self>) {
-        println!("adding children...");
-        for child in children.iter() {
-            println!("child: {:?}", child);
-        }
-        match self {
-            NwgWidget::Box(container) => {
-                for (i, child) in children.iter().enumerate() {
-                    println!("child {}", i);
-                    match child {
-                        NwgWidget::Box(child) => (),
-                        NwgWidget::Button(child) => container.add_child(i as u32, child),
-                        NwgWidget::Text(child) => container.add_child(i as u32, child),
-                        NwgWidget::TextInput(child) => container.add_child(i as u32, child),
-                        NwgWidget::Checkbox(child) => container.add_child(i as u32, child),
-                        NwgWidget::Radio(child) => container.add_child(i as u32, child),
-                        NwgWidget::Image(child, _) => container.add_child(i as u32, child),
-                        NwgWidget::Button(child) => container.child(i as u32, child),
-                        NwgWidget::Text(child) => container.child(i as u32, child),
-                        NwgWidget::TextInput(child) => container.child(i as u32, child),
-                        NwgWidget::Checkbox(child) => container.child(i as u32, child),
-                        NwgWidget::Radio(child) => container.child(i as u32, child),
-                        NwgWidget::Image(child,_) => container.child(i as u32, child),
-                    }
-                    container.child_size(Size{width: Dimension::Percent(1.0), height: Dimension::Auto})
-                }
+            _ => {
+                todo!()
             }
-            _ => panic!("can not add children for {:?}", self),
         }
     }
-    */
 }

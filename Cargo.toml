@@ -14,9 +14,10 @@ edition = "2018"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-sauron = { version = "0.32", path = "../sauron", optional = true }
+sauron = { version = "0.34", optional = true }
 mt-dom = { version = "0.6", path = "../mt-dom" }
-stretch = { package = "expanse", version = "0.3"}
+expanse = { version = "0.3"}
+stretch = { version = "0.3"}
 termion = { version = "1.5", optional= true }
 wasm-bindgen = { version = "0.2", optional = true }
 gtk = { version = "0.8", optional = true }
@@ -28,8 +29,7 @@ log = "0.4"
 base64 = "0.11"
 image = "0.23"
 console_log = { version = "0.1", optional = true }
-#native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui", rev="3011830", optional = true , features = ["all"]}
-native-windows-gui = { path = "../native-windows-gui/native-windows-gui", optional = true, features = ["flexbox", "rich-textbox", "image-decoder", "textbox", "frame"] }
+native-windows-gui = { version = "1.0", optional = true , features = ["all"]}
 titik = { version = "0.2", optional = true }
 resvg = { version = "0.9", features = ["raqote-backend"], optional = true }
 sauron-widget = { path = "crates/sauron-widget" }
@@ -75,7 +75,7 @@ with-web = ["sauron", "web-sys", "wasm-bindgen", "console_log"]
 with-gtk = ["gtk/v3_22", "gio", "glib", "gdk", "gdk-pixbuf"]
 with-nwg = ["native-windows-gui", "resvg"]
 with-titik = ["titik"]
-with-debug = ["sauron/with-nodeidx-debug", "sauron/with-debug"]
+with-debug = ["sauron/with-debug"]
 
 [workspace]
 members = [
@@ -85,8 +85,8 @@ members = [
 ]
 
 
-[patch.crates-io]
-sauron = { path = "../sauron" }
-mt-dom = { path = "../mt-dom" }
-titik = {path = "../titik" }
-native-windows-gui = { path = "../native-windows-gui/native-windows-gui" }
+#[patch.crates-io]
+#sauron = { path = "../sauron" }
+#mt-dom = { path = "../mt-dom" }
+#titik = {path = "../titik" }
+#native-windows-gui = { path = "../native-windows-gui/native-windows-gui" }
