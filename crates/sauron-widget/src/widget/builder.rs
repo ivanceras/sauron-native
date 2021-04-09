@@ -3,12 +3,12 @@ use crate::widget::attribute::style;
 use crate::widget::attribute::util::find_value;
 use crate::Widget;
 use crate::{AttribKey, Attribute, Node, Value};
+use expanse::geometry::Size;
+use expanse::style::Dimension;
+use expanse::style::FlexDirection;
+use expanse::style::PositionType;
+use expanse::style::Style;
 use mt_dom::{attr, element};
-use stretch::geometry::Size;
-use stretch::style::Dimension;
-use stretch::style::FlexDirection;
-use stretch::style::PositionType;
-use stretch::style::Style;
 
 /// a helper function to create widget elements
 pub fn widget<MSG>(

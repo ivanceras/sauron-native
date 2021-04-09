@@ -30,7 +30,7 @@ base64 = "0.11"
 image = "0.23"
 console_log = { version = "0.1", optional = true }
 native-windows-gui = { version = "1.0", optional = true , features = ["all"]}
-titik = { version = "0.2", optional = true }
+titik = { version = "0.3", optional = true }
 resvg = { version = "0.9", features = ["raqote-backend"], optional = true }
 sauron-widget = { path = "crates/sauron-widget" }
 

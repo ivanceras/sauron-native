@@ -1,7 +1,7 @@
+use expanse::result::Layout;
+use expanse::style::PositionType;
+use expanse::style::Style;
 use std::fmt;
-use stretch::result::Layout;
-use stretch::style::PositionType;
-use stretch::style::Style;
 
 /// The possible values of widget attributes
 #[derive(PartialEq, Debug, Clone)]

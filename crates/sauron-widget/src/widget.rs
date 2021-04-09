@@ -5,13 +5,13 @@ use crate::widget::attribute::style;
 use crate::widget::attribute::util::find_value;
 use crate::{AttribKey, Attribute, Node, Value};
 pub use builder::*;
+use expanse::geometry::Size;
+use expanse::style::Dimension;
+use expanse::style::FlexDirection;
+use expanse::style::PositionType;
+use expanse::style::Style;
 use mt_dom::{attr, element};
 use std::fmt::Debug;
-use stretch::geometry::Size;
-use stretch::style::Dimension;
-use stretch::style::FlexDirection;
-use stretch::style::PositionType;
-use stretch::style::Style;
 
 pub mod attribute;
 mod builder;

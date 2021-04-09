@@ -2,9 +2,9 @@
 //!
 pub use super::event::Event;
 use crate::Attribute;
+use expanse::style::Style;
 use mt_dom::attr;
 use std::fmt;
-use stretch::style::Style;
 pub use util::{find_callback, find_value, get_style};
 pub use value::Value;
 

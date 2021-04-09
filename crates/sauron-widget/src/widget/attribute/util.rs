@@ -3,8 +3,8 @@
 use crate::{
     widget::attribute::AttribKey, Attribute, Callback, Element, Node, Value,
 };
-use stretch::result::Layout;
-use stretch::style::Style;
+use expanse::result::Layout;
+use expanse::style::Style;
 
 /// find the value of the attribute key from a Vec of attributes
 pub fn find_value<MSG>(
